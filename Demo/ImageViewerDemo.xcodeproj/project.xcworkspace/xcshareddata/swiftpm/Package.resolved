@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "acelayout",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jrsaruo/AceLayout",
+      "state" : {
+        "revision" : "6f8ef9fe2a3d97fe64b34f2eeefe6147828793ba",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "swiftytable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jrsaruo/SwiftyTable",
+      "state" : {
+        "revision" : "f7a9234eb4d4fe99cd5b5fc431c76597278d5e0a",
+        "version" : "2.0.1"
+      }
+    }
+  ],
+  "version" : 2
+}

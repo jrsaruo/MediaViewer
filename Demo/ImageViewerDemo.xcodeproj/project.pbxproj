@@ -13,6 +13,8 @@
 		5A54613629A2594800F16456 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613429A2594800F16456 /* LaunchScreen.storyboard */; };
 		5A54614129A25A5600F16456 /* ImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614029A25A5600F16456 /* ImageViewer */; };
 		5A54614329A25A8900F16456 /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614229A25A8900F16456 /* PhotosViewController.swift */; };
+		5A54614629A25B7800F16456 /* SwiftyTable in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614529A25B7800F16456 /* SwiftyTable */; };
+		5A54614929A25BCD00F16456 /* AceLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614829A25BCD00F16456 /* AceLayout */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,7 +33,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A54614929A25BCD00F16456 /* AceLayout in Frameworks */,
 				5A54614129A25A5600F16456 /* ImageViewer in Frameworks */,
+				5A54614629A25B7800F16456 /* SwiftyTable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +106,8 @@
 			name = ImageViewerDemo;
 			packageProductDependencies = (
 				5A54614029A25A5600F16456 /* ImageViewer */,
+				5A54614529A25B7800F16456 /* SwiftyTable */,
+				5A54614829A25BCD00F16456 /* AceLayout */,
 			);
 			productName = ImageViewerDemo;
 			productReference = 5A54612629A2594700F16456 /* ImageViewerDemo.app */;
@@ -131,6 +137,10 @@
 				Base,
 			);
 			mainGroup = 5A54611D29A2594700F16456;
+			packageReferences = (
+				5A54614429A25B7800F16456 /* XCRemoteSwiftPackageReference "SwiftyTable" */,
+				5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */,
+			);
 			productRefGroup = 5A54612729A2594700F16456 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -366,10 +376,39 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		5A54614429A25B7800F16456 /* XCRemoteSwiftPackageReference "SwiftyTable" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jrsaruo/SwiftyTable";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.1;
+			};
+		};
+		5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jrsaruo/AceLayout";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		5A54614029A25A5600F16456 /* ImageViewer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ImageViewer;
+		};
+		5A54614529A25B7800F16456 /* SwiftyTable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A54614429A25B7800F16456 /* XCRemoteSwiftPackageReference "SwiftyTable" */;
+			productName = SwiftyTable;
+		};
+		5A54614829A25BCD00F16456 /* AceLayout */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */;
+			productName = AceLayout;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
