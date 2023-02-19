@@ -1,27 +1,27 @@
-# template-swift-library
+# ImageViewer
 
-A template repository for Swift libraries.
+A comfortable image viewer like the iOS standard.
 
 ## Requirements
 
 - \<PLATFORM_VERSION\>
-- \<SWIFT_VERSION\>
+- Swift 5.7+
 
-## Using \<LIBRARY_NAME\> in your project
+## Using ImageViewer in your project
 
-To use the `<LIBRARY_NAME>` library in a SwiftPM project, add the following line to the dependencies in your `Package.swift` file:
+To use the `ImageViewer` library in a SwiftPM project, add the following line to the dependencies in your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/jrsaruo/<LIBRARY_NAME>", from: "1.0.0"),
+.package(url: "https://github.com/jrsaruo/ImageViewer", from: "1.0.0"),
 ```
 
-and add `<LIBRARY_NAME>` as a dependency for your target:
+and add `ImageViewer` as a dependency for your target:
 
 ```swift
 .target(name: "<target>", dependencies: [
-    .product(name: "<LIBRARY_NAME>", package: "<PACKAGE_NAME>"),
+    .product(name: "ImageViewer", package: "ImageViewer"),
     // other dependencies
 ]),
 ```
 
-Finally, add `import <LIBRARY_NAME>` in your source code.
+Finally, add `import ImageViewer` in your source code.
