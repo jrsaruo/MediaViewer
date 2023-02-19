@@ -7,7 +7,19 @@
 
 import UIKit
 
-public final class ImageViewerViewController: UIViewController {
+public final class ImageViewerViewController: UINavigationController {
+    
+    public init() {
+        super.init(rootViewController: ImageViewerContentViewController())
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setViewControllers([ImageViewerContentViewController()], animated: false)
+    }
+}
+
+final class ImageViewerContentViewController: UIViewController {
     
     // MARK: - Lifecycle
     
