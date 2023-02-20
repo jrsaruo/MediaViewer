@@ -15,6 +15,7 @@ final class ImageViewerView: UIView {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 5
+        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         return scrollView
@@ -26,6 +27,8 @@ final class ImageViewerView: UIView {
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
+    
+    private var didMakeAllLayoutConstraints = false
     
     // MARK: - Initializers
     
@@ -65,16 +68,65 @@ final class ImageViewerView: UIView {
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
-            scrollView.contentLayoutGuide.topAnchor.constraint(equalTo: scrollView.frameLayoutGuide.topAnchor),
-            scrollView.contentLayoutGuide.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor),
-            scrollView.contentLayoutGuide.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor),
-            scrollView.contentLayoutGuide.bottomAnchor.constraint(equalTo: scrollView.frameLayoutGuide.bottomAnchor),
-            
             imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor)
         ])
+    }
+    
+    // MARK: - Lifecycle
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setUpLayoutIfNotYet()
+    }
+    
+    /// Configure the scrolling content layout and the image view aspect ratio if not yet.
+    private func setUpLayoutIfNotYet() {
+        guard let image = imageView.image, !didMakeAllLayoutConstraints else { return }
+        didMakeAllLayoutConstraints = true
+        
+        let imageWidthToHeight = image.size.width / image.size.height
+        let viewWidthToHeight = bounds.width / bounds.height
+        
+        let imageViewConstraints: [NSLayoutConstraint]
+        let imageViewAspectRatioConstraint = imageView.widthAnchor.constraint(equalTo: imageView.heightAnchor,
+                                                                              multiplier: imageWidthToHeight)
+        if imageWidthToHeight > viewWidthToHeight {
+            imageViewConstraints = [
+                scrollView.contentLayoutGuide.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor),
+                scrollView.contentLayoutGuide.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor),
+                imageViewAspectRatioConstraint
+            ]
+        } else {
+            imageViewConstraints = [
+                scrollView.contentLayoutGuide.topAnchor.constraint(equalTo: scrollView.frameLayoutGuide.topAnchor),
+                scrollView.contentLayoutGuide.bottomAnchor.constraint(equalTo: scrollView.frameLayoutGuide.bottomAnchor),
+                imageViewAspectRatioConstraint
+            ]
+        }
+        NSLayoutConstraint.activate(imageViewConstraints)
+        
+        layoutIfNeeded()
+        adjustContentInset()
+    }
+    
+    // MARK: - Methods
+    
+    /// Adjusts the content inset of the scroll view.
+    ///
+    /// Center the image vertically when the image height is smaller than the scroll view.
+    /// Removes the margin of the scrolling area when zooming makes the image higher than the scroll view.
+    /// Adjust horizontally in the same way.
+    private func adjustContentInset() {
+        let verticalMargin = max((scrollView.bounds.height - imageView.frame.height) / 2, 0)
+        let horizontalMargin = max((scrollView.bounds.width - imageView.frame.width) / 2, 0)
+        print(verticalMargin)
+        scrollView.contentInset = UIEdgeInsets(top: verticalMargin,
+                                               left: horizontalMargin,
+                                               bottom: verticalMargin,
+                                               right: horizontalMargin)
     }
     
     // MARK: - Actions
@@ -94,5 +146,9 @@ extension ImageViewerView: UIScrollViewDelegate {
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView
+    }
+    
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        adjustContentInset()
     }
 }
