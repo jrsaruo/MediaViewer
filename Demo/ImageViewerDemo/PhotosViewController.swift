@@ -67,7 +67,8 @@ final class PhotosViewController: UIViewController {
 extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let imageViewer = ImageViewerViewController()
+        let photo = dataSource.itemIdentifier(for: indexPath)!
+        let imageViewer = ImageViewerViewController(image: photo)
         present(imageViewer, animated: true)
     }
 }

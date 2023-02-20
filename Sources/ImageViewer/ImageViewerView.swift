@@ -28,9 +28,11 @@ final class ImageViewerView: UIView {
     
     // MARK: - Initializers
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(image: UIImage) {
+        super.init(frame: .null)
+        
         setUpViews()
+        imageView.image = image
     }
     
     required init?(coder: NSCoder) {
