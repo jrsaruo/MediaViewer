@@ -41,6 +41,7 @@ final class ImageViewerView: UIView {
         backgroundColor = .black
         
         // Subviews
+        scrollView.delegate = self
         addSubview(scrollView)
         scrollView.addSubview(imageView)
         
@@ -63,5 +64,12 @@ final class ImageViewerView: UIView {
             imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor)
         ])
+    }
+}
+
+extension ImageViewerView: UIScrollViewDelegate {
+    
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        imageView
     }
 }
