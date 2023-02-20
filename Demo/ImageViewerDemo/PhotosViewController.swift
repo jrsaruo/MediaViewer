@@ -69,6 +69,6 @@ extension PhotosViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let photo = dataSource.itemIdentifier(for: indexPath)!
         let imageViewer = ImageViewerViewController(image: photo)
-        present(imageViewer, animated: true)
+        navigationController?.pushViewController(imageViewer, animated: true)
     }
 }

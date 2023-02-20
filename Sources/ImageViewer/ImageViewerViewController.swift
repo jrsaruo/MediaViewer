@@ -7,33 +7,19 @@
 
 import UIKit
 
-public final class ImageViewerViewController: UINavigationController {
-    
-    public init(image: UIImage) {
-        super.init(rootViewController: ImageViewerContentViewController(image: image))
-    }
-    
-    @available(*, unavailable, message: "init(coder:) is not supported.")
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        
-        guard let imageViewerContentVC = ImageViewerContentViewController(coder: coder) else { return nil }
-        setViewControllers([imageViewerContentVC], animated: false)
-    }
-}
-
-final class ImageViewerContentViewController: UIViewController {
+open class ImageViewerViewController: UIViewController {
     
     private let imageViewerView: ImageViewerView
     
     // MARK: - Initializers
     
-    init(image: UIImage) {
+    public init(image: UIImage) {
         self.imageViewerView = ImageViewerView(image: image)
         super.init(nibName: nil, bundle: nil)
     }
     
-    required init?(coder: NSCoder) {
+    @available(*, unavailable, message: "init(coder:) is not supported.")
+    required public init?(coder: NSCoder) {
         guard let imageViewerView = ImageViewerView(coder: coder) else { return nil }
         self.imageViewerView = imageViewerView
         super.init(coder: coder)
@@ -41,18 +27,22 @@ final class ImageViewerContentViewController: UIViewController {
     
     // MARK: - Lifecycle
     
-    override public func loadView() {
+    open override func loadView() {
         view = imageViewerView
     }
     
-    override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
         setUpViews()
     }
     
     private func setUpViews() {
+        guard let navigationController else {
+            preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
+        }
+        
         // Navigation
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController.setNavigationBarHidden(true, animated: false)
         
         // Subviews
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
