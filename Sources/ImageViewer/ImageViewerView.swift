@@ -9,7 +9,8 @@ import UIKit
 
 final class ImageViewerView: UIView {
     
-    private(set) lazy var singleTapRecognizer = UITapGestureRecognizer()
+    let singleTapRecognizer = UITapGestureRecognizer()
+    let panRecognizer = UIPanGestureRecognizer()
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -47,6 +48,7 @@ final class ImageViewerView: UIView {
     private func setUpViews() {
         backgroundColor = .black
         addGestureRecognizer(singleTapRecognizer)
+        addGestureRecognizer(panRecognizer)
         
         // Subviews
         scrollView.delegate = self
