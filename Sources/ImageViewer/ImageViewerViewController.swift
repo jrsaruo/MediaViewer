@@ -25,6 +25,12 @@ open class ImageViewerViewController: UIViewController {
         super.init(coder: coder)
     }
     
+    // MARK: - Override
+    
+    open override var prefersStatusBarHidden: Bool {
+        true
+    }
+    
     // MARK: - Lifecycle
     
     open override func loadView() {
