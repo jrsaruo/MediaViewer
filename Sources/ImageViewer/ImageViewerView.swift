@@ -13,7 +13,6 @@ final class ImageViewerView: UIView {
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .black
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 5
         scrollView.showsVerticalScrollIndicator = false
