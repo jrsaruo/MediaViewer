@@ -9,6 +9,8 @@ import UIKit
 
 final class ImageViewerView: UIView {
     
+    private(set) lazy var singleTapRecognizer = UITapGestureRecognizer()
+    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.backgroundColor = .black
@@ -42,6 +44,7 @@ final class ImageViewerView: UIView {
     
     private func setUpViews() {
         backgroundColor = .black
+        addGestureRecognizer(singleTapRecognizer)
         
         // Subviews
         scrollView.delegate = self
@@ -51,6 +54,8 @@ final class ImageViewerView: UIView {
         doubleTapRecognizer.numberOfTapsRequired = 2
         imageView.addGestureRecognizer(doubleTapRecognizer)
         scrollView.addSubview(imageView)
+        
+        singleTapRecognizer.require(toFail: doubleTapRecognizer)
         
         // Layout
         scrollView.translatesAutoresizingMaskIntoConstraints = false

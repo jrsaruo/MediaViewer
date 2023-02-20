@@ -51,8 +51,7 @@ open class ImageViewerViewController: UIViewController {
         navigationController.setNavigationBarHidden(true, animated: false)
         
         // Subviews
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
-        view.addGestureRecognizer(tapRecognizer)
+        imageViewerView.singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
     }
     
     // MARK: - Actions
