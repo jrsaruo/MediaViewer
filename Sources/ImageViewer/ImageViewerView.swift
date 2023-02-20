@@ -21,6 +21,7 @@ final class ImageViewerView: UIView {
     
     private let imageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.isUserInteractionEnabled = true
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -43,6 +44,10 @@ final class ImageViewerView: UIView {
         // Subviews
         scrollView.delegate = self
         addSubview(scrollView)
+        
+        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageDoubleTapped))
+        doubleTapRecognizer.numberOfTapsRequired = 2
+        imageView.addGestureRecognizer(doubleTapRecognizer)
         scrollView.addSubview(imageView)
         
         // Layout
@@ -64,6 +69,18 @@ final class ImageViewerView: UIView {
             imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor)
         ])
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
+        if scrollView.zoomScale == 1 {
+            let location = recognizer.location(in: imageView)
+            scrollView.zoom(to: CGRect(origin: location, size: .zero), animated: true)
+        } else {
+            scrollView.setZoomScale(1, animated: true)
+        }
     }
 }
 
