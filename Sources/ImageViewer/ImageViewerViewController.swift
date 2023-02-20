@@ -79,6 +79,24 @@ open class ImageViewerViewController: UIViewController {
             }
             .store(in: &cancellables)
     }
+    
+    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
+    
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        navigationBarScrollEdgeAppearanceBackup = navigationController?.navigationBar.scrollEdgeAppearance
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithDefaultBackground()
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
+    
+    open override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
+    }
+    
     // MARK: - Actions
     
     @objc
