@@ -44,4 +44,27 @@ final class ImageViewerContentViewController: UIViewController {
     override public func loadView() {
         view = imageViewerView
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setUpViews()
+    }
+    
+    private func setUpViews() {
+        // Navigation
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        
+        // Subviews
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
+        view.addGestureRecognizer(tapRecognizer)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func backgroundTapped(recognizer: UITapGestureRecognizer) {
+        guard let navigationController else { return }
+        navigationController.setNavigationBarHidden(!navigationController.isNavigationBarHidden,
+                                                    animated: true)
+    }
 }
