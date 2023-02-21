@@ -74,7 +74,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                                                               from: sourceThumbnailView)
         imageViewerView.destroyConfigurationsBeforeTransition()
         imageViewerImageView.frame = thumbnailFrameInContainer
+        imageViewerImageView.backgroundColor = sourceThumbnailView.backgroundColor
         imageViewerImageView.contentMode = sourceThumbnailView.contentMode
+        imageViewerImageView.layer.cornerRadius = sourceThumbnailView.layer.cornerRadius
+        imageViewerImageView.layer.masksToBounds = sourceThumbnailView.layer.masksToBounds
         containerView.addSubview(imageViewerImageView)
         sourceThumbnailView.isHidden = true
         
@@ -83,6 +86,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.72) {
             imageViewerView.alpha = 1
             imageViewerImageView.frame = imageViewerImageFrameInContainer
+            imageViewerImageView.backgroundColor = nil
+            imageViewerImageView.layer.cornerRadius = 0
+            imageViewerImageView.layer.masksToBounds = false
         }
         animator.addCompletion { [weak self] position in
             switch position {
@@ -136,7 +142,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             guard let self else { return }
             toView.alpha = 1
             imageViewerImageView.frame = thumbnailFrameInContainer
+            imageViewerImageView.backgroundColor = self.sourceThumbnailView.backgroundColor
             imageViewerImageView.contentMode = self.sourceThumbnailView.contentMode
+            imageViewerImageView.layer.cornerRadius = self.sourceThumbnailView.layer.cornerRadius
+            imageViewerImageView.layer.masksToBounds = self.sourceThumbnailView.layer.masksToBounds
             imageViewerImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
         }
         animator.addCompletion { [weak self] position in
