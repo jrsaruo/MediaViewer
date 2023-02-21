@@ -70,6 +70,7 @@ extension PhotosViewController: UICollectionViewDelegate {
         let photo = dataSource.itemIdentifier(for: indexPath)!
         let imageViewer = ImageViewerViewController(image: photo)
         imageViewer.dataSource = self
+        navigationController?.delegate = imageViewer
         navigationController?.pushViewController(imageViewer, animated: true)
     }
 }

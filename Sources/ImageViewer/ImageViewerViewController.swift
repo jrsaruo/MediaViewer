@@ -53,7 +53,7 @@ open class ImageViewerViewController: UIViewController {
         guard let navigationController else {
             preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
         }
-        navigationController.delegate = self // TODO: Reset after disappear
+        navigationController.delegate = self
         
         setUpViews()
         setUpSubscriptions()
