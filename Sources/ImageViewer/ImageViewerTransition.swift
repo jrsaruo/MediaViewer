@@ -68,7 +68,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                                                                      from: imageViewerImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
-        imageViewerImageView.translatesAutoresizingMaskIntoConstraints = true
+        imageViewer.imageViewerView.destroyConfigurationsBeforeTransition()
         imageViewerImageView.frame = imageViewerImageFrameInContainer
         containerView.addSubview(imageViewerImageView)
         sourceThumbnailView.isHidden = true
