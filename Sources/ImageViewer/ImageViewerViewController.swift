@@ -8,9 +8,15 @@
 import UIKit
 import Combine
 
+public protocol ImageViewerDataSource: AnyObject {
+    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
+}
+
 open class ImageViewerViewController: UIViewController {
     
     private var cancellables: Set<AnyCancellable> = []
+    
+    open weak var dataSource: (any ImageViewerDataSource)?
     
     let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
