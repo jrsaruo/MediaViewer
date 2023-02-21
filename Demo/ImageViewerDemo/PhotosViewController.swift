@@ -36,11 +36,17 @@ final class PhotosViewController: UIViewController {
         return collectionView
     }()
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(collectionView: collectionView) { collectionView, indexPath, photo in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(collectionView: collectionView) { [weak self] collectionView, indexPath, photo in
+        guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
         cell.imageView.image = photo
+        cell.imageView.contentMode = self.preferredContentMode
         return cell
     }
+    
+    private let toggleContentModeButton = UIBarButtonItem()
+    
+    private var preferredContentMode: UIView.ContentMode = .scaleAspectFill
     
     // MARK: - Lifecycle
     
@@ -51,13 +57,45 @@ final class PhotosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setUpViews()
+    }
+    
+    private func setUpViews() {
         title = "Photos"
+        
+        // Navigation
         navigationItem.backButtonDisplayMode = .minimal
         
+        toggleContentModeButton.primaryAction = UIAction(image: .init(systemName: "rectangle.arrowtriangle.2.inward")) { [weak self] _ in
+            self?.toggleContentMode()
+        }
+        navigationItem.rightBarButtonItem = toggleContentModeButton
+        
+        // Subviews
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
         snapshot.appendItems((0...20).map { UIImage(systemName: "\($0).circle")! })
+        dataSource.apply(snapshot)
+    }
+    
+    // MARK: - Methods
+    
+    private func toggleContentMode() {
+        let newContentMode: UIView.ContentMode
+        let systemImageName: String
+        if preferredContentMode == .scaleAspectFill {
+            newContentMode = .scaleAspectFit
+            systemImageName = "rectangle.arrowtriangle.2.outward"
+        } else {
+            newContentMode = .scaleAspectFill
+            systemImageName = "rectangle.arrowtriangle.2.inward"
+        }
+        preferredContentMode = newContentMode
+        toggleContentModeButton.image = .init(systemName: systemImageName)
+        
+        var snapshot = dataSource.snapshot()
+        let visibleItems = dataSource.snapshot(for: 0).visibleItems
+        snapshot.reloadItems(visibleItems)
         dataSource.apply(snapshot)
     }
 }

@@ -13,7 +13,6 @@ final class PhotoCell: UICollectionViewCell {
     let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.backgroundColor = .secondarySystemBackground
-        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
