@@ -50,9 +50,10 @@ open class ImageViewerViewController: UIViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        guard navigationController != nil else {
+        guard let navigationController else {
             preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
         }
+        navigationController.delegate = self // TODO: Reset after disappear
         
         setUpViews()
         setUpSubscriptions()
@@ -108,5 +109,20 @@ open class ImageViewerViewController: UIViewController {
     @objc
     private func backgroundTapped(recognizer: UITapGestureRecognizer) {
         imageViewerVM.showsImageOnly.toggle()
+    }
+}
+
+// MARK: - UINavigationControllerDelegate -
+
+extension ImageViewerViewController: UINavigationControllerDelegate {
+    
+    public func navigationController(_ navigationController: UINavigationController,
+                                     animationControllerFor operation: UINavigationController.Operation,
+                                     from fromVC: UIViewController,
+                                     to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
+        if let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) {
+            return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
+        }
+        return nil
     }
 }
