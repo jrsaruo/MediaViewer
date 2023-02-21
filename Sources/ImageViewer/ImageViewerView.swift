@@ -99,6 +99,13 @@ final class ImageViewerView: UIView {
         imageView.removeFromSuperview()
     }
     
+    func restoreConfigurationsAfterTransition() {
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        scrollView.addSubview(imageView)
+        configureLayoutBasedOnImageSize()
+    }
+    
     private func configureLayoutBasedOnImageSize() {
         let imageSize = imageView.image?.size ?? bounds.size
         let imageWidthToHeight = imageSize.width / imageSize.height
