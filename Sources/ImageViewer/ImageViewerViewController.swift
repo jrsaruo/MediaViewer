@@ -12,7 +12,7 @@ open class ImageViewerViewController: UIViewController {
     
     private var cancellables: Set<AnyCancellable> = []
     
-    private let imageViewerView: ImageViewerView
+    let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
     
     // MARK: - Initializers
