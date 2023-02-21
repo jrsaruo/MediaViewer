@@ -38,7 +38,7 @@ final class PhotosViewController: UIViewController {
     
     private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(collectionView: collectionView) { collectionView, indexPath, photo in
         let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
-        cell.image = photo
+        cell.imageView.image = photo
         return cell
     }
     
@@ -69,6 +69,20 @@ extension PhotosViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let photo = dataSource.itemIdentifier(for: indexPath)!
         let imageViewer = ImageViewerViewController(image: photo)
+        imageViewer.dataSource = self
         navigationController?.pushViewController(imageViewer, animated: true)
+    }
+}
+
+// MARK: - ImageViewerDataSource -
+
+extension PhotosViewController: ImageViewerDataSource {
+    
+    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView? {
+        guard let indexPathForSelectedPhoto = collectionView.indexPathsForSelectedItems?.first,
+              let selectedCell = collectionView.cellForItem(at: indexPathForSelectedPhoto) as? PhotoCell else {
+            return nil
+        }
+        return selectedCell.imageView
     }
 }
