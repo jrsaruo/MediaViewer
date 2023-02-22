@@ -21,6 +21,8 @@ open class ImageViewerViewController: UIViewController {
     let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
     
+    private weak var navigationControllerDelegateBackup: (any UINavigationControllerDelegate)?
+    
     // MARK: - Initializers
     
     public init(image: UIImage) {
@@ -33,6 +35,10 @@ open class ImageViewerViewController: UIViewController {
         guard let imageViewerView = ImageViewerView(coder: coder) else { return nil }
         self.imageViewerView = imageViewerView
         super.init(coder: coder)
+    }
+    
+    deinit {
+        navigationController?.delegate = navigationControllerDelegateBackup
     }
     
     // MARK: - Override
@@ -53,6 +59,7 @@ open class ImageViewerViewController: UIViewController {
         guard let navigationController else {
             preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
         }
+        navigationControllerDelegateBackup = navigationController.delegate
         navigationController.delegate = self
         
         setUpViews()
