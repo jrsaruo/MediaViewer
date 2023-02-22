@@ -143,7 +143,6 @@ final class ImageViewerView: UIView {
     private func adjustContentInset() {
         let verticalMargin = max((scrollView.bounds.height - imageView.frame.height) / 2, 0)
         let horizontalMargin = max((scrollView.bounds.width - imageView.frame.width) / 2, 0)
-        print(verticalMargin)
         scrollView.contentInset = UIEdgeInsets(top: verticalMargin,
                                                left: horizontalMargin,
                                                bottom: verticalMargin,
