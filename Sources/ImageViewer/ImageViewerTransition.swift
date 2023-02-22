@@ -91,12 +91,12 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             imageViewerImageView.contentMode = self.sourceThumbnailView.contentMode
             imageViewerImageView.layer.masksToBounds = true
         }
-        animator.addCompletion { [weak self] position in
+        animator.addCompletion { position in
             switch position {
             case .end:
                 imageViewerImageView.configuration = configurationBackup
                 imageViewerView.restoreConfigurationsAfterTransition()
-                self?.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure()
@@ -146,11 +146,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             imageViewerImageView.configuration = self.sourceThumbnailView.configuration
             imageViewerImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
         }
-        animator.addCompletion { [weak self] position in
+        animator.addCompletion { position in
             switch position {
             case .end:
                 imageViewerImageView.removeFromSuperview()
-                self?.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure()
