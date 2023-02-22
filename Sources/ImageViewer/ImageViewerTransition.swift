@@ -73,7 +73,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                                                                      from: imageViewerImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
-        imageViewerView.destroyConfigurationsBeforeTransition()
+        imageViewerView.destroyLayoutConfigurationBeforeTransition()
         imageViewerImageView.configuration = sourceThumbnailView.configuration
         imageViewerImageView.frame = thumbnailFrameInContainer
         imageViewerImageView.layer.masksToBounds = true
@@ -95,7 +95,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             switch position {
             case .end:
                 imageViewerImageView.configuration = configurationBackup
-                imageViewerView.restoreConfigurationsAfterTransition()
+                imageViewerView.restoreLayoutConfigurationAfterTransition()
                 self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
             case .start, .current:
@@ -133,7 +133,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                                                                      from: imageViewerImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
-        imageViewer.imageViewerView.destroyConfigurationsBeforeTransition()
+        imageViewer.imageViewerView.destroyLayoutConfigurationBeforeTransition()
         imageViewerImageView.frame = imageViewerImageFrameInContainer
         containerView.addSubview(imageViewerImageView)
         sourceThumbnailView.isHidden = true

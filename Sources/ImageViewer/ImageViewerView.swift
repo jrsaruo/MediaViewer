@@ -92,14 +92,14 @@ final class ImageViewerView: UIView {
     
     // MARK: - Methods
     
-    func destroyConfigurationsBeforeTransition() {
+    func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsToBeDeactivatedDuringTransition)
         removeConstraints(constraintsToBeDeactivatedDuringTransition)
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.removeFromSuperview()
     }
     
-    func restoreConfigurationsAfterTransition() {
+    func restoreLayoutConfigurationAfterTransition() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageView)
         configureLayoutBasedOnImageSize()
