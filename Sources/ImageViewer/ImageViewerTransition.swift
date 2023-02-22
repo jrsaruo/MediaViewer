@@ -73,8 +73,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
         imageViewerView.destroyConfigurationsBeforeTransition()
-        imageViewerImageView.frame = thumbnailFrameInContainer
         copyThumbnailConfigurations(to: imageViewerImageView)
+        imageViewerImageView.frame = thumbnailFrameInContainer
+        imageViewerImageView.layer.masksToBounds = true
         containerView.addSubview(imageViewerImageView)
         sourceThumbnailView.isHidden = true
         
@@ -85,7 +86,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             imageViewerImageView.frame = imageViewerImageFrameInContainer
             imageViewerImageView.backgroundColor = nil
             imageViewerImageView.layer.cornerRadius = 0
-            imageViewerImageView.layer.masksToBounds = false
+            // NOTE: Resetting contentMode or masksToBounds prevents smooth animation
         }
         animator.addCompletion { [weak self] position in
             switch position {
