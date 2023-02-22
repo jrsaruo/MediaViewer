@@ -68,12 +68,13 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         imageViewerView.layoutIfNeeded()
         
         let imageViewerImageView = imageViewerView.imageView
+        let configurationBackup = imageViewerImageView.configuration
         let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
                                                                      from: imageViewerImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
         imageViewerView.destroyConfigurationsBeforeTransition()
-        copyThumbnailConfigurations(to: imageViewerImageView)
+        imageViewerImageView.configuration = sourceThumbnailView.configuration
         imageViewerImageView.frame = thumbnailFrameInContainer
         imageViewerImageView.layer.masksToBounds = true
         containerView.addSubview(imageViewerImageView)
@@ -84,16 +85,16 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.72) {
             imageViewerView.alpha = 1
             imageViewerImageView.frame = imageViewerImageFrameInContainer
-            imageViewerImageView.backgroundColor = nil
-            imageViewerImageView.tintColor = nil
-            imageViewerImageView.layer.cornerRadius = 0
-            imageViewerImageView.layer.borderColor = nil
-            imageViewerImageView.layer.borderWidth = 0
-            // NOTE: Resetting contentMode or masksToBounds prevents smooth animation
+            imageViewerImageView.configuration = configurationBackup
+            
+            // NOTE: Keep following properties during transition for smooth animation
+            imageViewerImageView.contentMode = self.sourceThumbnailView.contentMode
+            imageViewerImageView.layer.masksToBounds = true
         }
         animator.addCompletion { [weak self] position in
             switch position {
             case .end:
+                imageViewerImageView.configuration = configurationBackup
                 imageViewerView.restoreConfigurationsAfterTransition()
                 self?.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
@@ -139,11 +140,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
-        let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) { [weak self] in
-            guard let self else { return }
+        let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             toView.alpha = 1
             imageViewerImageView.frame = thumbnailFrameInContainer
-            self.copyThumbnailConfigurations(to: imageViewerImageView)
+            imageViewerImageView.configuration = self.sourceThumbnailView.configuration
             imageViewerImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
         }
         animator.addCompletion { [weak self] position in
@@ -161,14 +161,38 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         animator.startAnimation()
     }
+}
+
+private struct UIImageViewConfiguration {
+    var backgroundColor: UIColor?
+    var tintColor: UIColor?
+    var contentMode: UIView.ContentMode
+    var cornerRadius: CGFloat
+    var borderColor: CGColor?
+    var borderWidth: CGFloat
+    var masksToBounds: Bool
+}
+
+extension UIImageView {
     
-    private func copyThumbnailConfigurations(to imageView: UIImageView) {
-        imageView.backgroundColor = sourceThumbnailView.backgroundColor
-        imageView.tintColor = sourceThumbnailView.tintColor
-        imageView.contentMode = sourceThumbnailView.contentMode
-        imageView.layer.cornerRadius = sourceThumbnailView.layer.cornerRadius
-        imageView.layer.borderColor = sourceThumbnailView.layer.borderColor
-        imageView.layer.borderWidth = sourceThumbnailView.layer.borderWidth
-        imageView.layer.masksToBounds = sourceThumbnailView.layer.masksToBounds
+    fileprivate var configuration: UIImageViewConfiguration {
+        get {
+            .init(backgroundColor: backgroundColor,
+                  tintColor: tintColor,
+                  contentMode: contentMode,
+                  cornerRadius: layer.cornerRadius,
+                  borderColor: layer.borderColor,
+                  borderWidth: layer.borderWidth,
+                  masksToBounds: layer.masksToBounds)
+        }
+        set {
+            backgroundColor = newValue.backgroundColor
+            tintColor = newValue.tintColor
+            contentMode = newValue.contentMode
+            layer.cornerRadius = newValue.cornerRadius
+            layer.borderColor = newValue.borderColor
+            layer.borderWidth = newValue.borderWidth
+            layer.masksToBounds = newValue.masksToBounds
+        }
     }
 }
