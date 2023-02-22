@@ -102,8 +102,11 @@ final class ImageViewerView: UIView {
     func restoreConfigurationsAfterTransition() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.backgroundColor = nil
+        imageView.tintColor = nil
         imageView.contentMode = .scaleAspectFit
         imageView.layer.cornerRadius = 0
+        imageView.layer.borderColor = nil
+        imageView.layer.borderWidth = 0
         imageView.layer.masksToBounds = false
         scrollView.addSubview(imageView)
         configureLayoutBasedOnImageSize()

@@ -85,7 +85,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             imageViewerView.alpha = 1
             imageViewerImageView.frame = imageViewerImageFrameInContainer
             imageViewerImageView.backgroundColor = nil
+            imageViewerImageView.tintColor = nil
             imageViewerImageView.layer.cornerRadius = 0
+            imageViewerImageView.layer.borderColor = nil
+            imageViewerImageView.layer.borderWidth = 0
             // NOTE: Resetting contentMode or masksToBounds prevents smooth animation
         }
         animator.addCompletion { [weak self] position in
@@ -161,8 +164,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     
     private func copyThumbnailConfigurations(to imageView: UIImageView) {
         imageView.backgroundColor = sourceThumbnailView.backgroundColor
+        imageView.tintColor = sourceThumbnailView.tintColor
         imageView.contentMode = sourceThumbnailView.contentMode
         imageView.layer.cornerRadius = sourceThumbnailView.layer.cornerRadius
+        imageView.layer.borderColor = sourceThumbnailView.layer.borderColor
+        imageView.layer.borderWidth = sourceThumbnailView.layer.borderWidth
         imageView.layer.masksToBounds = sourceThumbnailView.layer.masksToBounds
     }
 }
