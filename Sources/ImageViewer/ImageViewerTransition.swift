@@ -74,10 +74,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                                                               from: sourceThumbnailView)
         imageViewerView.destroyConfigurationsBeforeTransition()
         imageViewerImageView.frame = thumbnailFrameInContainer
-        imageViewerImageView.backgroundColor = sourceThumbnailView.backgroundColor
-        imageViewerImageView.contentMode = sourceThumbnailView.contentMode
-        imageViewerImageView.layer.cornerRadius = sourceThumbnailView.layer.cornerRadius
-        imageViewerImageView.layer.masksToBounds = sourceThumbnailView.layer.masksToBounds
+        copyThumbnailConfigurations(to: imageViewerImageView)
         containerView.addSubview(imageViewerImageView)
         sourceThumbnailView.isHidden = true
         
@@ -142,10 +139,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             guard let self else { return }
             toView.alpha = 1
             imageViewerImageView.frame = thumbnailFrameInContainer
-            imageViewerImageView.backgroundColor = self.sourceThumbnailView.backgroundColor
-            imageViewerImageView.contentMode = self.sourceThumbnailView.contentMode
-            imageViewerImageView.layer.cornerRadius = self.sourceThumbnailView.layer.cornerRadius
-            imageViewerImageView.layer.masksToBounds = self.sourceThumbnailView.layer.masksToBounds
+            self.copyThumbnailConfigurations(to: imageViewerImageView)
             imageViewerImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
         }
         animator.addCompletion { [weak self] position in
@@ -162,5 +156,12 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         animator.startAnimation()
+    }
+    
+    private func copyThumbnailConfigurations(to imageView: UIImageView) {
+        imageView.backgroundColor = sourceThumbnailView.backgroundColor
+        imageView.contentMode = sourceThumbnailView.contentMode
+        imageView.layer.cornerRadius = sourceThumbnailView.layer.cornerRadius
+        imageView.layer.masksToBounds = sourceThumbnailView.layer.masksToBounds
     }
 }
