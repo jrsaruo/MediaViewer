@@ -13,6 +13,7 @@ final class ImageViewerInteractiveDismissalTransition: NSObject {
     
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
+    private var panningImageView: UIImageView?
     
     init(sourceThumbnailView: UIImageView) {
         self.sourceThumbnailView = sourceThumbnailView
@@ -37,6 +38,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         let imageViewerImageView = imageViewerView.imageView
         let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
                                                                      from: imageViewerImageView)
+        panningImageView = imageViewerImageView
         
         imageViewerView.destroyLayoutConfigurationBeforeTransition()
         imageViewerImageView.frame = imageViewerImageFrameInContainer
@@ -66,6 +68,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
                 transitionContext.completeTransition(true)
             case .start:
                 self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                imageViewerImageView.transform = .identity
                 imageViewerView.restoreLayoutConfigurationAfterTransition()
                 transitionContext.cancelInteractiveTransition()
                 transitionContext.completeTransition(false)
@@ -79,6 +82,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
         guard let imageViewerView = recognizer.view as? ImageViewerView,
+              let panningImageView,
               let animator else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
@@ -92,6 +96,10 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
             
             animator.fractionComplete = transitionProgress
             transitionContext?.updateInteractiveTransition(transitionProgress)
+            
+            let imageScale = min(1 - transitionProgress / 5, 1)
+            panningImageView.transform = .init(translationX: translation.x, y: translation.y)
+                .scaledBy(x: imageScale, y: imageScale)
         case .ended:
             let isMovingDown = recognizer.velocity(in: nil).y > 0
             if isMovingDown {
