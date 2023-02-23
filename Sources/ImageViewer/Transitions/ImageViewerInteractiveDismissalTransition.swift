@@ -61,17 +61,33 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
             
             switch position {
             case .end:
-                self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
-                imageViewerView.removeFromSuperview()
-                imageViewerImageView.removeFromSuperview()
                 transitionContext.finishInteractiveTransition()
-                transitionContext.completeTransition(true)
+                let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
+                    let thumbnailFrameInContainer = containerView.convert(self.sourceThumbnailView.frame,
+                                                                          from: self.sourceThumbnailView)
+                    imageViewerImageView.frame = thumbnailFrameInContainer
+                    imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
+                    imageViewerImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
+                }
+                finishAnimator.addCompletion { _ in
+                    self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                    imageViewerView.removeFromSuperview()
+                    imageViewerImageView.removeFromSuperview()
+                    transitionContext.completeTransition(true)
+                }
+                finishAnimator.startAnimation()
             case .start:
-                self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
-                imageViewerImageView.transform = .identity
-                imageViewerView.restoreLayoutConfigurationAfterTransition()
                 transitionContext.cancelInteractiveTransition()
-                transitionContext.completeTransition(false)
+                let cancelAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+                    imageViewerImageView.frame = imageViewerImageFrameInContainer
+                }
+                cancelAnimator.addCompletion { _ in
+                    self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                    imageViewerImageView.transform = .identity
+                    imageViewerView.restoreLayoutConfigurationAfterTransition()
+                    transitionContext.completeTransition(false)
+                }
+                cancelAnimator.startAnimation()
             case .current:
                 assertionFailure()
             @unknown default:
