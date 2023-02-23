@@ -20,6 +20,40 @@ final class ImageViewerInteractiveDismissalTransition: NSObject {
 extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
-        // TODO: implement
+        guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView,
+              let toView = transitionContext.view(forKey: .to) else {
+            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+        }
+        let containerView = transitionContext.containerView
+        
+        // Back up
+        let thumbnailHiddenBackup = sourceThumbnailView.isHidden
+        
+        // Prepare for transition
+        let imageViewerImageView = imageViewerView.imageView
+        let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
+                                                                     from: imageViewerImageView)
+        
+        imageViewerView.destroyLayoutConfigurationBeforeTransition()
+        imageViewerImageView.frame = imageViewerImageFrameInContainer
+        
+        containerView.addSubview(toView)
+        containerView.addSubview(imageViewerView)
+        containerView.addSubview(imageViewerImageView)
+        
+        sourceThumbnailView.isHidden = true
+        
+        // Animation
+        let animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+            imageViewerView.alpha = 0
+        }
+        animator.addCompletion { position in
+            self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+            imageViewerView.removeFromSuperview()
+            imageViewerImageView.removeFromSuperview()
+            transitionContext.finishInteractiveTransition()
+            transitionContext.completeTransition(true)
+        }
+        animator.startAnimation()
     }
 }
