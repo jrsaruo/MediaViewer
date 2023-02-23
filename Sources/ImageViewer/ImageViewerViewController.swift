@@ -33,6 +33,8 @@ open class ImageViewerViewController: UIViewController {
     let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
     
+    private var interactiveDismissalTransition: ImageViewerInteractiveDismissalTransition?
+    
     // MARK: - Initializers
     
     /// Creates a new viewer.
@@ -75,6 +77,7 @@ open class ImageViewerViewController: UIViewController {
     private func setUpViews() {
         // Subviews
         imageViewerView.singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
+        imageViewerView.panRecognizer.addTarget(self, action: #selector(panned))
     }
     
     private func setUpSubscriptions() {
@@ -123,6 +126,27 @@ open class ImageViewerViewController: UIViewController {
     private func backgroundTapped(recognizer: UITapGestureRecognizer) {
         imageViewerVM.showsImageOnly.toggle()
     }
+    
+    @objc
+    private func panned(recognizer: UIPanGestureRecognizer) {
+        // Check whether to transition interactively
+        guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return }
+        
+        switch recognizer.state {
+        case .possible:
+            break
+        case .began:
+            interactiveDismissalTransition = .init(sourceThumbnailView: sourceThumbnailView)
+            navigationController?.popViewController(animated: true)
+        case .changed:
+            break
+        case .ended, .cancelled, .failed:
+            interactiveDismissalTransition = nil
+        @unknown default:
+            assertionFailure("Unknown state: \(recognizer.state)")
+            interactiveDismissalTransition = nil
+        }
+    }
 }
 
 // MARK: - UINavigationControllerDelegate -
@@ -137,5 +161,10 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
             return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
         }
         return nil
+    }
+    
+    public func navigationController(_ navigationController: UINavigationController,
+                                     interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
+        return interactiveDismissalTransition
     }
 }
