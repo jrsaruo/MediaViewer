@@ -14,6 +14,13 @@ final class ImageViewerInteractiveDismissalTransition: NSObject {
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
     
+    // MARK: Backups
+    
+    private var thumbnailHiddenBackup = false
+    private var imageViewerImageFrameInContainerBackup = CGRect.null
+    
+    // MARK: - Initializers
+    
     init(sourceThumbnailView: UIImageView) {
         self.sourceThumbnailView = sourceThumbnailView
         super.init()
@@ -29,17 +36,17 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
+        let imageViewerImageView = imageViewerView.imageView
         
         // Back up
-        let thumbnailHiddenBackup = sourceThumbnailView.isHidden
+        thumbnailHiddenBackup = sourceThumbnailView.isHidden
+        imageViewerImageFrameInContainerBackup = containerView.convert(imageViewerImageView.frame,
+                                                                       from: imageViewerImageView)
         
         // Prepare for transition
-        let imageViewerImageView = imageViewerView.imageView
-        let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
-                                                                     from: imageViewerImageView)
         
         imageViewerView.destroyLayoutConfigurationBeforeTransition()
-        imageViewerImageView.frame = imageViewerImageFrameInContainer
+        imageViewerImageView.frame = imageViewerImageFrameInContainerBackup
         
         containerView.addSubview(toView)
         containerView.addSubview(imageViewerView)
@@ -51,47 +58,62 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             imageViewerView.alpha = 0
         }
-        animator!.addCompletion { [weak self] position in
-            guard let self else {
-                transitionContext.completeTransition(true)
-                return
-            }
-            
-            switch position {
-            case .end:
-                transitionContext.finishInteractiveTransition()
-                let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
-                    let thumbnailFrameInContainer = containerView.convert(self.sourceThumbnailView.frame,
-                                                                          from: self.sourceThumbnailView)
-                    imageViewerImageView.frame = thumbnailFrameInContainer
-                    imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
-                    imageViewerImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
-                }
-                finishAnimator.addCompletion { _ in
-                    self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
-                    imageViewerView.removeFromSuperview()
-                    imageViewerImageView.removeFromSuperview()
-                    transitionContext.completeTransition(true)
-                }
-                finishAnimator.startAnimation()
-            case .start:
-                transitionContext.cancelInteractiveTransition()
-                let cancelAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-                    imageViewerImageView.frame = imageViewerImageFrameInContainer
-                }
-                cancelAnimator.addCompletion { _ in
-                    self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
-                    imageViewerImageView.transform = .identity
-                    imageViewerView.restoreLayoutConfigurationAfterTransition()
-                    transitionContext.completeTransition(false)
-                }
-                cancelAnimator.startAnimation()
-            case .current:
-                assertionFailure()
-            @unknown default:
-                assertionFailure("Unknown position: \(position)")
-            }
+    }
+    
+    private func finishInteractiveTransition() {
+        guard let animator, let transitionContext else { return }
+        transitionContext.finishInteractiveTransition()
+        
+        animator.stopAnimation(false)
+        animator.finishAnimation(at: .end)
+        
+        let containerView = transitionContext.containerView
+        let imageViewerView = imageViewerView(from: transitionContext)
+        let imageViewerImageView = imageViewerView.imageView
+        
+        let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
+            let thumbnailFrameInContainer = containerView.convert(self.sourceThumbnailView.frame,
+                                                                  from: self.sourceThumbnailView)
+            imageViewerImageView.frame = thumbnailFrameInContainer
+            imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
+            imageViewerImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
         }
+        finishAnimator.addCompletion { _ in
+            self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
+            imageViewerView.removeFromSuperview()
+            imageViewerImageView.removeFromSuperview()
+            transitionContext.completeTransition(true)
+        }
+        finishAnimator.startAnimation()
+    }
+    
+    private func cancelInteractiveTransition() {
+        guard let animator, let transitionContext else { return }
+        transitionContext.cancelInteractiveTransition()
+        
+        animator.stopAnimation(false)
+        animator.finishAnimation(at: .start)
+        
+        let imageViewerView = imageViewerView(from: transitionContext)
+        let imageViewerImageView = imageViewerView.imageView
+        
+        let cancelAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+            imageViewerImageView.frame = self.imageViewerImageFrameInContainerBackup
+        }
+        cancelAnimator.addCompletion { _ in
+            self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
+            imageViewerImageView.transform = .identity
+            imageViewerView.restoreLayoutConfigurationAfterTransition()
+            transitionContext.completeTransition(false)
+        }
+        cancelAnimator.startAnimation()
+    }
+    
+    private func imageViewerView(from transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerView {
+        guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView else {
+            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+        }
+        return imageViewerView
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
@@ -120,17 +142,15 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         case .ended:
             let isMovingDown = recognizer.velocity(in: nil).y > 0
             if isMovingDown {
-                animator.stopAnimation(false)
-                animator.finishAnimation(at: .end)
+                finishInteractiveTransition()
             } else {
-                animator.stopAnimation(false)
-                animator.finishAnimation(at: .start)
+                cancelInteractiveTransition()
             }
         case .cancelled, .failed:
-            animator.stopAnimation(false)
-            animator.finishAnimation(at: .start)
+            cancelInteractiveTransition()
         @unknown default:
             assertionFailure()
+            cancelInteractiveTransition()
         }
     }
 }
