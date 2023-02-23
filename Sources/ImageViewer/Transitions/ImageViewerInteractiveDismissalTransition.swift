@@ -56,11 +56,24 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
                 transitionContext.completeTransition(true)
                 return
             }
-            self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
-            imageViewerView.removeFromSuperview()
-            imageViewerImageView.removeFromSuperview()
-            transitionContext.finishInteractiveTransition()
-            transitionContext.completeTransition(true)
+            
+            switch position {
+            case .end:
+                self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                imageViewerView.removeFromSuperview()
+                imageViewerImageView.removeFromSuperview()
+                transitionContext.finishInteractiveTransition()
+                transitionContext.completeTransition(true)
+            case .start:
+                self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
+                imageViewerView.restoreLayoutConfigurationAfterTransition()
+                transitionContext.cancelInteractiveTransition()
+                transitionContext.completeTransition(false)
+            case .current:
+                assertionFailure()
+            @unknown default:
+                assertionFailure("Unknown position: \(position)")
+            }
         }
     }
     
