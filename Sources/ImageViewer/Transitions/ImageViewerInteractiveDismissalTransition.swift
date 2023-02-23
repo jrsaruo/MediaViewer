@@ -122,7 +122,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
         guard let animator, let transitionContext else {
-            assertionFailure("Transition should have started.")
+            // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
             return
         }
         
