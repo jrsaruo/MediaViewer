@@ -64,14 +64,14 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         guard let animator, let transitionContext else { return }
         transitionContext.finishInteractiveTransition()
         
-        animator.stopAnimation(false)
-        animator.finishAnimation(at: .end)
+        let duration = 0.35
+        animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let containerView = transitionContext.containerView
         let imageViewerView = imageViewerView(from: transitionContext)
         let imageViewerImageView = imageViewerView.imageView
         
-        let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
+        let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             let thumbnailFrameInContainer = containerView.convert(self.sourceThumbnailView.frame,
                                                                   from: self.sourceThumbnailView)
             imageViewerImageView.frame = thumbnailFrameInContainer
@@ -91,13 +91,14 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         guard let animator, let transitionContext else { return }
         transitionContext.cancelInteractiveTransition()
         
-        animator.stopAnimation(false)
-        animator.finishAnimation(at: .start)
+        let duration = 0.3
+        animator.isReversed = true
+        animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let imageViewerView = imageViewerView(from: transitionContext)
         let imageViewerImageView = imageViewerView.imageView
         
-        let cancelAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+        let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             imageViewerImageView.frame = self.imageViewerImageFrameInContainerBackup
         }
         cancelAnimator.addCompletion { _ in
