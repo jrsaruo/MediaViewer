@@ -132,6 +132,8 @@ open class ImageViewerViewController: UIViewController {
         // Check whether to transition interactively
         guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return }
         
+        interactiveDismissalTransition?.panRecognized(by: recognizer)
+        
         switch recognizer.state {
         case .possible:
             break

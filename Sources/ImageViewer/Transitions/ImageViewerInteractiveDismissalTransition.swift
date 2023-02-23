@@ -56,4 +56,19 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         }
         animator.startAnimation()
     }
+    
+    func panRecognized(by recognizer: UIPanGestureRecognizer) {
+        switch recognizer.state {
+        case .possible, .began:
+            break
+        case .changed:
+            break // TODO: Update transition progress
+        case .ended:
+            break // TODO: Finish or cancel transition
+        case .cancelled, .failed:
+            break // TODO: Cancel transition
+        @unknown default:
+            assertionFailure()
+        }
+    }
 }
