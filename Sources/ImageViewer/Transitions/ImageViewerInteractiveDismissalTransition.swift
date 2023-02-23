@@ -95,8 +95,12 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let imageViewerView = recognizer.view as? ImageViewerView, let animator else {
+        guard let imageViewerView = recognizer.view as? ImageViewerView else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+        }
+        guard let animator, let transitionContext else {
+            assertionFailure("Transition should have started.")
+            return
         }
         
         switch recognizer.state {
@@ -107,7 +111,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
             let transitionProgress = translation.y / imageViewerView.bounds.height
             
             animator.fractionComplete = transitionProgress
-            transitionContext?.updateInteractiveTransition(transitionProgress)
+            transitionContext.updateInteractiveTransition(transitionProgress)
             
             let imageScale = min(1 - transitionProgress / 5, 1)
             let panningImageView = imageViewerView.imageView
