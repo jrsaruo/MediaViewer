@@ -11,6 +11,9 @@ final class ImageViewerInteractiveDismissalTransition: NSObject {
     
     private let sourceThumbnailView: UIImageView
     
+    private var animator: UIViewPropertyAnimator?
+    private var transitionContext: (any UIViewControllerContextTransitioning)?
+    
     init(sourceThumbnailView: UIImageView) {
         self.sourceThumbnailView = sourceThumbnailView
         super.init()
@@ -24,6 +27,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
               let toView = transitionContext.view(forKey: .to) else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
+        self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
         
         // Back up
@@ -44,29 +48,49 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         sourceThumbnailView.isHidden = true
         
         // Animation
-        let animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+        animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             imageViewerView.alpha = 0
         }
-        animator.addCompletion { position in
+        animator!.addCompletion { [weak self] position in
+            guard let self else {
+                transitionContext.completeTransition(true)
+                return
+            }
             self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
             imageViewerView.removeFromSuperview()
             imageViewerImageView.removeFromSuperview()
             transitionContext.finishInteractiveTransition()
             transitionContext.completeTransition(true)
         }
-        animator.startAnimation()
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
+        guard let imageViewerView = recognizer.view as? ImageViewerView,
+              let animator else {
+            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+        }
+        
         switch recognizer.state {
         case .possible, .began:
             break
         case .changed:
-            break // TODO: Update transition progress
+            let translation = recognizer.translation(in: imageViewerView)
+            let transitionProgress = translation.y / imageViewerView.bounds.height
+            
+            animator.fractionComplete = transitionProgress
+            transitionContext?.updateInteractiveTransition(transitionProgress)
         case .ended:
-            break // TODO: Finish or cancel transition
+            let isMovingDown = recognizer.velocity(in: nil).y > 0
+            if isMovingDown {
+                animator.stopAnimation(false)
+                animator.finishAnimation(at: .end)
+            } else {
+                animator.stopAnimation(false)
+                animator.finishAnimation(at: .start)
+            }
         case .cancelled, .failed:
-            break // TODO: Cancel transition
+            animator.stopAnimation(false)
+            animator.finishAnimation(at: .start)
         @unknown default:
             assertionFailure()
         }
