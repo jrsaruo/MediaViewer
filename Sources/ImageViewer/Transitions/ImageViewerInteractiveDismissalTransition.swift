@@ -13,7 +13,6 @@ final class ImageViewerInteractiveDismissalTransition: NSObject {
     
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
-    private var panningImageView: UIImageView?
     
     init(sourceThumbnailView: UIImageView) {
         self.sourceThumbnailView = sourceThumbnailView
@@ -38,7 +37,6 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
         let imageViewerImageView = imageViewerView.imageView
         let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
                                                                      from: imageViewerImageView)
-        panningImageView = imageViewerImageView
         
         imageViewerView.destroyLayoutConfigurationBeforeTransition()
         imageViewerImageView.frame = imageViewerImageFrameInContainer
@@ -97,9 +95,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let imageViewerView = recognizer.view as? ImageViewerView,
-              let panningImageView,
-              let animator else {
+        guard let imageViewerView = recognizer.view as? ImageViewerView, let animator else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
         
@@ -114,6 +110,7 @@ extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractive
             transitionContext?.updateInteractiveTransition(transitionProgress)
             
             let imageScale = min(1 - transitionProgress / 5, 1)
+            let panningImageView = imageViewerView.imageView
             panningImageView.transform = .init(translationX: translation.x, y: translation.y)
                 .scaledBy(x: imageScale, y: imageScale)
         case .ended:
