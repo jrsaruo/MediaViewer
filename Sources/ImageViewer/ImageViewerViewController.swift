@@ -35,6 +35,11 @@ open class ImageViewerViewController: UIViewController {
     
     private var interactiveDismissalTransition: ImageViewerInteractiveDismissalTransition?
     
+    // MARK: - Backups
+    
+    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
+    private var navigationBarHiddenBackup = false
+    
     // MARK: - Initializers
     
     /// Creates a new viewer.
@@ -66,9 +71,12 @@ open class ImageViewerViewController: UIViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        guard navigationController != nil else {
+        guard let navigationController else {
             preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
         }
+        
+        navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
+        navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpViews()
         setUpSubscriptions()
@@ -103,12 +111,9 @@ open class ImageViewerViewController: UIViewController {
             .store(in: &cancellables)
     }
     
-    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
-    
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        navigationBarScrollEdgeAppearanceBackup = navigationController?.navigationBar.scrollEdgeAppearance
         let appearance = UINavigationBarAppearance()
         appearance.configureWithDefaultBackground()
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
@@ -118,6 +123,7 @@ open class ImageViewerViewController: UIViewController {
         super.viewWillDisappear(animated)
         
         navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
+        navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
     
     // MARK: - Actions
