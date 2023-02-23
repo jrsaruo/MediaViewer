@@ -165,10 +165,8 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        if let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) {
-            return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
-        }
-        return nil
+        guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return nil }
+        return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
     }
     
     public func navigationController(_ navigationController: UINavigationController,
