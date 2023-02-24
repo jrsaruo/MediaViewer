@@ -44,7 +44,6 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                                                                        from: imageViewerImageView)
         
         // Prepare for transition
-        
         imageViewerView.destroyLayoutConfigurationBeforeTransition()
         imageViewerImageView.frame = imageViewerImageFrameInContainerBackup
         
