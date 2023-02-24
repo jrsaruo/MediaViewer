@@ -33,7 +33,7 @@ open class ImageViewerViewController: UIViewController {
     let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
     
-    private var interactiveDismissalTransition: ImageViewerInteractiveDismissalTransition?
+    private var interactivePopTransition: ImageViewerInteractivePopTransition?
     
     // MARK: - Backups
     
@@ -138,21 +138,21 @@ open class ImageViewerViewController: UIViewController {
         // Check whether to transition interactively
         guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return }
         
-        interactiveDismissalTransition?.panRecognized(by: recognizer)
+        interactivePopTransition?.panRecognized(by: recognizer)
         
         switch recognizer.state {
         case .possible:
             break
         case .began:
-            interactiveDismissalTransition = .init(sourceThumbnailView: sourceThumbnailView)
+            interactivePopTransition = .init(sourceThumbnailView: sourceThumbnailView)
             navigationController?.popViewController(animated: true)
         case .changed:
             break
         case .ended, .cancelled, .failed:
-            interactiveDismissalTransition = nil
+            interactivePopTransition = nil
         @unknown default:
             assertionFailure("Unknown state: \(recognizer.state)")
-            interactiveDismissalTransition = nil
+            interactivePopTransition = nil
         }
     }
 }
@@ -171,6 +171,6 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
     
     public func navigationController(_ navigationController: UINavigationController,
                                      interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
-        return interactiveDismissalTransition
+        return interactivePopTransition
     }
 }

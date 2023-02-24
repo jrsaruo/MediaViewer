@@ -1,5 +1,5 @@
 //
-//  ImageViewerInteractiveDismissalTransition.swift
+//  ImageViewerInteractivePopTransition.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/23.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ImageViewerInteractiveDismissalTransition: NSObject {
+final class ImageViewerInteractivePopTransition: NSObject {
     
     private let sourceThumbnailView: UIImageView
     
@@ -27,7 +27,7 @@ final class ImageViewerInteractiveDismissalTransition: NSObject {
     }
 }
 
-extension ImageViewerInteractiveDismissalTransition: UIViewControllerInteractiveTransitioning {
+extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
         guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView,
