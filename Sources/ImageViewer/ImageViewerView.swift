@@ -10,7 +10,12 @@ import UIKit
 final class ImageViewerView: UIView {
     
     let singleTapRecognizer = UITapGestureRecognizer()
-    let panRecognizer = UIPanGestureRecognizer()
+    
+    let panRecognizer: UIPanGestureRecognizer = {
+        let recognizer = UIPanGestureRecognizer()
+        recognizer.maximumNumberOfTouches = 1
+        return recognizer
+    }()
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()

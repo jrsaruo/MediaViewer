@@ -33,6 +33,13 @@ open class ImageViewerViewController: UIViewController {
     let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
     
+    private var interactivePopTransition: ImageViewerInteractivePopTransition?
+    
+    // MARK: - Backups
+    
+    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
+    private var navigationBarHiddenBackup = false
+    
     // MARK: - Initializers
     
     /// Creates a new viewer.
@@ -64,9 +71,12 @@ open class ImageViewerViewController: UIViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        guard navigationController != nil else {
+        guard let navigationController else {
             preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
         }
+        
+        navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
+        navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpViews()
         setUpSubscriptions()
@@ -75,6 +85,7 @@ open class ImageViewerViewController: UIViewController {
     private func setUpViews() {
         // Subviews
         imageViewerView.singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
+        imageViewerView.panRecognizer.addTarget(self, action: #selector(panned))
     }
     
     private func setUpSubscriptions() {
@@ -100,12 +111,9 @@ open class ImageViewerViewController: UIViewController {
             .store(in: &cancellables)
     }
     
-    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
-    
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        navigationBarScrollEdgeAppearanceBackup = navigationController?.navigationBar.scrollEdgeAppearance
         let appearance = UINavigationBarAppearance()
         appearance.configureWithDefaultBackground()
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
@@ -115,6 +123,7 @@ open class ImageViewerViewController: UIViewController {
         super.viewWillDisappear(animated)
         
         navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
+        navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
     
     // MARK: - Actions
@@ -122,6 +131,28 @@ open class ImageViewerViewController: UIViewController {
     @objc
     private func backgroundTapped(recognizer: UITapGestureRecognizer) {
         imageViewerVM.showsImageOnly.toggle()
+    }
+    
+    @objc
+    private func panned(recognizer: UIPanGestureRecognizer) {
+        interactivePopTransition?.panRecognized(by: recognizer)
+        
+        switch recognizer.state {
+        case .possible, .changed:
+            break
+        case .began:
+            // Check whether to transition interactively
+            guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else {
+                break
+            }
+            interactivePopTransition = .init(sourceThumbnailView: sourceThumbnailView)
+            navigationController?.popViewController(animated: true)
+        case .ended, .cancelled, .failed:
+            interactivePopTransition = nil
+        @unknown default:
+            assertionFailure("Unknown state: \(recognizer.state)")
+            interactivePopTransition = nil
+        }
     }
 }
 
@@ -133,9 +164,12 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        if let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) {
-            return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
-        }
-        return nil
+        guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return nil }
+        return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
+    }
+    
+    public func navigationController(_ navigationController: UINavigationController,
+                                     interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
+        return interactivePopTransition
     }
 }

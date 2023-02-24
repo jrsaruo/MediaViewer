@@ -68,13 +68,13 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         imageViewerView.layoutIfNeeded()
         
         let imageViewerImageView = imageViewerView.imageView
-        let configurationBackup = imageViewerImageView.configuration
+        let configurationBackup = imageViewerImageView.transitioningConfiguration
         let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
                                                                      from: imageViewerImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
         imageViewerView.destroyLayoutConfigurationBeforeTransition()
-        imageViewerImageView.configuration = sourceThumbnailView.configuration
+        imageViewerImageView.transitioningConfiguration = sourceThumbnailView.transitioningConfiguration
         imageViewerImageView.frame = thumbnailFrameInContainer
         imageViewerImageView.layer.masksToBounds = true
         containerView.addSubview(imageViewerImageView)
@@ -85,7 +85,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.72) {
             imageViewerView.alpha = 1
             imageViewerImageView.frame = imageViewerImageFrameInContainer
-            imageViewerImageView.configuration = configurationBackup
+            imageViewerImageView.transitioningConfiguration = configurationBackup
             
             // NOTE: Keep following properties during transition for smooth animation
             imageViewerImageView.contentMode = self.sourceThumbnailView.contentMode
@@ -94,7 +94,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         animator.addCompletion { position in
             switch position {
             case .end:
-                imageViewerImageView.configuration = configurationBackup
+                imageViewerImageView.transitioningConfiguration = configurationBackup
                 imageViewerView.restoreLayoutConfigurationAfterTransition()
                 self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
@@ -143,7 +143,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             toView.alpha = 1
             imageViewerImageView.frame = thumbnailFrameInContainer
-            imageViewerImageView.configuration = self.sourceThumbnailView.configuration
+            imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
             imageViewerImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
         }
         animator.addCompletion { position in
@@ -160,39 +160,5 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         animator.startAnimation()
-    }
-}
-
-private struct UIImageViewConfiguration {
-    var backgroundColor: UIColor?
-    var tintColor: UIColor?
-    var contentMode: UIView.ContentMode
-    var cornerRadius: CGFloat
-    var borderColor: CGColor?
-    var borderWidth: CGFloat
-    var masksToBounds: Bool
-}
-
-extension UIImageView {
-    
-    fileprivate var configuration: UIImageViewConfiguration {
-        get {
-            .init(backgroundColor: backgroundColor,
-                  tintColor: tintColor,
-                  contentMode: contentMode,
-                  cornerRadius: layer.cornerRadius,
-                  borderColor: layer.borderColor,
-                  borderWidth: layer.borderWidth,
-                  masksToBounds: layer.masksToBounds)
-        }
-        set {
-            backgroundColor = newValue.backgroundColor
-            tintColor = newValue.tintColor
-            contentMode = newValue.contentMode
-            layer.cornerRadius = newValue.cornerRadius
-            layer.borderColor = newValue.borderColor
-            layer.borderWidth = newValue.borderWidth
-            layer.masksToBounds = newValue.masksToBounds
-        }
     }
 }
