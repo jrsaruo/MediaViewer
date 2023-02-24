@@ -10,15 +10,9 @@ import AceLayout
 
 final class PhotoCell: UICollectionViewCell {
     
-    var image: UIImage? {
-        get { imageView.image }
-        set { imageView.image = newValue }
-    }
-    
-    private let imageView: UIImageView = {
+    let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.backgroundColor = .secondarySystemBackground
-        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     

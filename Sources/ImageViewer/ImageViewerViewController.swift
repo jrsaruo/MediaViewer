@@ -8,15 +8,35 @@
 import UIKit
 import Combine
 
+public protocol ImageViewerDataSource: AnyObject {
+    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
+}
+
+/// An image viewer.
+///
+/// It is recommended to set your `ImageViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+/// ```swift
+/// let imageViewer = ImageViewerViewController(image: imageToView)
+/// imageViewer.dataSource = self
+/// navigationController?.delegate = imageViewer
+/// navigationController?.pushViewController(imageViewer, animated: true)
+/// ```
+///
+/// - Note: `ImageViewerViewController` must be used in `UINavigationController`.
 open class ImageViewerViewController: UIViewController {
     
     private var cancellables: Set<AnyCancellable> = []
     
-    private let imageViewerView: ImageViewerView
+    /// The data source of the image viewer object.
+    open weak var dataSource: (any ImageViewerDataSource)?
+    
+    let imageViewerView: ImageViewerView
     private let imageViewerVM = ImageViewerViewModel()
     
     // MARK: - Initializers
     
+    /// Creates a new viewer.
+    /// - Parameter image: The image you want to view.
     public init(image: UIImage) {
         self.imageViewerView = ImageViewerView(image: image)
         super.init(nibName: nil, bundle: nil)
@@ -102,5 +122,20 @@ open class ImageViewerViewController: UIViewController {
     @objc
     private func backgroundTapped(recognizer: UITapGestureRecognizer) {
         imageViewerVM.showsImageOnly.toggle()
+    }
+}
+
+// MARK: - UINavigationControllerDelegate -
+
+extension ImageViewerViewController: UINavigationControllerDelegate {
+    
+    public func navigationController(_ navigationController: UINavigationController,
+                                     animationControllerFor operation: UINavigationController.Operation,
+                                     from fromVC: UIViewController,
+                                     to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
+        if let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) {
+            return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
+        }
+        return nil
     }
 }
