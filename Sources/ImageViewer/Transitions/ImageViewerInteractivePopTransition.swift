@@ -101,9 +101,12 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             imageViewerImageView.frame = self.imageViewerImageFrameInContainerBackup
         }
         cancelAnimator.addCompletion { _ in
+            // Restore to pre-transition state
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
+            imageViewerImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
             imageViewerImageView.transform = .identity
             imageViewerView.restoreLayoutConfigurationAfterTransition()
+            
             transitionContext.completeTransition(false)
         }
         cancelAnimator.startAnimation()
@@ -120,15 +123,20 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         guard let imageViewerView = recognizer.view as? ImageViewerView else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
-        guard let animator, let transitionContext else {
-            // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
-            return
-        }
+        let panningImageView = imageViewerView.imageView
         
         switch recognizer.state {
         case .possible, .began:
-            break
+            // Adjust the anchor point to scale the image around a finger
+            let location = recognizer.location(in: panningImageView)
+            let anchorPoint = CGPoint(x: location.x / panningImageView.frame.width,
+                                      y: location.y / panningImageView.frame.height)
+            panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
         case .changed:
+            guard let animator, let transitionContext else {
+                // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
+                return
+            }
             let translation = recognizer.translation(in: imageViewerView)
             let transitionProgress = translation.y / imageViewerView.bounds.height
             
@@ -136,7 +144,6 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             transitionContext.updateInteractiveTransition(transitionProgress)
             
             let imageScale = min(1 - transitionProgress / 5, 1)
-            let panningImageView = imageViewerView.imageView
             panningImageView.transform = .init(translationX: translation.x, y: translation.y)
                 .scaledBy(x: imageScale, y: imageScale)
         case .ended:
