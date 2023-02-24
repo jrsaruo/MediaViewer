@@ -135,18 +135,20 @@ open class ImageViewerViewController: UIViewController {
     
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
+        // Check whether to transition interactively
+        guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return }
+        
+        if recognizer.state == .began {
+            // Start the interactive pop transition
+            interactivePopTransition = .init(sourceThumbnailView: sourceThumbnailView)
+            navigationController?.popViewController(animated: true)
+        }
+        
         interactivePopTransition?.panRecognized(by: recognizer)
         
         switch recognizer.state {
-        case .possible, .changed:
+        case .possible, .began, .changed:
             break
-        case .began:
-            // Check whether to transition interactively
-            guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else {
-                break
-            }
-            interactivePopTransition = .init(sourceThumbnailView: sourceThumbnailView)
-            navigationController?.popViewController(animated: true)
         case .ended, .cancelled, .failed:
             interactivePopTransition = nil
         @unknown default:
