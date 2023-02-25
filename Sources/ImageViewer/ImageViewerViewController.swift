@@ -1,5 +1,5 @@
 //
-//  ImageViewerPageViewController.swift
+//  ImageViewerViewController.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/25.
@@ -7,8 +7,7 @@
 
 import UIKit
 
-// TODO: Rename to ImageViewerViewController
-open class ImageViewerPageViewController: UIPageViewController {
+open class ImageViewerViewController: UIPageViewController {
     
     // MARK: - Initializers
     
