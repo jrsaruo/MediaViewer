@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Combine
 
 /// An image viewer.
 ///
@@ -21,10 +20,7 @@ import Combine
 /// - Note: `ImageViewerOnePageViewController` must be used in `UINavigationController`.
 open class ImageViewerOnePageViewController: UIViewController {
     
-    private var cancellables: Set<AnyCancellable> = []
-    
     let imageViewerOnePageView: ImageViewerOnePageView
-    private let imageViewerOnePageVM = ImageViewerOnePageViewModel()
     
     // MARK: - Initializers
     
@@ -52,33 +48,5 @@ open class ImageViewerOnePageViewController: UIViewController {
     
     open override func loadView() {
         view = imageViewerOnePageView
-    }
-    
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        setUpSubscriptions()
-    }
-    
-    private func setUpSubscriptions() {
-        imageViewerOnePageVM.$showsImageOnly
-            .sink { [weak self] showsImageOnly in
-                guard let self else { return }
-                let animator = UIViewPropertyAnimator(duration: UINavigationController.hideShowBarDuration,
-                                                      dampingRatio: 1) {
-                    self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
-                    self.view.backgroundColor = showsImageOnly ? .black : .systemBackground
-                }
-                if showsImageOnly {
-                    animator.addCompletion { position in
-                        if position == .end {
-                            self.navigationController?.isNavigationBarHidden = true
-                        }
-                    }
-                } else {
-                    self.navigationController?.isNavigationBarHidden = false
-                }
-                animator.startAnimation()
-            }
-            .store(in: &cancellables)
     }
 }

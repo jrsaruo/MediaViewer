@@ -6,12 +6,15 @@
 //
 
 import UIKit
+import Combine
 
 public protocol ImageViewerDataSource: AnyObject {
     func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
 open class ImageViewerViewController: UIPageViewController {
+    
+    private var cancellables: Set<AnyCancellable> = []
     
     /// The data source of the image viewer object.
     open weak var imageViewerDataSource: (any ImageViewerDataSource)?
@@ -22,6 +25,8 @@ open class ImageViewerViewController: UIPageViewController {
         }
         return imageViewerOnePage
     }
+    
+    private let imageViewerVM = ImageViewerViewModel()
     
     private let singleTapRecognizer = UITapGestureRecognizer()
     
@@ -68,6 +73,7 @@ open class ImageViewerViewController: UIPageViewController {
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpGestureRecognizers()
+        setUpSubscriptions()
     }
     
     private func setUpGestureRecognizers() {
@@ -77,6 +83,29 @@ open class ImageViewerViewController: UIPageViewController {
         
         panRecognizer.addTarget(self, action: #selector(panned))
         view.addGestureRecognizer(panRecognizer)
+    }
+    
+    private func setUpSubscriptions() {
+        imageViewerVM.$showsImageOnly
+            .sink { [weak self] showsImageOnly in
+                guard let self else { return }
+                let animator = UIViewPropertyAnimator(duration: UINavigationController.hideShowBarDuration,
+                                                      dampingRatio: 1) {
+                    self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
+                    self.view.backgroundColor = showsImageOnly ? .black : .systemBackground
+                }
+                if showsImageOnly {
+                    animator.addCompletion { position in
+                        if position == .end {
+                            self.navigationController?.isNavigationBarHidden = true
+                        }
+                    }
+                } else {
+                    self.navigationController?.isNavigationBarHidden = false
+                }
+                animator.startAnimation()
+            }
+            .store(in: &cancellables)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -98,7 +127,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     @objc
     private func backgroundTapped(recognizer: UITapGestureRecognizer) {
-        // TODO: Toggle the navigation bar visibility
+        imageViewerVM.showsImageOnly.toggle()
     }
     
     @objc
