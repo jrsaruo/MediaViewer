@@ -7,17 +7,6 @@
 
 import UIKit
 
-/// An image viewer.
-///
-/// It is recommended to set your `ImageViewerOnePageViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
-/// ```swift
-/// let imageViewer = ImageViewerOnePageViewController(image: imageToView)
-/// imageViewer.dataSource = self
-/// navigationController?.delegate = imageViewer
-/// navigationController?.pushViewController(imageViewer, animated: true)
-/// ```
-///
-/// - Note: `ImageViewerOnePageViewController` must be used in `UINavigationController`.
 final class ImageViewerOnePageViewController: UIViewController {
     
     let imageViewerOnePageView: ImageViewerOnePageView
@@ -30,8 +19,6 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     // MARK: - Initializers
     
-    /// Creates a new viewer.
-    /// - Parameter image: The image you want to view.
     init(image: UIImage) {
         self.imageViewerOnePageView = ImageViewerOnePageView(image: image)
         super.init(nibName: nil, bundle: nil)

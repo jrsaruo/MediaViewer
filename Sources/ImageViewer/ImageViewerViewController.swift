@@ -12,6 +12,17 @@ public protocol ImageViewerDataSource: AnyObject {
     func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
+/// An image viewer.
+///
+/// It is recommended to set your `ImageViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+/// ```swift
+/// let imageViewer = ImageViewerViewController(image: imageToView)
+/// imageViewer.imageViewerDataSource = self
+/// navigationController?.delegate = imageViewer
+/// navigationController?.pushViewController(imageViewer, animated: true)
+/// ```
+///
+/// - Note: `ImageViewerViewController` must be used in `UINavigationController`. It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
 open class ImageViewerViewController: UIPageViewController {
     
     private var cancellables: Set<AnyCancellable> = []
@@ -45,6 +56,8 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: - Initializers
     
+    /// Creates a new viewer.
+    /// - Parameter image: The image you want to view.
     public init(image: UIImage) {
         super.init(transitionStyle: .scroll,
                    navigationOrientation: .horizontal,
