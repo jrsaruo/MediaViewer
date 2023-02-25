@@ -138,12 +138,12 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 return
             }
             let translation = recognizer.translation(in: currentPageView)
-            let transitionProgress = translation.y / currentPageView.bounds.height
             
+            let transitionProgress = translation.y * 2 / currentPageView.bounds.height
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)
             
-            let imageScale = min(1 - transitionProgress / 5, 1)
+            let imageScale = min(1 - transitionProgress / 3.6, 1)
             panningImageView.transform = .init(translationX: translation.x, y: translation.y)
                 .scaledBy(x: imageScale, y: imageScale)
         case .ended:
