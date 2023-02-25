@@ -88,8 +88,9 @@ open class ImageViewerViewController: UIPageViewController {
                     .interPageSpacing: 16,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
-        let imageViewer = ImageViewerOnePageViewController(image: image, page: page)
-        setViewControllers([imageViewer], direction: .forward, animated: false)
+        let imageViewerPage = ImageViewerOnePageViewController(image: image, page: page)
+        imageViewerPage.delegate = self
+        setViewControllers([imageViewerPage], direction: .forward, animated: false)
     }
     
     required public init?(coder: NSCoder) {
@@ -216,6 +217,16 @@ open class ImageViewerViewController: UIPageViewController {
     }
 }
 
+// MARK: - ImageViewerOnePageViewControllerDelegate -
+
+extension ImageViewerViewController: ImageViewerOnePageViewControllerDelegate {
+    
+    func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
+                         didDoubleTap imageView: UIImageView) {
+        imageViewerVM.showsImageOnly = true
+    }
+}
+
 // MARK: - UIPageViewControllerDataSource -
 
 extension ImageViewerViewController: UIPageViewControllerDataSource {
@@ -234,7 +245,10 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         }
         let previousPage = imageViewerPageVC.page - 1
         guard images.indices.contains(previousPage) else { return nil }
-        return ImageViewerOnePageViewController(image: images[previousPage], page: previousPage)
+        let previousPageVC = ImageViewerOnePageViewController(image: images[previousPage],
+                                                              page: previousPage)
+        previousPageVC.delegate = self
+        return previousPageVC
     }
     
     open func pageViewController(_ pageViewController: UIPageViewController,
@@ -246,7 +260,10 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         }
         let nextPage = imageViewerPageVC.page + 1
         guard images.indices.contains(nextPage) else { return nil }
-        return ImageViewerOnePageViewController(image: images[nextPage], page: nextPage)
+        let nextPageVC = ImageViewerOnePageViewController(image: images[nextPage],
+                                                          page: nextPage)
+        nextPageVC.delegate = self
+        return nextPageVC
     }
 }
 
