@@ -38,12 +38,6 @@ final class ImageViewerOnePageViewController: UIViewController {
         super.init(coder: coder)
     }
     
-    // MARK: - Override
-    
-    override var prefersStatusBarHidden: Bool {
-        true
-    }
-    
     // MARK: - Lifecycle
     
     override func loadView() {

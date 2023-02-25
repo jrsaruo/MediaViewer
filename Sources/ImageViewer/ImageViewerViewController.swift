@@ -123,6 +123,12 @@ open class ImageViewerViewController: UIPageViewController {
         navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
     
+    // MARK: - Override
+    
+    open override var prefersStatusBarHidden: Bool {
+        true
+    }
+    
     // MARK: - Actions
     
     @objc
