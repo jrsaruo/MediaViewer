@@ -18,7 +18,7 @@ import UIKit
 /// ```
 ///
 /// - Note: `ImageViewerOnePageViewController` must be used in `UINavigationController`.
-open class ImageViewerOnePageViewController: UIViewController {
+final class ImageViewerOnePageViewController: UIViewController {
     
     let imageViewerOnePageView: ImageViewerOnePageView
     
@@ -26,13 +26,13 @@ open class ImageViewerOnePageViewController: UIViewController {
     
     /// Creates a new viewer.
     /// - Parameter image: The image you want to view.
-    public init(image: UIImage) {
+    init(image: UIImage) {
         self.imageViewerOnePageView = ImageViewerOnePageView(image: image)
         super.init(nibName: nil, bundle: nil)
     }
     
     @available(*, unavailable, message: "init(coder:) is not supported.")
-    required public init?(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         guard let onePageView = ImageViewerOnePageView(coder: coder) else { return nil }
         self.imageViewerOnePageView = onePageView
         super.init(coder: coder)
@@ -40,13 +40,13 @@ open class ImageViewerOnePageViewController: UIViewController {
     
     // MARK: - Override
     
-    open override var prefersStatusBarHidden: Bool {
+    override var prefersStatusBarHidden: Bool {
         true
     }
     
     // MARK: - Lifecycle
     
-    open override func loadView() {
+    override func loadView() {
         view = imageViewerOnePageView
     }
 }
