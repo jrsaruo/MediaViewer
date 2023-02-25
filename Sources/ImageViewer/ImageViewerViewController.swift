@@ -238,32 +238,37 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
     
     open func pageViewController(_ pageViewController: UIPageViewController,
                                  viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
         guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
         let previousPage = imageViewerPageVC.page - 1
-        guard images.indices.contains(previousPage) else { return nil }
-        let previousPageVC = ImageViewerOnePageViewController(image: images[previousPage],
-                                                              page: previousPage)
-        previousPageVC.delegate = self
-        return previousPageVC
+        if let previousPageVC = makeImageViewerPage(forPage: previousPage) {
+            return previousPageVC
+        }
+        return nil
     }
     
     open func pageViewController(_ pageViewController: UIPageViewController,
                                  viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
         guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
         let nextPage = imageViewerPageVC.page + 1
-        guard images.indices.contains(nextPage) else { return nil }
-        let nextPageVC = ImageViewerOnePageViewController(image: images[nextPage],
-                                                          page: nextPage)
-        nextPageVC.delegate = self
-        return nextPageVC
+        if let nextPageVC = makeImageViewerPage(forPage: nextPage) {
+            return nextPageVC
+        }
+        return nil
+    }
+    
+    private func makeImageViewerPage(forPage page: Int) -> ImageViewerOnePageViewController? {
+        guard let images = imageViewerDataSource?.images(in: self),
+              images.indices.contains(page) else { return nil }
+        let imageViewerPage = ImageViewerOnePageViewController(image: images[page],
+                                                               page: page)
+        imageViewerPage.delegate = self
+        return imageViewerPage
     }
 }
 
