@@ -30,12 +30,13 @@ final class ImageViewerInteractivePopTransition: NSObject {
 extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
-        guard let onePageView = transitionContext.view(forKey: .from) as? ImageViewerOnePageView,
+        guard let fromView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to) else {
-            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+            preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
+        let onePageView = imageViewerOnePageView(from: transitionContext)
         let onePageImageView = onePageView.imageView
         
         // Back up
@@ -48,14 +49,14 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         onePageImageView.frame = onePageImageFrameInContainerBackup
         
         containerView.addSubview(toView)
-        containerView.addSubview(onePageView)
+        containerView.addSubview(fromView)
         containerView.addSubview(onePageImageView)
         
         sourceThumbnailView.isHidden = true
         
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            onePageView.alpha = 0
+            fromView.alpha = 0
         }
     }
     
@@ -67,7 +68,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let containerView = transitionContext.containerView
-        let onePageView = onePageView(from: transitionContext)
+        let onePageView = imageViewerOnePageView(from: transitionContext)
         let onePageImageView = onePageView.imageView
         
         let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
@@ -94,7 +95,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.isReversed = true
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
-        let onePageView = onePageView(from: transitionContext)
+        let onePageView = imageViewerOnePageView(from: transitionContext)
         let onePageImageView = onePageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
@@ -112,17 +113,19 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         cancelAnimator.startAnimation()
     }
     
-    private func onePageView(from transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerOnePageView {
-        guard let onePageView = transitionContext.view(forKey: .from) as? ImageViewerOnePageView else {
+    private func imageViewerOnePageView(from transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerOnePageView {
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
-        return onePageView
+        return imageViewer.currentPageViewController.imageViewerOnePageView
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let onePageView = recognizer.view as? ImageViewerOnePageView else {
-            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+        guard let animator, let transitionContext else {
+            // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
+            return
         }
+        let onePageView = imageViewerOnePageView(from: transitionContext)
         let panningImageView = onePageView.imageView
         
         switch recognizer.state {
@@ -133,10 +136,6 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
         case .changed:
-            guard let animator, let transitionContext else {
-                // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
-                return
-            }
             let translation = recognizer.translation(in: onePageView)
             let transitionProgress = translation.y / onePageView.bounds.height
             

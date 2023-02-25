@@ -49,21 +49,22 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     }
     
     private func animatePushTransition(using transitionContext: any UIViewControllerContextTransitioning) {
-        guard let imageViewerOnePage = transitionContext.viewController(forKey: .to) as? ImageViewerOnePageViewController,
-              let onePageView = transitionContext.view(forKey: .to) as? ImageViewerOnePageView
+        guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
+              let imageViewerView = transitionContext.view(forKey: .to)
         else {
             assertionFailure("\(Self.self) works only with the push/pop animation for ImageViewerViewController.")
             transitionContext.completeTransition(false)
             return
         }
         let containerView = transitionContext.containerView
-        containerView.addSubview(onePageView)
+        containerView.addSubview(imageViewerView)
         
         // Back up
         let thumbnailHiddenBackup = sourceThumbnailView.isHidden
         
         // Prepare for transition
-        onePageView.frame = transitionContext.finalFrame(for: imageViewerOnePage)
+        let onePageView = imageViewer.currentPageViewController.imageViewerOnePageView
+        onePageView.frame = transitionContext.finalFrame(for: imageViewer)
         onePageView.alpha = 0
         onePageView.layoutIfNeeded()
         
@@ -109,7 +110,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     }
     
     private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
-        guard let imageViewerOnePage = transitionContext.viewController(forKey: .from) as? ImageViewerOnePageViewController,
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to)
         else {
@@ -128,12 +129,13 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         toView.alpha = 0
         toVC.view.layoutIfNeeded()
         
-        let onePageImageView = imageViewerOnePage.imageViewerOnePageView.imageView
+        let onePageView = imageViewer.currentPageViewController.imageViewerOnePageView
+        let onePageImageView = onePageView.imageView
         let imageViewerImageFrameInContainer = containerView.convert(onePageImageView.frame,
                                                                      from: onePageImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
-        imageViewerOnePage.imageViewerOnePageView.destroyLayoutConfigurationBeforeTransition()
+        onePageView.destroyLayoutConfigurationBeforeTransition()
         onePageImageView.frame = imageViewerImageFrameInContainer
         containerView.addSubview(onePageImageView)
         sourceThumbnailView.isHidden = true

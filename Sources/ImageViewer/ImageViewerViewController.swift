@@ -16,6 +16,13 @@ open class ImageViewerViewController: UIPageViewController {
     /// The data source of the image viewer object.
     open weak var imageViewerDataSource: (any ImageViewerDataSource)?
     
+    var currentPageViewController: ImageViewerOnePageViewController {
+        guard let imageViewerOnePage = viewControllers?.first as? ImageViewerOnePageViewController else {
+            preconditionFailure("\(Self.self) must have only one \(ImageViewerOnePageViewController.self).")
+        }
+        return imageViewerOnePage
+    }
+    
     private let singleTapRecognizer = UITapGestureRecognizer()
     
     private let panRecognizer: UIPanGestureRecognizer = {
