@@ -65,6 +65,7 @@ open class ImageViewerViewController: UIPageViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        dataSource = self
         delegate = self
         
         guard let navigationController else {
@@ -176,6 +177,26 @@ open class ImageViewerViewController: UIPageViewController {
             assertionFailure("Unknown state: \(recognizer.state)")
             interactivePopTransition = nil
         }
+    }
+}
+
+extension ImageViewerViewController: UIPageViewControllerDataSource {
+    
+    public func presentationCount(for pageViewController: UIPageViewController) -> Int {
+        // TODO: Return the number of images
+        1
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController,
+                                   viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        // TODO: Return ImageViewerOnePageViewController for the previous image
+        nil
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController,
+                                   viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        // TODO: Return ImageViewerOnePageViewController for the next image
+        nil
     }
 }
 
