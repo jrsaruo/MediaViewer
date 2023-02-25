@@ -2,7 +2,7 @@
 //  ImageViewerViewController.swift
 //  
 //
-//  Created by Yusaku Nishi on 2023/02/19.
+//  Created by Yusaku Nishi on 2023/02/25.
 //
 
 import UIKit
@@ -17,25 +17,39 @@ public protocol ImageViewerDataSource: AnyObject {
 /// It is recommended to set your `ImageViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
 /// ```swift
 /// let imageViewer = ImageViewerViewController(image: imageToView)
-/// imageViewer.dataSource = self
+/// imageViewer.imageViewerDataSource = self
 /// navigationController?.delegate = imageViewer
 /// navigationController?.pushViewController(imageViewer, animated: true)
 /// ```
 ///
-/// - Note: `ImageViewerViewController` must be used in `UINavigationController`.
-open class ImageViewerViewController: UIViewController {
+/// - Note: `ImageViewerViewController` must be used in `UINavigationController`. It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
+open class ImageViewerViewController: UIPageViewController {
     
     private var cancellables: Set<AnyCancellable> = []
     
     /// The data source of the image viewer object.
-    open weak var dataSource: (any ImageViewerDataSource)?
+    open weak var imageViewerDataSource: (any ImageViewerDataSource)?
     
-    let imageViewerView: ImageViewerView
+    var currentPageViewController: ImageViewerOnePageViewController {
+        guard let imageViewerOnePage = viewControllers?.first as? ImageViewerOnePageViewController else {
+            preconditionFailure("\(Self.self) must have only one \(ImageViewerOnePageViewController.self).")
+        }
+        return imageViewerOnePage
+    }
+    
     private let imageViewerVM = ImageViewerViewModel()
+    
+    private let singleTapRecognizer = UITapGestureRecognizer()
+    
+    private let panRecognizer: UIPanGestureRecognizer = {
+        let recognizer = UIPanGestureRecognizer()
+        recognizer.maximumNumberOfTouches = 1
+        return recognizer
+    }()
     
     private var interactivePopTransition: ImageViewerInteractivePopTransition?
     
-    // MARK: - Backups
+    // MARK: Backups
     
     private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
     private var navigationBarHiddenBackup = false
@@ -45,47 +59,45 @@ open class ImageViewerViewController: UIViewController {
     /// Creates a new viewer.
     /// - Parameter image: The image you want to view.
     public init(image: UIImage) {
-        self.imageViewerView = ImageViewerView(image: image)
-        super.init(nibName: nil, bundle: nil)
+        super.init(transitionStyle: .scroll,
+                   navigationOrientation: .horizontal,
+                   options: [
+                    .interPageSpacing: 16,
+                    .spineLocation: SpineLocation.none.rawValue
+                   ])
+        let imageViewer = ImageViewerOnePageViewController(image: image)
+        setViewControllers([imageViewer], direction: .forward, animated: false)
     }
     
-    @available(*, unavailable, message: "init(coder:) is not supported.")
     required public init?(coder: NSCoder) {
-        guard let imageViewerView = ImageViewerView(coder: coder) else { return nil }
-        self.imageViewerView = imageViewerView
         super.init(coder: coder)
-    }
-    
-    // MARK: - Override
-    
-    open override var prefersStatusBarHidden: Bool {
-        true
     }
     
     // MARK: - Lifecycle
     
-    open override func loadView() {
-        view = imageViewerView
-    }
-    
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        dataSource = self
+        delegate = self
+        
         guard let navigationController else {
-            preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
+            preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
         }
         
         navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
-        setUpViews()
+        setUpGestureRecognizers()
         setUpSubscriptions()
     }
     
-    private func setUpViews() {
-        // Subviews
-        imageViewerView.singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
-        imageViewerView.panRecognizer.addTarget(self, action: #selector(panned))
+    private func setUpGestureRecognizers() {
+        singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
+        view.addGestureRecognizer(singleTapRecognizer)
+        
+        panRecognizer.addTarget(self, action: #selector(panned))
+        view.addGestureRecognizer(panRecognizer)
     }
     
     private func setUpSubscriptions() {
@@ -126,6 +138,29 @@ open class ImageViewerViewController: UIViewController {
         navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
     
+    // MARK: - Override
+    
+    open override var prefersStatusBarHidden: Bool {
+        true
+    }
+    
+    open override func setViewControllers(_ viewControllers: [UIViewController]?,
+                                          direction: UIPageViewController.NavigationDirection,
+                                          animated: Bool,
+                                          completion: ((Bool) -> Void)? = nil) {
+        super.setViewControllers(viewControllers,
+                                 direction: direction,
+                                 animated: animated,
+                                 completion: completion)
+        pageDidChange()
+    }
+    
+    // MARK: - Methods
+    
+    private func pageDidChange() {
+        singleTapRecognizer.require(toFail: currentPageViewController.imageDoubleTapRecognizer)
+    }
+    
     // MARK: - Actions
     
     @objc
@@ -136,7 +171,7 @@ open class ImageViewerViewController: UIViewController {
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
         // Check whether to transition interactively
-        guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return }
+        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return }
         
         if recognizer.state == .began {
             // Start the interactive pop transition
@@ -158,6 +193,40 @@ open class ImageViewerViewController: UIViewController {
     }
 }
 
+extension ImageViewerViewController: UIPageViewControllerDataSource {
+    
+    public func presentationCount(for pageViewController: UIPageViewController) -> Int {
+        // TODO: Return the number of images
+        1
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController,
+                                   viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        // TODO: Return ImageViewerOnePageViewController for the previous image
+        nil
+    }
+    
+    public func pageViewController(_ pageViewController: UIPageViewController,
+                                   viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        // TODO: Return ImageViewerOnePageViewController for the next image
+        nil
+    }
+}
+
+// MARK: - UIPageViewControllerDelegate -
+
+extension ImageViewerViewController: UIPageViewControllerDelegate {
+    
+    public func pageViewController(_ pageViewController: UIPageViewController,
+                                   didFinishAnimating finished: Bool,
+                                   previousViewControllers: [UIViewController],
+                                   transitionCompleted completed: Bool) {
+        if completed {
+            pageDidChange()
+        }
+    }
+}
+
 // MARK: - UINavigationControllerDelegate -
 
 extension ImageViewerViewController: UINavigationControllerDelegate {
@@ -166,7 +235,7 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        guard let sourceThumbnailView = dataSource?.sourceThumbnailView(for: self) else { return nil }
+        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return nil }
         return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
     }
     

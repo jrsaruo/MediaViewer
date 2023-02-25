@@ -17,7 +17,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     // MARK: Backups
     
     private var thumbnailHiddenBackup = false
-    private var imageViewerImageFrameInContainerBackup = CGRect.null
+    private var currentPageImageFrameInContainerBackup = CGRect.null
     
     // MARK: - Initializers
     
@@ -30,32 +30,33 @@ final class ImageViewerInteractivePopTransition: NSObject {
 extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
-        guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView,
+        guard let fromView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to) else {
-            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+            preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
-        let imageViewerImageView = imageViewerView.imageView
+        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let currentPageImageView = currentPageView.imageView
         
         // Back up
         thumbnailHiddenBackup = sourceThumbnailView.isHidden
-        imageViewerImageFrameInContainerBackup = containerView.convert(imageViewerImageView.frame,
-                                                                       from: imageViewerImageView)
+        currentPageImageFrameInContainerBackup = containerView.convert(currentPageImageView.frame,
+                                                                       from: currentPageImageView)
         
         // Prepare for transition
-        imageViewerView.destroyLayoutConfigurationBeforeTransition()
-        imageViewerImageView.frame = imageViewerImageFrameInContainerBackup
+        currentPageView.destroyLayoutConfigurationBeforeTransition()
+        currentPageImageView.frame = currentPageImageFrameInContainerBackup
         
         containerView.addSubview(toView)
-        containerView.addSubview(imageViewerView)
-        containerView.addSubview(imageViewerImageView)
+        containerView.addSubview(fromView)
+        containerView.addSubview(currentPageImageView)
         
         sourceThumbnailView.isHidden = true
         
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            imageViewerView.alpha = 0
+            fromView.alpha = 0
         }
     }
     
@@ -67,20 +68,20 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let containerView = transitionContext.containerView
-        let imageViewerView = imageViewerView(from: transitionContext)
-        let imageViewerImageView = imageViewerView.imageView
+        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let currentPageImageView = currentPageView.imageView
         
         let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             let thumbnailFrameInContainer = containerView.convert(self.sourceThumbnailView.frame,
                                                                   from: self.sourceThumbnailView)
-            imageViewerImageView.frame = thumbnailFrameInContainer
-            imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
-            imageViewerImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
+            currentPageImageView.frame = thumbnailFrameInContainer
+            currentPageImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
+            currentPageImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
         }
         finishAnimator.addCompletion { _ in
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
-            imageViewerView.removeFromSuperview()
-            imageViewerImageView.removeFromSuperview()
+            currentPageView.removeFromSuperview()
+            currentPageImageView.removeFromSuperview()
             transitionContext.completeTransition(true)
         }
         finishAnimator.startAnimation()
@@ -94,36 +95,38 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.isReversed = true
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
-        let imageViewerView = imageViewerView(from: transitionContext)
-        let imageViewerImageView = imageViewerView.imageView
+        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let currentPageImageView = currentPageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            imageViewerImageView.frame = self.imageViewerImageFrameInContainerBackup
+            currentPageImageView.frame = self.currentPageImageFrameInContainerBackup
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
-            imageViewerImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
-            imageViewerImageView.transform = .identity
-            imageViewerView.restoreLayoutConfigurationAfterTransition()
+            currentPageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
+            currentPageImageView.transform = .identity
+            currentPageView.restoreLayoutConfigurationAfterTransition()
             
             transitionContext.completeTransition(false)
         }
         cancelAnimator.startAnimation()
     }
     
-    private func imageViewerView(from transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerView {
-        guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView else {
-            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+    private func imageViewerCurrentPageView(in transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerOnePageView {
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
+            preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
-        return imageViewerView
+        return imageViewer.currentPageViewController.imageViewerOnePageView
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let imageViewerView = recognizer.view as? ImageViewerView else {
-            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+        guard let animator, let transitionContext else {
+            // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
+            return
         }
-        let panningImageView = imageViewerView.imageView
+        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let panningImageView = currentPageView.imageView
         
         switch recognizer.state {
         case .possible, .began:
@@ -133,12 +136,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
         case .changed:
-            guard let animator, let transitionContext else {
-                // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
-                return
-            }
-            let translation = recognizer.translation(in: imageViewerView)
-            let transitionProgress = translation.y / imageViewerView.bounds.height
+            let translation = recognizer.translation(in: currentPageView)
+            let transitionProgress = translation.y / currentPageView.bounds.height
             
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)

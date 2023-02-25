@@ -1,5 +1,5 @@
 //
-//  ImageViewerView.swift
+//  ImageViewerOnePageView.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -7,15 +7,7 @@
 
 import UIKit
 
-final class ImageViewerView: UIView {
-    
-    let singleTapRecognizer = UITapGestureRecognizer()
-    
-    let panRecognizer: UIPanGestureRecognizer = {
-        let recognizer = UIPanGestureRecognizer()
-        recognizer.maximumNumberOfTouches = 1
-        return recognizer
-    }()
+final class ImageViewerOnePageView: UIView {
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -53,19 +45,11 @@ final class ImageViewerView: UIView {
     
     private func setUpViews() {
         backgroundColor = .black
-        addGestureRecognizer(singleTapRecognizer)
-        addGestureRecognizer(panRecognizer)
         
         // Subviews
         scrollView.delegate = self
-        addSubview(scrollView)
-        
-        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageDoubleTapped))
-        doubleTapRecognizer.numberOfTapsRequired = 2
-        imageView.addGestureRecognizer(doubleTapRecognizer)
         scrollView.addSubview(imageView)
-        
-        singleTapRecognizer.require(toFail: doubleTapRecognizer)
+        addSubview(scrollView)
         
         // Layout
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -96,6 +80,15 @@ final class ImageViewerView: UIView {
     }
     
     // MARK: - Methods
+    
+    func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
+        if scrollView.zoomScale == 1 {
+            let location = doubleTapRecognizer.location(in: imageView)
+            scrollView.zoom(to: CGRect(origin: location, size: .zero), animated: true)
+        } else {
+            scrollView.setZoomScale(1, animated: true)
+        }
+    }
     
     func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsToBeDeactivatedDuringTransition)
@@ -153,21 +146,9 @@ final class ImageViewerView: UIView {
                                                bottom: verticalMargin,
                                                right: horizontalMargin)
     }
-    
-    // MARK: - Actions
-    
-    @objc
-    private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
-        if scrollView.zoomScale == 1 {
-            let location = recognizer.location(in: imageView)
-            scrollView.zoom(to: CGRect(origin: location, size: .zero), animated: true)
-        } else {
-            scrollView.setZoomScale(1, animated: true)
-        }
-    }
 }
 
-extension ImageViewerView: UIScrollViewDelegate {
+extension ImageViewerOnePageView: UIScrollViewDelegate {
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView
