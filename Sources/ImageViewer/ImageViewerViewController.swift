@@ -85,7 +85,7 @@ open class ImageViewerViewController: UIPageViewController {
         super.init(transitionStyle: .scroll,
                    navigationOrientation: .horizontal,
                    options: [
-                    .interPageSpacing: 16,
+                    .interPageSpacing: 40,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
         let imageViewerPage = ImageViewerOnePageViewController(image: image, page: page)
