@@ -220,13 +220,13 @@ open class ImageViewerViewController: UIPageViewController {
 
 extension ImageViewerViewController: UIPageViewControllerDataSource {
     
-    public func presentationCount(for pageViewController: UIPageViewController) -> Int {
+    open func presentationCount(for pageViewController: UIPageViewController) -> Int {
         guard let images = imageViewerDataSource?.images(in: self) else { return 0 }
         return images.count
     }
     
-    public func pageViewController(_ pageViewController: UIPageViewController,
-                                   viewControllerBefore viewController: UIViewController) -> UIViewController? {
+    open func pageViewController(_ pageViewController: UIPageViewController,
+                                 viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let images = imageViewerDataSource?.images(in: self) else { return nil }
         guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
             assertionFailure("Unknown view controller: \(viewController)")
@@ -237,8 +237,8 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         return ImageViewerOnePageViewController(image: images[previousPage], page: previousPage)
     }
     
-    public func pageViewController(_ pageViewController: UIPageViewController,
-                                   viewControllerAfter viewController: UIViewController) -> UIViewController? {
+    open func pageViewController(_ pageViewController: UIPageViewController,
+                                 viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let images = imageViewerDataSource?.images(in: self) else { return nil }
         guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
             assertionFailure("Unknown view controller: \(viewController)")
@@ -254,10 +254,10 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
 
 extension ImageViewerViewController: UIPageViewControllerDelegate {
     
-    public func pageViewController(_ pageViewController: UIPageViewController,
-                                   didFinishAnimating finished: Bool,
-                                   previousViewControllers: [UIViewController],
-                                   transitionCompleted completed: Bool) {
+    open func pageViewController(_ pageViewController: UIPageViewController,
+                                 didFinishAnimating finished: Bool,
+                                 previousViewControllers: [UIViewController],
+                                 transitionCompleted completed: Bool) {
         if completed {
             pageDidChange()
         }
