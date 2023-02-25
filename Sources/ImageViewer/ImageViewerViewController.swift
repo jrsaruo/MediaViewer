@@ -31,6 +31,10 @@ open class ImageViewerViewController: UIPageViewController {
     /// The data source of the image viewer object.
     open weak var imageViewerDataSource: (any ImageViewerDataSource)?
     
+    public var currentPage: Int {
+        currentPageViewController.page
+    }
+    
     var currentPageViewController: ImageViewerOnePageViewController {
         guard let imageViewerOnePage = viewControllers?.first as? ImageViewerOnePageViewController else {
             preconditionFailure("\(Self.self) must have only one \(ImageViewerOnePageViewController.self).")

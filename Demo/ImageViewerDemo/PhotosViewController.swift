@@ -122,10 +122,11 @@ extension PhotosViewController: ImageViewerDataSource {
     }
     
     func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView? {
-        guard let indexPathForSelectedPhoto = collectionView.indexPathsForSelectedItems?.first,
-              let selectedCell = collectionView.cellForItem(at: indexPathForSelectedPhoto) as? PhotoCell else {
+        let currentPage = imageViewer.currentPage
+        let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+        guard let cellForCurrentImage = collectionView.cellForItem(at: indexPathForCurrentImage) as? PhotoCell else {
             return nil
         }
-        return selectedCell.imageView
+        return cellForCurrentImage.imageView
     }
 }
