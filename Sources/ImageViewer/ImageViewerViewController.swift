@@ -216,6 +216,8 @@ open class ImageViewerViewController: UIPageViewController {
     }
 }
 
+// MARK: - UIPageViewControllerDataSource -
+
 extension ImageViewerViewController: UIPageViewControllerDataSource {
     
     public func presentationCount(for pageViewController: UIPageViewController) -> Int {
