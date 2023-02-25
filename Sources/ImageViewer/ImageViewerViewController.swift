@@ -8,8 +8,23 @@
 import UIKit
 import Combine
 
+/// The object you use to provide data for an image viewer.
 public protocol ImageViewerDataSource: AnyObject {
+    
+    /// Asks the data source to return images to view in the image viewer.
+    /// - Parameter imageViewer: An object representing the image viewer requesting this information.
+    /// - Returns: Images to view in `imageViewer`.
     func images(in imageViewer: ImageViewerViewController) -> [UIImage]
+    
+    /// Asks the data source to return the source thumbnail view for the image viewer.
+    ///
+    /// The image viewer uses this thumbnail view for push or pop transitions.
+    /// On the push transition, an animation runs as the image expands from this thumbnail view. The reverse happens on the pop.
+    ///
+    /// If `nil`, the default animation runs on the transition.
+    ///
+    /// - Parameter imageViewer: An object representing the image viewer requesting this information.
+    /// - Returns: The source thumbnail view for `imageViewer`.
     func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
@@ -31,6 +46,7 @@ open class ImageViewerViewController: UIPageViewController {
     /// The data source of the image viewer object.
     open weak var imageViewerDataSource: (any ImageViewerDataSource)?
     
+    /// The current page of the image viewer.
     public var currentPage: Int {
         currentPageViewController.page
     }
