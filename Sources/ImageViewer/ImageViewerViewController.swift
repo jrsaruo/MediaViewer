@@ -16,7 +16,7 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Returns: Images to view in `imageViewer`.
     func images(in imageViewer: ImageViewerViewController) -> [UIImage]
     
-    /// Asks the data source to return the source thumbnail view for the image viewer.
+    /// Asks the data source to return the thumbnail view for the current page of the image viewer.
     ///
     /// The image viewer uses this thumbnail view for push or pop transitions.
     /// On the push transition, an animation runs as the image expands from this thumbnail view. The reverse happens on the pop.
@@ -24,8 +24,8 @@ public protocol ImageViewerDataSource: AnyObject {
     /// If `nil`, the default animation runs on the transition.
     ///
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
-    /// - Returns: The source thumbnail view for `imageViewer`.
-    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
+    /// - Returns: The thumbnail view for current page of `imageViewer`.
+    func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
 /// An image viewer.
@@ -194,7 +194,7 @@ open class ImageViewerViewController: UIPageViewController {
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
         // Check whether to transition interactively
-        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return }
+        guard let sourceThumbnailView = imageViewerDataSource?.thumbnailView(forCurrentPageOf: self) else { return }
         
         if recognizer.state == .began {
             // Start the interactive pop transition
@@ -270,7 +270,7 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return nil }
+        guard let sourceThumbnailView = imageViewerDataSource?.thumbnailView(forCurrentPageOf: self) else { return nil }
         return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
     }
     
