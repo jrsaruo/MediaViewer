@@ -9,6 +9,7 @@ import UIKit
 import Combine
 
 public protocol ImageViewerDataSource: AnyObject {
+    func images(in imageViewer: ImageViewerViewController) -> [UIImage]
     func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
