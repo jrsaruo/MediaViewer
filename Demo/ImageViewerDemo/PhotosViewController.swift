@@ -117,7 +117,7 @@ extension PhotosViewController: UICollectionViewDelegate {
 
 extension PhotosViewController: ImageViewerDataSource {
     
-    func sourceThumbnailView(for imageViewer: ImageViewerOnePageViewController) -> UIImageView? {
+    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView? {
         guard let indexPathForSelectedPhoto = collectionView.indexPathsForSelectedItems?.first,
               let selectedCell = collectionView.cellForItem(at: indexPathForSelectedPhoto) as? PhotoCell else {
             return nil

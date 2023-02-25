@@ -7,9 +7,24 @@
 
 import UIKit
 
+public protocol ImageViewerDataSource: AnyObject {
+    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
+}
+
 open class ImageViewerViewController: UIPageViewController {
     
-    open weak var imageViewerDataSource: ImageViewerDataSource?
+    /// The data source of the image viewer object.
+    open weak var imageViewerDataSource: (any ImageViewerDataSource)?
+    
+    private let singleTapRecognizer = UITapGestureRecognizer()
+    
+    private let panRecognizer: UIPanGestureRecognizer = {
+        let recognizer = UIPanGestureRecognizer()
+        recognizer.maximumNumberOfTouches = 1
+        return recognizer
+    }()
+    
+    private var interactivePopTransition: ImageViewerInteractivePopTransition?
     
     // MARK: Backups
     
@@ -44,6 +59,17 @@ open class ImageViewerViewController: UIPageViewController {
         
         navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
+        
+        setUpGestureRecognizers()
+    }
+    
+    private func setUpGestureRecognizers() {
+        singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
+        // TODO: Prefer double-tap over single-tap
+        view.addGestureRecognizer(singleTapRecognizer)
+        
+        panRecognizer.addTarget(self, action: #selector(panned))
+        view.addGestureRecognizer(panRecognizer)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -60,8 +86,51 @@ open class ImageViewerViewController: UIPageViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
         navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func backgroundTapped(recognizer: UITapGestureRecognizer) {
+        // TODO: Toggle the navigation bar visibility
+    }
+    
+    @objc
+    private func panned(recognizer: UIPanGestureRecognizer) {
+        // Check whether to transition interactively
+        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return }
+        
+        if recognizer.state == .began {
+            // Start the interactive pop transition
+            interactivePopTransition = .init(sourceThumbnailView: sourceThumbnailView)
+            navigationController?.popViewController(animated: true)
+        }
+        
+        interactivePopTransition?.panRecognized(by: recognizer)
+        
+        switch recognizer.state {
+        case .possible, .began, .changed:
+            break
+        case .ended, .cancelled, .failed:
+            interactivePopTransition = nil
+        @unknown default:
+            assertionFailure("Unknown state: \(recognizer.state)")
+            interactivePopTransition = nil
+        }
+    }
 }
 
 extension ImageViewerViewController: UINavigationControllerDelegate {
     
+    public func navigationController(_ navigationController: UINavigationController,
+                                     animationControllerFor operation: UINavigationController.Operation,
+                                     from fromVC: UIViewController,
+                                     to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
+        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return nil }
+        return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
+    }
+    
+    public func navigationController(_ navigationController: UINavigationController,
+                                     interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
+        return interactivePopTransition
+    }
 }

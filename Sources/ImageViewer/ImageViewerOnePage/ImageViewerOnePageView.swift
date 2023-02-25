@@ -9,14 +9,6 @@ import UIKit
 
 final class ImageViewerOnePageView: UIView {
     
-    let singleTapRecognizer = UITapGestureRecognizer()
-    
-    let panRecognizer: UIPanGestureRecognizer = {
-        let recognizer = UIPanGestureRecognizer()
-        recognizer.maximumNumberOfTouches = 1
-        return recognizer
-    }()
-    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
@@ -53,8 +45,6 @@ final class ImageViewerOnePageView: UIView {
     
     private func setUpViews() {
         backgroundColor = .black
-        addGestureRecognizer(singleTapRecognizer)
-        addGestureRecognizer(panRecognizer)
         
         // Subviews
         scrollView.delegate = self
@@ -64,8 +54,6 @@ final class ImageViewerOnePageView: UIView {
         doubleTapRecognizer.numberOfTapsRequired = 2
         imageView.addGestureRecognizer(doubleTapRecognizer)
         scrollView.addSubview(imageView)
-        
-        singleTapRecognizer.require(toFail: doubleTapRecognizer)
         
         // Layout
         scrollView.translatesAutoresizingMaskIntoConstraints = false
