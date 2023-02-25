@@ -58,15 +58,17 @@ open class ImageViewerViewController: UIPageViewController {
     // MARK: - Initializers
     
     /// Creates a new viewer.
-    /// - Parameter image: The image you want to view.
-    public init(image: UIImage) {
+    /// - Parameters:
+    ///   - image: The image you want to view.
+    ///   - page: The page number of the image.
+    public init(image: UIImage, page: Int) {
         super.init(transitionStyle: .scroll,
                    navigationOrientation: .horizontal,
                    options: [
                     .interPageSpacing: 16,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
-        let imageViewer = ImageViewerOnePageViewController(image: image)
+        let imageViewer = ImageViewerOnePageViewController(image: image, page: page)
         setViewControllers([imageViewer], direction: .forward, animated: false)
     }
     
@@ -197,20 +199,32 @@ open class ImageViewerViewController: UIPageViewController {
 extension ImageViewerViewController: UIPageViewControllerDataSource {
     
     public func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        // TODO: Return the number of images
-        1
+        guard let images = imageViewerDataSource?.images(in: self) else { return 0 }
+        return images.count
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController,
                                    viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        // TODO: Return ImageViewerOnePageViewController for the previous image
-        nil
+        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
+        guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
+            assertionFailure("Unknown view controller: \(viewController)")
+            return nil
+        }
+        let previousPage = imageViewerPageVC.page - 1
+        guard images.indices.contains(previousPage) else { return nil }
+        return ImageViewerOnePageViewController(image: images[previousPage], page: previousPage)
     }
     
     public func pageViewController(_ pageViewController: UIPageViewController,
                                    viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        // TODO: Return ImageViewerOnePageViewController for the next image
-        nil
+        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
+        guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
+            assertionFailure("Unknown view controller: \(viewController)")
+            return nil
+        }
+        let nextPage = imageViewerPageVC.page + 1
+        guard images.indices.contains(nextPage) else { return nil }
+        return ImageViewerOnePageViewController(image: images[nextPage], page: nextPage)
     }
 }
 

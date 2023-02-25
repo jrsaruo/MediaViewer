@@ -10,6 +10,7 @@ import UIKit
 final class ImageViewerOnePageViewController: UIViewController {
     
     let imageViewerOnePageView: ImageViewerOnePageView
+    let page: Int
     
     let imageDoubleTapRecognizer: UITapGestureRecognizer = {
         let recognizer = UITapGestureRecognizer()
@@ -19,8 +20,9 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     // MARK: - Initializers
     
-    init(image: UIImage) {
+    init(image: UIImage, page: Int) {
         self.imageViewerOnePageView = ImageViewerOnePageView(image: image)
+        self.page = page
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -28,6 +30,7 @@ final class ImageViewerOnePageViewController: UIViewController {
     required init?(coder: NSCoder) {
         guard let onePageView = ImageViewerOnePageView(coder: coder) else { return nil }
         self.imageViewerOnePageView = onePageView
+        self.page = 0
         super.init(coder: coder)
     }
     
