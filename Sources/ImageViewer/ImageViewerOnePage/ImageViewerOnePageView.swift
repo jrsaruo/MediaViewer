@@ -12,7 +12,7 @@ final class ImageViewerOnePageView: UIView {
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
-        scrollView.maximumZoomScale = 5
+        scrollView.maximumZoomScale = 50
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
@@ -84,7 +84,18 @@ final class ImageViewerOnePageView: UIView {
     func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
         if scrollView.zoomScale == 1 {
             let location = doubleTapRecognizer.location(in: imageView)
-            scrollView.zoom(to: CGRect(origin: location, size: .zero), animated: true)
+            // Simulate the standard Photos app zoom
+            let zoomAreaHeight: CGFloat
+            if imageView.bounds.width > imageView.bounds.height {
+                zoomAreaHeight = imageView.bounds.height
+            } else {
+                zoomAreaHeight = imageView.bounds.height * 2 / 3
+            }
+            let zoomArea = CGRect(x: location.x,
+                                  y: location.y - zoomAreaHeight / 2,
+                                  width: 0,
+                                  height: zoomAreaHeight)
+            scrollView.zoom(to: zoomArea, animated: true)
         } else {
             scrollView.setZoomScale(1, animated: true)
         }
