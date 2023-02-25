@@ -48,12 +48,8 @@ final class ImageViewerOnePageView: UIView {
         
         // Subviews
         scrollView.delegate = self
-        addSubview(scrollView)
-        
-        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageDoubleTapped))
-        doubleTapRecognizer.numberOfTapsRequired = 2
-        imageView.addGestureRecognizer(doubleTapRecognizer)
         scrollView.addSubview(imageView)
+        addSubview(scrollView)
         
         // Layout
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -84,6 +80,15 @@ final class ImageViewerOnePageView: UIView {
     }
     
     // MARK: - Methods
+    
+    func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
+        if scrollView.zoomScale == 1 {
+            let location = doubleTapRecognizer.location(in: imageView)
+            scrollView.zoom(to: CGRect(origin: location, size: .zero), animated: true)
+        } else {
+            scrollView.setZoomScale(1, animated: true)
+        }
+    }
     
     func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsToBeDeactivatedDuringTransition)
@@ -140,18 +145,6 @@ final class ImageViewerOnePageView: UIView {
                                                left: horizontalMargin,
                                                bottom: verticalMargin,
                                                right: horizontalMargin)
-    }
-    
-    // MARK: - Actions
-    
-    @objc
-    private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
-        if scrollView.zoomScale == 1 {
-            let location = recognizer.location(in: imageView)
-            scrollView.zoom(to: CGRect(origin: location, size: .zero), animated: true)
-        } else {
-            scrollView.setZoomScale(1, animated: true)
-        }
     }
 }
 

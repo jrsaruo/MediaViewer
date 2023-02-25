@@ -22,6 +22,12 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     let imageViewerOnePageView: ImageViewerOnePageView
     
+    let imageDoubleTapRecognizer: UITapGestureRecognizer = {
+        let recognizer = UITapGestureRecognizer()
+        recognizer.numberOfTapsRequired = 2
+        return recognizer
+    }()
+    
     // MARK: - Initializers
     
     /// Creates a new viewer.
@@ -42,5 +48,22 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     override func loadView() {
         view = imageViewerOnePageView
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setUpGestureRecognizers()
+    }
+    
+    private func setUpGestureRecognizers() {
+        imageDoubleTapRecognizer.addTarget(self, action: #selector(imageDoubleTapped))
+        imageViewerOnePageView.imageView.addGestureRecognizer(imageDoubleTapRecognizer)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
+        imageViewerOnePageView.updateZoomScaleOnDoubleTap(recognizedBy: recognizer)
     }
 }

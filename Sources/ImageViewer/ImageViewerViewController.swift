@@ -65,6 +65,8 @@ open class ImageViewerViewController: UIPageViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
+        delegate = self
+        
         guard let navigationController else {
             preconditionFailure("ImageViewerOnePageViewController must be embedded in UINavigationController.")
         }
@@ -78,7 +80,6 @@ open class ImageViewerViewController: UIPageViewController {
     
     private func setUpGestureRecognizers() {
         singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
-        // TODO: Prefer double-tap over single-tap
         view.addGestureRecognizer(singleTapRecognizer)
         
         panRecognizer.addTarget(self, action: #selector(panned))
@@ -129,6 +130,23 @@ open class ImageViewerViewController: UIPageViewController {
         true
     }
     
+    open override func setViewControllers(_ viewControllers: [UIViewController]?,
+                                          direction: UIPageViewController.NavigationDirection,
+                                          animated: Bool,
+                                          completion: ((Bool) -> Void)? = nil) {
+        super.setViewControllers(viewControllers,
+                                 direction: direction,
+                                 animated: animated,
+                                 completion: completion)
+        pageDidChange()
+    }
+    
+    // MARK: - Methods
+    
+    private func pageDidChange() {
+        singleTapRecognizer.require(toFail: currentPageViewController.imageDoubleTapRecognizer)
+    }
+    
     // MARK: - Actions
     
     @objc
@@ -160,6 +178,22 @@ open class ImageViewerViewController: UIPageViewController {
         }
     }
 }
+
+// MARK: - UIPageViewControllerDelegate -
+
+extension ImageViewerViewController: UIPageViewControllerDelegate {
+    
+    public func pageViewController(_ pageViewController: UIPageViewController,
+                                   didFinishAnimating finished: Bool,
+                                   previousViewControllers: [UIViewController],
+                                   transitionCompleted completed: Bool) {
+        if completed {
+            pageDidChange()
+        }
+    }
+}
+
+// MARK: - UINavigationControllerDelegate -
 
 extension ImageViewerViewController: UINavigationControllerDelegate {
     
