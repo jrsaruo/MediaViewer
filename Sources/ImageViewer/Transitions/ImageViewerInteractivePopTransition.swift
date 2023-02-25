@@ -120,12 +120,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         return imageViewer.currentPageViewController.imageViewerOnePageView
     }
     
-    func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let animator, let transitionContext else {
-            // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
-            return
-        }
-        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+    func panRecognized(by recognizer: UIPanGestureRecognizer,
+                       in imageViewer: ImageViewerViewController) {
+        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView
         
         switch recognizer.state {
@@ -136,6 +133,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
         case .changed:
+            guard let animator, let transitionContext else {
+                // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
+                return
+            }
             let translation = recognizer.translation(in: currentPageView)
             let transitionProgress = translation.y / currentPageView.bounds.height
             

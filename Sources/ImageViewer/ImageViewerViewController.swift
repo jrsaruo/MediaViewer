@@ -203,7 +203,7 @@ open class ImageViewerViewController: UIPageViewController {
             navigationController?.popViewController(animated: true)
         }
         
-        interactivePopTransition?.panRecognized(by: recognizer)
+        interactivePopTransition?.panRecognized(by: recognizer, in: self)
         
         switch recognizer.state {
         case .possible, .began, .changed:
