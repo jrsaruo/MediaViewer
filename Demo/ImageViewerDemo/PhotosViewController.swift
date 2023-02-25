@@ -106,7 +106,7 @@ extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let photo = dataSource.itemIdentifier(for: indexPath)!
-        let imageViewer = ImageViewerViewController(image: photo)
+        let imageViewer = ImageViewerOnePageViewController(image: photo)
         imageViewer.dataSource = self
         navigationController?.delegate = imageViewer
         navigationController?.pushViewController(imageViewer, animated: true)
@@ -117,7 +117,7 @@ extension PhotosViewController: UICollectionViewDelegate {
 
 extension PhotosViewController: ImageViewerDataSource {
     
-    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView? {
+    func sourceThumbnailView(for imageViewer: ImageViewerOnePageViewController) -> UIImageView? {
         guard let indexPathForSelectedPhoto = collectionView.indexPathsForSelectedItems?.first,
               let selectedCell = collectionView.cellForItem(at: indexPathForSelectedPhoto) as? PhotoCell else {
             return nil

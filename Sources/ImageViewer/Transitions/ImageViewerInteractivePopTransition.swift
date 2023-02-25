@@ -17,7 +17,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     // MARK: Backups
     
     private var thumbnailHiddenBackup = false
-    private var imageViewerImageFrameInContainerBackup = CGRect.null
+    private var onePageImageFrameInContainerBackup = CGRect.null
     
     // MARK: - Initializers
     
@@ -30,32 +30,32 @@ final class ImageViewerInteractivePopTransition: NSObject {
 extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
-        guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView,
+        guard let onePageView = transitionContext.view(forKey: .from) as? ImageViewerOnePageView,
               let toView = transitionContext.view(forKey: .to) else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
-        let imageViewerImageView = imageViewerView.imageView
+        let onePageImageView = onePageView.imageView
         
         // Back up
         thumbnailHiddenBackup = sourceThumbnailView.isHidden
-        imageViewerImageFrameInContainerBackup = containerView.convert(imageViewerImageView.frame,
-                                                                       from: imageViewerImageView)
+        onePageImageFrameInContainerBackup = containerView.convert(onePageImageView.frame,
+                                                                   from: onePageImageView)
         
         // Prepare for transition
-        imageViewerView.destroyLayoutConfigurationBeforeTransition()
-        imageViewerImageView.frame = imageViewerImageFrameInContainerBackup
+        onePageView.destroyLayoutConfigurationBeforeTransition()
+        onePageImageView.frame = onePageImageFrameInContainerBackup
         
         containerView.addSubview(toView)
-        containerView.addSubview(imageViewerView)
-        containerView.addSubview(imageViewerImageView)
+        containerView.addSubview(onePageView)
+        containerView.addSubview(onePageImageView)
         
         sourceThumbnailView.isHidden = true
         
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            imageViewerView.alpha = 0
+            onePageView.alpha = 0
         }
     }
     
@@ -67,20 +67,20 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let containerView = transitionContext.containerView
-        let imageViewerView = imageViewerView(from: transitionContext)
-        let imageViewerImageView = imageViewerView.imageView
+        let onePageView = onePageView(from: transitionContext)
+        let onePageImageView = onePageView.imageView
         
         let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             let thumbnailFrameInContainer = containerView.convert(self.sourceThumbnailView.frame,
                                                                   from: self.sourceThumbnailView)
-            imageViewerImageView.frame = thumbnailFrameInContainer
-            imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
-            imageViewerImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
+            onePageImageView.frame = thumbnailFrameInContainer
+            onePageImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
+            onePageImageView.layer.masksToBounds = true // TODO: Change according to the thumbnail configuration
         }
         finishAnimator.addCompletion { _ in
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
-            imageViewerView.removeFromSuperview()
-            imageViewerImageView.removeFromSuperview()
+            onePageView.removeFromSuperview()
+            onePageImageView.removeFromSuperview()
             transitionContext.completeTransition(true)
         }
         finishAnimator.startAnimation()
@@ -94,36 +94,36 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.isReversed = true
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
-        let imageViewerView = imageViewerView(from: transitionContext)
-        let imageViewerImageView = imageViewerView.imageView
+        let onePageView = onePageView(from: transitionContext)
+        let onePageImageView = onePageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            imageViewerImageView.frame = self.imageViewerImageFrameInContainerBackup
+            onePageImageView.frame = self.onePageImageFrameInContainerBackup
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
-            imageViewerImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
-            imageViewerImageView.transform = .identity
-            imageViewerView.restoreLayoutConfigurationAfterTransition()
+            onePageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
+            onePageImageView.transform = .identity
+            onePageView.restoreLayoutConfigurationAfterTransition()
             
             transitionContext.completeTransition(false)
         }
         cancelAnimator.startAnimation()
     }
     
-    private func imageViewerView(from transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerView {
-        guard let imageViewerView = transitionContext.view(forKey: .from) as? ImageViewerView else {
+    private func onePageView(from transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerOnePageView {
+        guard let onePageView = transitionContext.view(forKey: .from) as? ImageViewerOnePageView else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
-        return imageViewerView
+        return onePageView
     }
     
     func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let imageViewerView = recognizer.view as? ImageViewerView else {
+        guard let onePageView = recognizer.view as? ImageViewerOnePageView else {
             preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
         }
-        let panningImageView = imageViewerView.imageView
+        let panningImageView = onePageView.imageView
         
         switch recognizer.state {
         case .possible, .began:
@@ -137,8 +137,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
                 return
             }
-            let translation = recognizer.translation(in: imageViewerView)
-            let transitionProgress = translation.y / imageViewerView.bounds.height
+            let translation = recognizer.translation(in: onePageView)
+            let transitionProgress = translation.y / onePageView.bounds.height
             
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)

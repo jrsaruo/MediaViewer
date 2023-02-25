@@ -1,5 +1,5 @@
 //
-//  ImageViewerViewController.swift
+//  ImageViewerOnePageViewController.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -9,29 +9,29 @@ import UIKit
 import Combine
 
 public protocol ImageViewerDataSource: AnyObject {
-    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
+    func sourceThumbnailView(for imageViewer: ImageViewerOnePageViewController) -> UIImageView?
 }
 
 /// An image viewer.
 ///
-/// It is recommended to set your `ImageViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+/// It is recommended to set your `ImageViewerOnePageViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
 /// ```swift
-/// let imageViewer = ImageViewerViewController(image: imageToView)
+/// let imageViewer = ImageViewerOnePageViewController(image: imageToView)
 /// imageViewer.dataSource = self
 /// navigationController?.delegate = imageViewer
 /// navigationController?.pushViewController(imageViewer, animated: true)
 /// ```
 ///
-/// - Note: `ImageViewerViewController` must be used in `UINavigationController`.
-open class ImageViewerViewController: UIViewController {
+/// - Note: `ImageViewerOnePageViewController` must be used in `UINavigationController`.
+open class ImageViewerOnePageViewController: UIViewController {
     
     private var cancellables: Set<AnyCancellable> = []
     
     /// The data source of the image viewer object.
     open weak var dataSource: (any ImageViewerDataSource)?
     
-    let imageViewerView: ImageViewerView
-    private let imageViewerVM = ImageViewerViewModel()
+    let imageViewerOnePageView: ImageViewerOnePageView
+    private let imageViewerOnePageVM = ImageViewerOnePageViewModel()
     
     private var interactivePopTransition: ImageViewerInteractivePopTransition?
     
@@ -45,14 +45,14 @@ open class ImageViewerViewController: UIViewController {
     /// Creates a new viewer.
     /// - Parameter image: The image you want to view.
     public init(image: UIImage) {
-        self.imageViewerView = ImageViewerView(image: image)
+        self.imageViewerOnePageView = ImageViewerOnePageView(image: image)
         super.init(nibName: nil, bundle: nil)
     }
     
     @available(*, unavailable, message: "init(coder:) is not supported.")
     required public init?(coder: NSCoder) {
-        guard let imageViewerView = ImageViewerView(coder: coder) else { return nil }
-        self.imageViewerView = imageViewerView
+        guard let onePageView = ImageViewerOnePageView(coder: coder) else { return nil }
+        self.imageViewerOnePageView = onePageView
         super.init(coder: coder)
     }
     
@@ -65,14 +65,14 @@ open class ImageViewerViewController: UIViewController {
     // MARK: - Lifecycle
     
     open override func loadView() {
-        view = imageViewerView
+        view = imageViewerOnePageView
     }
     
     open override func viewDidLoad() {
         super.viewDidLoad()
         
         guard let navigationController else {
-            preconditionFailure("ImageViewerViewController must be embedded in UINavigationController.")
+            preconditionFailure("ImageViewerOnePageViewController must be embedded in UINavigationController.")
         }
         
         navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
@@ -84,12 +84,12 @@ open class ImageViewerViewController: UIViewController {
     
     private func setUpViews() {
         // Subviews
-        imageViewerView.singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
-        imageViewerView.panRecognizer.addTarget(self, action: #selector(panned))
+        imageViewerOnePageView.singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
+        imageViewerOnePageView.panRecognizer.addTarget(self, action: #selector(panned))
     }
     
     private func setUpSubscriptions() {
-        imageViewerVM.$showsImageOnly
+        imageViewerOnePageVM.$showsImageOnly
             .sink { [weak self] showsImageOnly in
                 guard let self else { return }
                 let animator = UIViewPropertyAnimator(duration: UINavigationController.hideShowBarDuration,
@@ -130,7 +130,7 @@ open class ImageViewerViewController: UIViewController {
     
     @objc
     private func backgroundTapped(recognizer: UITapGestureRecognizer) {
-        imageViewerVM.showsImageOnly.toggle()
+        imageViewerOnePageVM.showsImageOnly.toggle()
     }
     
     @objc
@@ -160,7 +160,7 @@ open class ImageViewerViewController: UIViewController {
 
 // MARK: - UINavigationControllerDelegate -
 
-extension ImageViewerViewController: UINavigationControllerDelegate {
+extension ImageViewerOnePageViewController: UINavigationControllerDelegate {
     
     public func navigationController(_ navigationController: UINavigationController,
                                      animationControllerFor operation: UINavigationController.Operation,

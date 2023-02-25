@@ -49,53 +49,53 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     }
     
     private func animatePushTransition(using transitionContext: any UIViewControllerContextTransitioning) {
-        guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
-              let imageViewerView = transitionContext.view(forKey: .to) as? ImageViewerView
+        guard let imageViewerOnePage = transitionContext.viewController(forKey: .to) as? ImageViewerOnePageViewController,
+              let onePageView = transitionContext.view(forKey: .to) as? ImageViewerOnePageView
         else {
             assertionFailure("\(Self.self) works only with the push/pop animation for ImageViewerViewController.")
             transitionContext.completeTransition(false)
             return
         }
         let containerView = transitionContext.containerView
-        containerView.addSubview(imageViewerView)
+        containerView.addSubview(onePageView)
         
         // Back up
         let thumbnailHiddenBackup = sourceThumbnailView.isHidden
         
         // Prepare for transition
-        imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
-        imageViewerView.alpha = 0
-        imageViewerView.layoutIfNeeded()
+        onePageView.frame = transitionContext.finalFrame(for: imageViewerOnePage)
+        onePageView.alpha = 0
+        onePageView.layoutIfNeeded()
         
-        let imageViewerImageView = imageViewerView.imageView
-        let configurationBackup = imageViewerImageView.transitioningConfiguration
-        let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
-                                                                     from: imageViewerImageView)
+        let onePageImageView = onePageView.imageView
+        let configurationBackup = onePageImageView.transitioningConfiguration
+        let onePageImageFrameInContainer = containerView.convert(onePageImageView.frame,
+                                                                 from: onePageImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
-        imageViewerView.destroyLayoutConfigurationBeforeTransition()
-        imageViewerImageView.transitioningConfiguration = sourceThumbnailView.transitioningConfiguration
-        imageViewerImageView.frame = thumbnailFrameInContainer
-        imageViewerImageView.layer.masksToBounds = true
-        containerView.addSubview(imageViewerImageView)
+        onePageView.destroyLayoutConfigurationBeforeTransition()
+        onePageImageView.transitioningConfiguration = sourceThumbnailView.transitioningConfiguration
+        onePageImageView.frame = thumbnailFrameInContainer
+        onePageImageView.layer.masksToBounds = true
+        containerView.addSubview(onePageImageView)
         sourceThumbnailView.isHidden = true
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.72) {
-            imageViewerView.alpha = 1
-            imageViewerImageView.frame = imageViewerImageFrameInContainer
-            imageViewerImageView.transitioningConfiguration = configurationBackup
+            onePageView.alpha = 1
+            onePageImageView.frame = onePageImageFrameInContainer
+            onePageImageView.transitioningConfiguration = configurationBackup
             
             // NOTE: Keep following properties during transition for smooth animation
-            imageViewerImageView.contentMode = self.sourceThumbnailView.contentMode
-            imageViewerImageView.layer.masksToBounds = true
+            onePageImageView.contentMode = self.sourceThumbnailView.contentMode
+            onePageImageView.layer.masksToBounds = true
         }
         animator.addCompletion { position in
             switch position {
             case .end:
-                imageViewerImageView.transitioningConfiguration = configurationBackup
-                imageViewerView.restoreLayoutConfigurationAfterTransition()
+                onePageImageView.transitioningConfiguration = configurationBackup
+                onePageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
             case .start, .current:
@@ -109,7 +109,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     }
     
     private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
+        guard let imageViewerOnePage = transitionContext.viewController(forKey: .from) as? ImageViewerOnePageViewController,
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to)
         else {
@@ -128,28 +128,28 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         toView.alpha = 0
         toVC.view.layoutIfNeeded()
         
-        let imageViewerImageView = imageViewer.imageViewerView.imageView
-        let imageViewerImageFrameInContainer = containerView.convert(imageViewerImageView.frame,
-                                                                     from: imageViewerImageView)
+        let onePageImageView = imageViewerOnePage.imageViewerOnePageView.imageView
+        let imageViewerImageFrameInContainer = containerView.convert(onePageImageView.frame,
+                                                                     from: onePageImageView)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
-        imageViewer.imageViewerView.destroyLayoutConfigurationBeforeTransition()
-        imageViewerImageView.frame = imageViewerImageFrameInContainer
-        containerView.addSubview(imageViewerImageView)
+        imageViewerOnePage.imageViewerOnePageView.destroyLayoutConfigurationBeforeTransition()
+        onePageImageView.frame = imageViewerImageFrameInContainer
+        containerView.addSubview(onePageImageView)
         sourceThumbnailView.isHidden = true
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             toView.alpha = 1
-            imageViewerImageView.frame = thumbnailFrameInContainer
-            imageViewerImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
-            imageViewerImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
+            onePageImageView.frame = thumbnailFrameInContainer
+            onePageImageView.transitioningConfiguration = self.sourceThumbnailView.transitioningConfiguration
+            onePageImageView.clipsToBounds = true // TODO: Change according to the thumbnail configuration
         }
         animator.addCompletion { position in
             switch position {
             case .end:
-                imageViewerImageView.removeFromSuperview()
+                onePageImageView.removeFromSuperview()
                 self.sourceThumbnailView.isHidden = thumbnailHiddenBackup
                 transitionContext.completeTransition(true)
             case .start, .current:

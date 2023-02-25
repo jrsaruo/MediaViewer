@@ -19,7 +19,7 @@ open class ImageViewerPageViewController: UIPageViewController {
                     .interPageSpacing: 16,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
-        let imageViewer = ImageViewerViewController(image: image)
+        let imageViewer = ImageViewerOnePageViewController(image: image)
         setViewControllers([imageViewer], direction: .forward, animated: false)
     }
     

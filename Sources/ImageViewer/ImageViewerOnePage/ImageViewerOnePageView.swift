@@ -1,5 +1,5 @@
 //
-//  ImageViewerView.swift
+//  ImageViewerOnePageView.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ImageViewerView: UIView {
+final class ImageViewerOnePageView: UIView {
     
     let singleTapRecognizer = UITapGestureRecognizer()
     
@@ -167,7 +167,7 @@ final class ImageViewerView: UIView {
     }
 }
 
-extension ImageViewerView: UIScrollViewDelegate {
+extension ImageViewerOnePageView: UIScrollViewDelegate {
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView
