@@ -115,7 +115,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     
     private func imageViewerCurrentPageView(in transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerOnePageView {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
-            preconditionFailure("\(Self.self) works only with the pop animation for ImageViewerViewController.")
+            preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
         return imageViewer.currentPageViewController.imageViewerOnePageView
     }

@@ -82,7 +82,7 @@ open class ImageViewerViewController: UIPageViewController {
         delegate = self
         
         guard let navigationController else {
-            preconditionFailure("ImageViewerOnePageViewController must be embedded in UINavigationController.")
+            preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
         }
         
         navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance

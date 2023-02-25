@@ -52,7 +52,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .to)
         else {
-            assertionFailure("\(Self.self) works only with the push/pop animation for ImageViewerViewController.")
+            assertionFailure("\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self).")
             transitionContext.completeTransition(false)
             return
         }
@@ -114,7 +114,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to)
         else {
-            assertionFailure("\(Self.self) works only with the push/pop animation for ImageViewerViewController.")
+            assertionFailure("\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self).")
             transitionContext.completeTransition(false)
             return
         }
