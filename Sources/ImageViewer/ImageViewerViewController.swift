@@ -8,8 +8,24 @@
 import UIKit
 import Combine
 
+/// The object you use to provide data for an image viewer.
 public protocol ImageViewerDataSource: AnyObject {
-    func sourceThumbnailView(for imageViewer: ImageViewerViewController) -> UIImageView?
+    
+    /// Asks the data source to return images to view in the image viewer.
+    /// - Parameter imageViewer: An object representing the image viewer requesting this information.
+    /// - Returns: Images to view in `imageViewer`.
+    func images(in imageViewer: ImageViewerViewController) -> [UIImage]
+    
+    /// Asks the data source to return the thumbnail view for the current page of the image viewer.
+    ///
+    /// The image viewer uses this thumbnail view for push or pop transitions.
+    /// On the push transition, an animation runs as the image expands from this thumbnail view. The reverse happens on the pop.
+    ///
+    /// If `nil`, the default animation runs on the transition.
+    ///
+    /// - Parameter imageViewer: An object representing the image viewer requesting this information.
+    /// - Returns: The thumbnail view for current page of `imageViewer`.
+    func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
 /// An image viewer.
@@ -29,6 +45,11 @@ open class ImageViewerViewController: UIPageViewController {
     
     /// The data source of the image viewer object.
     open weak var imageViewerDataSource: (any ImageViewerDataSource)?
+    
+    /// The current page of the image viewer.
+    public var currentPage: Int {
+        currentPageViewController.page
+    }
     
     var currentPageViewController: ImageViewerOnePageViewController {
         guard let imageViewerOnePage = viewControllers?.first as? ImageViewerOnePageViewController else {
@@ -57,15 +78,17 @@ open class ImageViewerViewController: UIPageViewController {
     // MARK: - Initializers
     
     /// Creates a new viewer.
-    /// - Parameter image: The image you want to view.
-    public init(image: UIImage) {
+    /// - Parameters:
+    ///   - image: The image you want to view.
+    ///   - page: The page number of the image.
+    public init(image: UIImage, page: Int) {
         super.init(transitionStyle: .scroll,
                    navigationOrientation: .horizontal,
                    options: [
                     .interPageSpacing: 16,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
-        let imageViewer = ImageViewerOnePageViewController(image: image)
+        let imageViewer = ImageViewerOnePageViewController(image: image, page: page)
         setViewControllers([imageViewer], direction: .forward, animated: false)
     }
     
@@ -171,7 +194,7 @@ open class ImageViewerViewController: UIPageViewController {
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
         // Check whether to transition interactively
-        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return }
+        guard let sourceThumbnailView = imageViewerDataSource?.thumbnailView(forCurrentPageOf: self) else { return }
         
         if recognizer.state == .began {
             // Start the interactive pop transition
@@ -193,23 +216,37 @@ open class ImageViewerViewController: UIPageViewController {
     }
 }
 
+// MARK: - UIPageViewControllerDataSource -
+
 extension ImageViewerViewController: UIPageViewControllerDataSource {
     
-    public func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        // TODO: Return the number of images
-        1
+    open func presentationCount(for pageViewController: UIPageViewController) -> Int {
+        guard let images = imageViewerDataSource?.images(in: self) else { return 0 }
+        return images.count
     }
     
-    public func pageViewController(_ pageViewController: UIPageViewController,
-                                   viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        // TODO: Return ImageViewerOnePageViewController for the previous image
-        nil
+    open func pageViewController(_ pageViewController: UIPageViewController,
+                                 viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
+        guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
+            assertionFailure("Unknown view controller: \(viewController)")
+            return nil
+        }
+        let previousPage = imageViewerPageVC.page - 1
+        guard images.indices.contains(previousPage) else { return nil }
+        return ImageViewerOnePageViewController(image: images[previousPage], page: previousPage)
     }
     
-    public func pageViewController(_ pageViewController: UIPageViewController,
-                                   viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        // TODO: Return ImageViewerOnePageViewController for the next image
-        nil
+    open func pageViewController(_ pageViewController: UIPageViewController,
+                                 viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
+        guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
+            assertionFailure("Unknown view controller: \(viewController)")
+            return nil
+        }
+        let nextPage = imageViewerPageVC.page + 1
+        guard images.indices.contains(nextPage) else { return nil }
+        return ImageViewerOnePageViewController(image: images[nextPage], page: nextPage)
     }
 }
 
@@ -217,10 +254,10 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
 
 extension ImageViewerViewController: UIPageViewControllerDelegate {
     
-    public func pageViewController(_ pageViewController: UIPageViewController,
-                                   didFinishAnimating finished: Bool,
-                                   previousViewControllers: [UIViewController],
-                                   transitionCompleted completed: Bool) {
+    open func pageViewController(_ pageViewController: UIPageViewController,
+                                 didFinishAnimating finished: Bool,
+                                 previousViewControllers: [UIViewController],
+                                 transitionCompleted completed: Bool) {
         if completed {
             pageDidChange()
         }
@@ -235,7 +272,7 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        guard let sourceThumbnailView = imageViewerDataSource?.sourceThumbnailView(for: self) else { return nil }
+        guard let sourceThumbnailView = imageViewerDataSource?.thumbnailView(forCurrentPageOf: self) else { return nil }
         return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
     }
     
