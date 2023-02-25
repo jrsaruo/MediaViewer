@@ -35,11 +35,6 @@ open class ImageViewerOnePageViewController: UIViewController {
     
     private var interactivePopTransition: ImageViewerInteractivePopTransition?
     
-    // MARK: - Backups
-    
-    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
-    private var navigationBarHiddenBackup = false
-    
     // MARK: - Initializers
     
     /// Creates a new viewer.
@@ -70,13 +65,6 @@ open class ImageViewerOnePageViewController: UIViewController {
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        
-        guard let navigationController else {
-            preconditionFailure("ImageViewerOnePageViewController must be embedded in UINavigationController.")
-        }
-        
-        navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
-        navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpViews()
         setUpSubscriptions()
@@ -109,21 +97,6 @@ open class ImageViewerOnePageViewController: UIViewController {
                 animator.startAnimation()
             }
             .store(in: &cancellables)
-    }
-    
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithDefaultBackground()
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
-    }
-    
-    open override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
-        navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
     
     // MARK: - Actions
