@@ -85,11 +85,12 @@ open class ImageViewerViewController: UIPageViewController {
         super.init(transitionStyle: .scroll,
                    navigationOrientation: .horizontal,
                    options: [
-                    .interPageSpacing: 16,
+                    .interPageSpacing: 40,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
-        let imageViewer = ImageViewerOnePageViewController(image: image, page: page)
-        setViewControllers([imageViewer], direction: .forward, animated: false)
+        let imageViewerPage = ImageViewerOnePageViewController(image: image, page: page)
+        imageViewerPage.delegate = self
+        setViewControllers([imageViewerPage], direction: .forward, animated: false)
     }
     
     required public init?(coder: NSCoder) {
@@ -202,7 +203,7 @@ open class ImageViewerViewController: UIPageViewController {
             navigationController?.popViewController(animated: true)
         }
         
-        interactivePopTransition?.panRecognized(by: recognizer)
+        interactivePopTransition?.panRecognized(by: recognizer, in: self)
         
         switch recognizer.state {
         case .possible, .began, .changed:
@@ -213,6 +214,16 @@ open class ImageViewerViewController: UIPageViewController {
             assertionFailure("Unknown state: \(recognizer.state)")
             interactivePopTransition = nil
         }
+    }
+}
+
+// MARK: - ImageViewerOnePageViewControllerDelegate -
+
+extension ImageViewerViewController: ImageViewerOnePageViewControllerDelegate {
+    
+    func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
+                         didDoubleTap imageView: UIImageView) {
+        imageViewerVM.showsImageOnly = true
     }
 }
 
@@ -227,26 +238,37 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
     
     open func pageViewController(_ pageViewController: UIPageViewController,
                                  viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
         guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
         let previousPage = imageViewerPageVC.page - 1
-        guard images.indices.contains(previousPage) else { return nil }
-        return ImageViewerOnePageViewController(image: images[previousPage], page: previousPage)
+        if let previousPageVC = makeImageViewerPage(forPage: previousPage) {
+            return previousPageVC
+        }
+        return nil
     }
     
     open func pageViewController(_ pageViewController: UIPageViewController,
                                  viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let images = imageViewerDataSource?.images(in: self) else { return nil }
         guard let imageViewerPageVC = viewController as? ImageViewerOnePageViewController else {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
         let nextPage = imageViewerPageVC.page + 1
-        guard images.indices.contains(nextPage) else { return nil }
-        return ImageViewerOnePageViewController(image: images[nextPage], page: nextPage)
+        if let nextPageVC = makeImageViewerPage(forPage: nextPage) {
+            return nextPageVC
+        }
+        return nil
+    }
+    
+    private func makeImageViewerPage(forPage page: Int) -> ImageViewerOnePageViewController? {
+        guard let images = imageViewerDataSource?.images(in: self),
+              images.indices.contains(page) else { return nil }
+        let imageViewerPage = ImageViewerOnePageViewController(image: images[page],
+                                                               page: page)
+        imageViewerPage.delegate = self
+        return imageViewerPage
     }
 }
 

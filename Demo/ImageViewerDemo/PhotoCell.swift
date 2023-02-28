@@ -10,11 +10,7 @@ import AceLayout
 
 final class PhotoCell: UICollectionViewCell {
     
-    let imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.backgroundColor = .secondarySystemBackground
-        return imageView
-    }()
+    let imageView = UIImageView()
     
     // MARK: - Initializers
     

@@ -120,12 +120,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         return imageViewer.currentPageViewController.imageViewerOnePageView
     }
     
-    func panRecognized(by recognizer: UIPanGestureRecognizer) {
-        guard let animator, let transitionContext else {
-            // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
-            return
-        }
-        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+    func panRecognized(by recognizer: UIPanGestureRecognizer,
+                       in imageViewer: ImageViewerViewController) {
+        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView
         
         switch recognizer.state {
@@ -136,15 +133,19 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
         case .changed:
+            guard let animator, let transitionContext else {
+                // NOTE: Sometimes this method is called before startInteractiveTransition(_:) and enters here.
+                return
+            }
             let translation = recognizer.translation(in: currentPageView)
-            let transitionProgress = translation.y / currentPageView.bounds.height
+            let panAreaSize = currentPageView.bounds.size
             
+            let transitionProgress = translation.y * 2 / panAreaSize.height
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)
             
-            let imageScale = min(1 - transitionProgress / 5, 1)
-            panningImageView.transform = .init(translationX: translation.x, y: translation.y)
-                .scaledBy(x: imageScale, y: imageScale)
+            panningImageView.transform = panningImageTransform(translation: translation,
+                                                               panAreaSize: panAreaSize)
         case .ended:
             let isMovingDown = recognizer.velocity(in: nil).y > 0
             if isMovingDown {
@@ -158,5 +159,46 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             assertionFailure()
             cancelInteractiveTransition()
         }
+    }
+    
+    /// Calculate an affine transformation matrix for the panning image.
+    ///
+    /// Ease translation and image scale changes.
+    ///
+    /// - Parameters:
+    ///   - translation: The total translation over time.
+    ///   - panAreaSize: The size of the panning area.
+    /// - Returns: An affine transformation matrix for the panning image.
+    private func panningImageTransform(translation: CGPoint,
+                                       panAreaSize: CGSize) -> CGAffineTransform {
+        // Translation x: ease-in-out from the left to the right
+        let maxX = panAreaSize.width * 0.4
+        let translationX = sin(translation.x / panAreaSize.width * .pi / 2) * maxX
+        
+        let translationY: CGFloat
+        let imageScale: CGFloat
+        if translation.y >= 0 {
+            // Translation y: linear during pull-down
+            translationY = translation.y
+            
+            // Image scale: ease-out during pull-down
+            let maxScale = 1.0
+            let minScale = 0.6
+            let difference = maxScale - minScale
+            imageScale = maxScale - sin(translation.y * .pi / 2 / panAreaSize.height) * difference
+        } else {
+            // Translation y: ease-out during pull-up
+            let minY = -panAreaSize.height / 3.8
+            translationY = easeOutQuadratic(-translation.y / panAreaSize.height) * minY
+            
+            // Image scale: not change during pull-up
+            imageScale = 1
+        }
+        return CGAffineTransform(translationX: translationX, y: translationY)
+            .scaledBy(x: imageScale, y: imageScale)
+    }
+    
+    private func easeOutQuadratic(_ x: Double) -> Double {
+        -x * (x - 2)
     }
 }

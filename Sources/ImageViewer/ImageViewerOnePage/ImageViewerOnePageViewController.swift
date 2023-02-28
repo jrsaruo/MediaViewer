@@ -7,10 +7,17 @@
 
 import UIKit
 
+protocol ImageViewerOnePageViewControllerDelegate: AnyObject {
+    func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
+                         didDoubleTap imageView: UIImageView)
+}
+
 final class ImageViewerOnePageViewController: UIViewController {
     
     let imageViewerOnePageView: ImageViewerOnePageView
     let page: Int
+    
+    weak var delegate: (any ImageViewerOnePageViewControllerDelegate)?
     
     let imageDoubleTapRecognizer: UITapGestureRecognizer = {
         let recognizer = UITapGestureRecognizer()
@@ -54,6 +61,7 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     @objc
     private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
+        delegate?.imageViewerPage(self, didDoubleTap: imageViewerOnePageView.imageView)
         imageViewerOnePageView.updateZoomScaleOnDoubleTap(recognizedBy: recognizer)
     }
 }
