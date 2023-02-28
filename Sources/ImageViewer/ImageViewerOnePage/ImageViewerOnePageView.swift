@@ -84,21 +84,39 @@ final class ImageViewerOnePageView: UIView {
     func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
         if scrollView.zoomScale == 1 {
             let location = doubleTapRecognizer.location(in: imageView)
-            // Simulate the standard Photos app zoom
+            zoom(to: location, animated: true)
+        } else {
+            scrollView.setZoomScale(1, animated: true)
+        }
+    }
+    
+    private func zoom(to point: CGPoint, animated: Bool) {
+        // Simulate the standard Photos app zoom
+        let zoomArea: CGRect
+        if scrollView.bounds.width < scrollView.bounds.height {
             let zoomAreaHeight: CGFloat
             if imageView.bounds.width > imageView.bounds.height {
                 zoomAreaHeight = imageView.bounds.height
             } else {
                 zoomAreaHeight = imageView.bounds.height * 2 / 3
             }
-            let zoomArea = CGRect(x: location.x,
-                                  y: location.y - zoomAreaHeight / 2,
-                                  width: 0,
-                                  height: zoomAreaHeight)
-            scrollView.zoom(to: zoomArea, animated: true)
+            zoomArea = CGRect(x: point.x,
+                              y: point.y - zoomAreaHeight / 2,
+                              width: 0,
+                              height: zoomAreaHeight)
         } else {
-            scrollView.setZoomScale(1, animated: true)
+            let zoomAreaWidth: CGFloat
+            if imageView.bounds.width < imageView.bounds.height {
+                zoomAreaWidth = imageView.bounds.width
+            } else {
+                zoomAreaWidth = imageView.bounds.width * 2 / 3
+            }
+            zoomArea = CGRect(x: point.x - zoomAreaWidth / 2,
+                              y: point.y,
+                              width: zoomAreaWidth,
+                              height: 0)
         }
+        scrollView.zoom(to: zoomArea, animated: animated)
     }
     
     func destroyLayoutConfigurationBeforeTransition() {
