@@ -132,7 +132,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
         let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                                     from: currentPageImageView)
+                                                                     from: currentPageImageView.superview)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
         currentPageView.destroyLayoutConfigurationBeforeTransition()
