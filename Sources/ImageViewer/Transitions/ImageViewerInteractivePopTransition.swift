@@ -33,7 +33,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
         guard let fromView = transitionContext.view(forKey: .from),
-              let toView = transitionContext.view(forKey: .to) else {
+              let toView = transitionContext.view(forKey: .to),
+              let toVC = transitionContext.viewController(forKey: .to)
+        else {
             preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
         self.transitionContext = transitionContext
@@ -52,6 +54,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = initialImageFrameInContainer
         
+        toView.frame = transitionContext.finalFrame(for: toVC)
         containerView.addSubview(toView)
         containerView.addSubview(fromView)
         containerView.addSubview(currentPageImageView)
