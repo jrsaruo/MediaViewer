@@ -16,6 +16,8 @@ final class ImageViewerInteractivePopTransition: NSObject {
     
     // MARK: Backups
     
+    private var initialZoomScale: CGFloat = 1
+    private var initialPanningImageTransform = CGAffineTransform.identity
     private var thumbnailHiddenBackup = false
     private var currentPageImageFrameInContainerBackup = CGRect.null
     
@@ -40,9 +42,11 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         // Back up
+        initialZoomScale = currentPageView.zoomScale
+        initialPanningImageTransform = currentPageImageView.transform
         thumbnailHiddenBackup = sourceThumbnailView.isHidden
         currentPageImageFrameInContainerBackup = containerView.convert(currentPageImageView.frame,
-                                                                       from: currentPageImageView)
+                                                                       from: currentPageImageView.superview)
         
         // Prepare for transition
         currentPageView.destroyLayoutConfigurationBeforeTransition()
@@ -105,7 +109,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             // Restore to pre-transition state
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
             currentPageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
-            currentPageImageView.transform = .identity
+            currentPageImageView.transform = self.initialPanningImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
             
             transitionContext.completeTransition(false)
@@ -128,7 +132,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         switch recognizer.state {
         case .possible, .began:
             // Adjust the anchor point to scale the image around a finger
-            let location = recognizer.location(in: panningImageView)
+            let location = recognizer.location(in: panningImageView.superview)
             let anchorPoint = CGPoint(x: location.x / panningImageView.frame.width,
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
@@ -194,7 +198,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             // Image scale: not change during pull-up
             imageScale = 1
         }
-        return CGAffineTransform(translationX: translationX, y: translationY)
+        return initialPanningImageTransform
+            .translatedBy(x: translationX / initialZoomScale,
+                          y: translationY / initialZoomScale)
             .scaledBy(x: imageScale, y: imageScale)
     }
     
