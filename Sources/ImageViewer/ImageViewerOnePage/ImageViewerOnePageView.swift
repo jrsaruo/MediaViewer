@@ -9,6 +9,12 @@ import UIKit
 
 final class ImageViewerOnePageView: UIView {
     
+    private enum LayoutState {
+        case needsToLayout
+        case laidOut
+        case destroyedForTransition
+    }
+    
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
@@ -26,6 +32,7 @@ final class ImageViewerOnePageView: UIView {
         return imageView
     }()
     
+    private var layoutState: LayoutState = .needsToLayout
     private var constraintsBasedOnImageSize: [NSLayoutConstraint] = []
     private var didMakeAllLayoutConstraints = false
     
@@ -82,12 +89,18 @@ final class ImageViewerOnePageView: UIView {
         configureLayoutBasedOnImageSize()
         layoutIfNeeded()
         adjustContentInset()
+        layoutState = .laidOut
     }
     
     func setImage(_ image: UIImage?) {
         imageView.image = image
         if didMakeAllLayoutConstraints {
-            invalidateLayout()
+            if layoutState == .destroyedForTransition {
+                // Skip layout during the transition
+                layoutState = .needsToLayout
+            } else {
+                invalidateLayout()
+            }
         }
     }
     
@@ -134,12 +147,18 @@ final class ImageViewerOnePageView: UIView {
         removeConstraints(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.removeFromSuperview()
+        layoutState = .destroyedForTransition
     }
     
     func restoreLayoutConfigurationAfterTransition() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageView)
         configureLayoutBasedOnImageSize()
+        if layoutState == .needsToLayout {
+            layoutIfNeeded()
+            adjustContentInset()
+        }
+        layoutState = .laidOut
     }
     
     private func configureLayoutBasedOnImageSize() {
