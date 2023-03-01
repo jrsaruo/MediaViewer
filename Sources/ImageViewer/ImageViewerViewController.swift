@@ -318,7 +318,11 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
            otherGestureRecognizer == scrollView.panGestureRecognizer {
             let isReachingTopEdge = scrollView.contentOffset.y <= 0
             let isMovingDown = scrollView.panGestureRecognizer.velocity(in: nil).y > 0
-            return isReachingTopEdge && isMovingDown
+            if isReachingTopEdge && isMovingDown {
+                // Cancel scrolling
+                scrollView.panGestureRecognizer.state = .cancelled
+                return true
+            }
         }
         return false
     }
