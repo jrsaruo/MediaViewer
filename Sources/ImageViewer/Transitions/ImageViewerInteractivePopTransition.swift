@@ -45,10 +45,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // Back up
         thumbnailHiddenBackup = sourceThumbnailView.isHidden
-        initialZoomScale = currentPageView.zoomScale
+        initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
         initialImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                             from: currentPageImageView.superview)
+                                                             from: currentPageView.scrollView)
         
         // Prepare for transition
         currentPageView.destroyLayoutConfigurationBeforeTransition()
@@ -135,7 +135,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         switch recognizer.state {
         case .possible, .began:
             // Adjust the anchor point to scale the image around a finger
-            let location = recognizer.location(in: panningImageView.superview)
+            let location = recognizer.location(in: currentPageView.scrollView)
             let anchorPoint = CGPoint(x: location.x / panningImageView.frame.width,
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)

@@ -9,10 +9,6 @@ import UIKit
 
 final class ImageViewerOnePageView: UIView {
     
-    var zoomScale: CGFloat {
-        scrollView.zoomScale
-    }
-    
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
