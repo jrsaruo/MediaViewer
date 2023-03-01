@@ -57,6 +57,16 @@ final class ImageViewerOnePageViewController: UIViewController {
         imageViewerOnePageView.imageView.addGestureRecognizer(imageDoubleTapRecognizer)
     }
     
+    override func viewWillTransition(to size: CGSize,
+                                     with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        // Update layout when screen is rotated
+        coordinator.animate { context in
+            self.imageViewerOnePageView.invalidateLayout()
+        }
+    }
+    
     // MARK: - Actions
     
     @objc
