@@ -120,6 +120,15 @@ extension PhotosViewController: ImageViewerDataSource {
         dataSource.snapshot().itemIdentifiers
     }
     
+    func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
+        dataSource.snapshot().numberOfItems
+    }
+    
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     imageAtPage page: Int) async -> UIImage? {
+        dataSource.snapshot().itemIdentifiers[page]
+    }
+    
     func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)

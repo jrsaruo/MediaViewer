@@ -16,6 +16,19 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Returns: Images to view in `imageViewer`.
     func images(in imageViewer: ImageViewerViewController) -> [UIImage]
     
+    /// Asks the data source to return the number of images in the image viewer.
+    /// - Parameter imageViewer: An object representing the image viewer requesting this information.
+    /// - Returns: The number of images in `imageViewer`.
+    func numberOfImages(in imageViewer: ImageViewerViewController) -> Int
+    
+    /// Asks the data source to return an image to view at the particular page in the image viewer.
+    /// - Parameters:
+    ///   - imageViewer: An object representing the image viewer requesting this information.
+    ///   - page: A page in the image viewer.
+    /// - Returns: An image to view at the particular page in `imageViewer`.
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     imageAtPage page: Int) async -> UIImage?
+    
     /// Asks the data source to return the thumbnail view for the current page of the image viewer.
     ///
     /// The image viewer uses this thumbnail view for push or pop transitions.
