@@ -116,10 +116,6 @@ extension PhotosViewController: UICollectionViewDelegate {
 
 extension PhotosViewController: ImageViewerDataSource {
     
-    func images(in imageViewer: ImageViewerViewController) -> [UIImage] {
-        dataSource.snapshot().itemIdentifiers
-    }
-    
     func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
     }

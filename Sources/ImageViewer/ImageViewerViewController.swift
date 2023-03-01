@@ -11,11 +11,6 @@ import Combine
 /// The object you use to provide data for an image viewer.
 public protocol ImageViewerDataSource: AnyObject {
     
-    /// Asks the data source to return images to view in the image viewer.
-    /// - Parameter imageViewer: An object representing the image viewer requesting this information.
-    /// - Returns: Images to view in `imageViewer`.
-    func images(in imageViewer: ImageViewerViewController) -> [UIImage]
-    
     /// Asks the data source to return the number of images in the image viewer.
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
     /// - Returns: The number of images in `imageViewer`.
@@ -249,8 +244,7 @@ extension ImageViewerViewController: ImageViewerOnePageViewControllerDelegate {
 extension ImageViewerViewController: UIPageViewControllerDataSource {
     
     open func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        guard let images = imageViewerDataSource?.images(in: self) else { return 0 }
-        return images.count
+        imageViewerDataSource?.numberOfImages(in: self) ?? 0
     }
     
     open func pageViewController(_ pageViewController: UIPageViewController,
@@ -280,11 +274,15 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
     }
     
     private func makeImageViewerPage(forPage page: Int) -> ImageViewerOnePageViewController? {
-        guard let images = imageViewerDataSource?.images(in: self),
-              images.indices.contains(page) else { return nil }
+        guard let imageViewerDataSource,
+              0 <= page,
+              page < imageViewerDataSource.numberOfImages(in: self) else { return nil }
         let imageViewerPage = ImageViewerOnePageViewController(page: page)
-        imageViewerPage.imageViewerOnePageView.setImage(images[page])
         imageViewerPage.delegate = self
+        Task {
+            let image = await imageViewerDataSource.imageViewer(self, imageAtPage: page)
+            imageViewerPage.imageViewerOnePageView.setImage(image)
+        }
         return imageViewerPage
     }
 }
