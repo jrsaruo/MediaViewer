@@ -84,6 +84,11 @@ final class ImageViewerOnePageView: UIView {
         adjustContentInset()
     }
     
+    func setImage(_ image: UIImage?) {
+        imageView.image = image
+        invalidateLayout()
+    }
+    
     func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
         if scrollView.zoomScale == 1 {
             let location = doubleTapRecognizer.location(in: imageView)
