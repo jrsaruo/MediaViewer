@@ -120,6 +120,7 @@ open class ImageViewerViewController: UIPageViewController {
         singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
         view.addGestureRecognizer(singleTapRecognizer)
         
+        panRecognizer.delegate = self
         panRecognizer.addTarget(self, action: #selector(panned))
         view.addGestureRecognizer(panRecognizer)
     }
@@ -301,5 +302,27 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
     public func navigationController(_ navigationController: UINavigationController,
                                      interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
         return interactivePopTransition
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate -
+
+extension ImageViewerViewController: UIGestureRecognizerDelegate {
+    
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                                  shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        // If the scroll position reaches the top edge, allow an interactive pop by pulldown.
+        let scrollView = currentPageViewController.imageViewerOnePageView.scrollView
+        if gestureRecognizer == panRecognizer,
+           otherGestureRecognizer == scrollView.panGestureRecognizer {
+            let isReachingTopEdge = scrollView.contentOffset.y <= 0
+            let isMovingDown = scrollView.panGestureRecognizer.velocity(in: nil).y > 0
+            if isReachingTopEdge && isMovingDown {
+                // Cancel scrolling
+                scrollView.panGestureRecognizer.state = .cancelled
+                return true
+            }
+        }
+        return false
     }
 }
