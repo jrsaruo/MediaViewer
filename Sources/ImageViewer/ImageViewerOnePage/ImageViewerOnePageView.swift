@@ -86,7 +86,9 @@ final class ImageViewerOnePageView: UIView {
     
     func setImage(_ image: UIImage?) {
         imageView.image = image
-        invalidateLayout()
+        if didMakeAllLayoutConstraints {
+            invalidateLayout()
+        }
     }
     
     func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
