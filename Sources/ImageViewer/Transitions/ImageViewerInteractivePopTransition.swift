@@ -17,7 +17,9 @@ final class ImageViewerInteractivePopTransition: NSObject {
     // MARK: Backups
     
     private var thumbnailHiddenBackup = false
-    private var currentPageImageFrameInContainerBackup = CGRect.null
+    private var initialZoomScale: CGFloat = 1
+    private var initialImageTransform = CGAffineTransform.identity
+    private var initialImageFrameInContainer = CGRect.null
     
     // MARK: - Initializers
     
@@ -31,7 +33,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
         guard let fromView = transitionContext.view(forKey: .from),
-              let toView = transitionContext.view(forKey: .to) else {
+              let toView = transitionContext.view(forKey: .to),
+              let toVC = transitionContext.viewController(forKey: .to)
+        else {
             preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
         self.transitionContext = transitionContext
@@ -41,13 +45,16 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // Back up
         thumbnailHiddenBackup = sourceThumbnailView.isHidden
-        currentPageImageFrameInContainerBackup = containerView.convert(currentPageImageView.frame,
-                                                                       from: currentPageImageView)
+        initialZoomScale = currentPageView.zoomScale
+        initialImageTransform = currentPageImageView.transform
+        initialImageFrameInContainer = containerView.convert(currentPageImageView.frame,
+                                                             from: currentPageImageView.superview)
         
         // Prepare for transition
         currentPageView.destroyLayoutConfigurationBeforeTransition()
-        currentPageImageView.frame = currentPageImageFrameInContainerBackup
+        currentPageImageView.frame = initialImageFrameInContainer
         
+        toView.frame = transitionContext.finalFrame(for: toVC)
         containerView.addSubview(toView)
         containerView.addSubview(fromView)
         containerView.addSubview(currentPageImageView)
@@ -99,13 +106,13 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            currentPageImageView.frame = self.currentPageImageFrameInContainerBackup
+            currentPageImageView.frame = self.initialImageFrameInContainer
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
             currentPageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
-            currentPageImageView.transform = .identity
+            currentPageImageView.transform = self.initialImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
             
             transitionContext.completeTransition(false)
@@ -128,7 +135,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         switch recognizer.state {
         case .possible, .began:
             // Adjust the anchor point to scale the image around a finger
-            let location = recognizer.location(in: panningImageView)
+            let location = recognizer.location(in: panningImageView.superview)
             let anchorPoint = CGPoint(x: location.x / panningImageView.frame.width,
                                       y: location.y / panningImageView.frame.height)
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
@@ -194,7 +201,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             // Image scale: not change during pull-up
             imageScale = 1
         }
-        return CGAffineTransform(translationX: translationX, y: translationY)
+        return initialImageTransform
+            .translatedBy(x: translationX / initialZoomScale,
+                          y: translationY / initialZoomScale)
             .scaledBy(x: imageScale, y: imageScale)
     }
     

@@ -25,7 +25,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     func transitionDuration(using transitionContext: (any UIViewControllerContextTransitioning)?) -> TimeInterval {
         switch operation {
         case .push:
-            return 0.45
+            return 0.5
         case .pop:
             return 0.35
         case .none:
@@ -83,7 +83,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
-        let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.72) {
+        let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.68) {
             currentPageView.alpha = 1
             currentPageImageView.frame = currentPageImageFrameInContainer
             currentPageImageView.transitioningConfiguration = configurationBackup
@@ -132,7 +132,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
         let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                                     from: currentPageImageView)
+                                                                     from: currentPageImageView.superview)
         let thumbnailFrameInContainer = containerView.convert(sourceThumbnailView.frame,
                                                               from: sourceThumbnailView)
         currentPageView.destroyLayoutConfigurationBeforeTransition()
