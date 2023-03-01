@@ -311,17 +311,32 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
     
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
                                   shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        // If the scroll position reaches the top edge, allow an interactive pop by pulldown.
-        let scrollView = currentPageViewController.imageViewerOnePageView.scrollView
-        if gestureRecognizer == panRecognizer,
-           otherGestureRecognizer == scrollView.panGestureRecognizer {
-            let isReachingTopEdge = scrollView.contentOffset.y <= 0
-            let isMovingDown = scrollView.panGestureRecognizer.velocity(in: nil).y > 0
+        // Tune gesture recognizers to make it easier to start an interactive pop.
+        guard gestureRecognizer == panRecognizer else { return false }
+        let velocity = panRecognizer.velocity(in: nil)
+        let isMovingDown = velocity.y > 0 && velocity.y > abs(velocity.x)
+        
+        let imageScrollView = currentPageViewController.imageViewerOnePageView.scrollView
+        switch otherGestureRecognizer {
+        case imageScrollView.panGestureRecognizer:
+            // If the scroll position reaches the top edge, allow an interactive pop by pulldown.
+            let isReachingTopEdge = imageScrollView.contentOffset.y <= 0
             if isReachingTopEdge && isMovingDown {
                 // Cancel scrolling
-                scrollView.panGestureRecognizer.state = .cancelled
+                imageScrollView.panGestureRecognizer.state = .cancelled
                 return true
             }
+        case let pagingRecognizer as UIPanGestureRecognizer where pagingRecognizer.view is UIScrollView:
+            assert(pagingRecognizer.view?.superview == view,
+                   "Unknown pan gesture recognizer: \(otherGestureRecognizer)")
+            // Prefer an interactive pop over paging.
+            if isMovingDown {
+                // Cancel paging
+                pagingRecognizer.state = .cancelled
+                return true
+            }
+        default:
+            break
         }
         return false
     }
