@@ -26,7 +26,7 @@ final class ImageViewerOnePageView: UIView {
         return imageView
     }()
     
-    private var constraintsToBeDeactivatedDuringTransition: [NSLayoutConstraint] = []
+    private var constraintsBasedOnImageSize: [NSLayoutConstraint] = []
     private var didMakeAllLayoutConstraints = false
     
     // MARK: - Initializers
@@ -120,8 +120,8 @@ final class ImageViewerOnePageView: UIView {
     }
     
     func destroyLayoutConfigurationBeforeTransition() {
-        NSLayoutConstraint.deactivate(constraintsToBeDeactivatedDuringTransition)
-        removeConstraints(constraintsToBeDeactivatedDuringTransition)
+        NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
+        removeConstraints(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.removeFromSuperview()
     }
@@ -137,7 +137,7 @@ final class ImageViewerOnePageView: UIView {
         let imageWidthToHeight = imageSize.width / imageSize.height
         let viewWidthToHeight = bounds.width / bounds.height
         
-        constraintsToBeDeactivatedDuringTransition = [
+        constraintsBasedOnImageSize = [
             imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
@@ -157,9 +157,9 @@ final class ImageViewerOnePageView: UIView {
                 scrollView.contentLayoutGuide.bottomAnchor.constraint(equalTo: scrollView.frameLayoutGuide.bottomAnchor)
             ]
         }
-        constraintsToBeDeactivatedDuringTransition.append(contentsOf: scrollViewContentConstraints)
+        constraintsBasedOnImageSize.append(contentsOf: scrollViewContentConstraints)
         
-        NSLayoutConstraint.activate(constraintsToBeDeactivatedDuringTransition)
+        NSLayoutConstraint.activate(constraintsBasedOnImageSize)
     }
     
     /// Adjusts the content inset of the scroll view.
