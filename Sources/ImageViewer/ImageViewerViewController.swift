@@ -266,6 +266,7 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         guard let images = imageViewerDataSource?.images(in: self),
               images.indices.contains(page) else { return nil }
         let imageViewerPage = ImageViewerOnePageViewController(page: page)
+        imageViewerPage.imageViewerOnePageView.setImage(images[page])
         imageViewerPage.delegate = self
         return imageViewerPage
     }
