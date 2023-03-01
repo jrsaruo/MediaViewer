@@ -311,9 +311,8 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
     
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
                                   shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        let scrollView = currentPageViewController.imageViewerOnePageView.scrollView
-        
         // If the scroll position reaches the top edge, allow an interactive pop by pulldown.
+        let scrollView = currentPageViewController.imageViewerOnePageView.scrollView
         if gestureRecognizer == panRecognizer,
            otherGestureRecognizer == scrollView.panGestureRecognizer {
             let isReachingTopEdge = scrollView.contentOffset.y <= 0
