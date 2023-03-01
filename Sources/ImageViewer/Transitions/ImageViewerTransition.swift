@@ -69,6 +69,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         currentPageView.layoutIfNeeded()
         
         let currentPageImageView = currentPageView.imageView
+        if currentPageImageView.image == nil {
+            currentPageView.setImage(sourceThumbnailView.image)
+        }
+        
         let configurationBackup = currentPageImageView.transitioningConfiguration
         let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
                                                                      from: currentPageImageView)
