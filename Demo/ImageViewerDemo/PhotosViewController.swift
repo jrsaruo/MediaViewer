@@ -106,8 +106,7 @@ final class PhotosViewController: UIViewController {
 extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let photo = dataSource.itemIdentifier(for: indexPath)!
-        let imageViewer = ImageViewerViewController(image: photo, page: indexPath.item)
+        let imageViewer = ImageViewerViewController(page: indexPath.item)
         imageViewer.imageViewerDataSource = self
         navigationController?.delegate = imageViewer
         navigationController?.pushViewController(imageViewer, animated: true)

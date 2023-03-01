@@ -14,10 +14,11 @@ protocol ImageViewerOnePageViewControllerDelegate: AnyObject {
 
 final class ImageViewerOnePageViewController: UIViewController {
     
-    let imageViewerOnePageView: ImageViewerOnePageView
     let page: Int
     
     weak var delegate: (any ImageViewerOnePageViewControllerDelegate)?
+    
+    let imageViewerOnePageView = ImageViewerOnePageView()
     
     let imageDoubleTapRecognizer: UITapGestureRecognizer = {
         let recognizer = UITapGestureRecognizer()
@@ -27,16 +28,13 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     // MARK: - Initializers
     
-    init(image: UIImage, page: Int) {
-        self.imageViewerOnePageView = ImageViewerOnePageView(image: image)
+    init(page: Int) {
         self.page = page
         super.init(nibName: nil, bundle: nil)
     }
     
     @available(*, unavailable, message: "init(coder:) is not supported.")
     required init?(coder: NSCoder) {
-        guard let onePageView = ImageViewerOnePageView(coder: coder) else { return nil }
-        self.imageViewerOnePageView = onePageView
         self.page = 0
         super.init(coder: coder)
     }
