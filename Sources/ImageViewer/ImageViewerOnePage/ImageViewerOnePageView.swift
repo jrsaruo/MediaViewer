@@ -73,13 +73,18 @@ final class ImageViewerOnePageView: UIView {
     private func setUpLayoutIfNotYet() {
         guard !didMakeAllLayoutConstraints else { return }
         didMakeAllLayoutConstraints = true
-        configureLayoutBasedOnImageSize()
-        
-        layoutIfNeeded()
-        adjustContentInset()
+        invalidateLayout()
     }
     
     // MARK: - Methods
+    
+    /// Invalidates the current layout and triggers a layout update.
+    func invalidateLayout() {
+        NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
+        configureLayoutBasedOnImageSize()
+        layoutIfNeeded()
+        adjustContentInset()
+    }
     
     func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {
         if scrollView.zoomScale == 1 {
