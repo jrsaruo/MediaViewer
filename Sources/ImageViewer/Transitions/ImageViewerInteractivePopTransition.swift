@@ -16,10 +16,10 @@ final class ImageViewerInteractivePopTransition: NSObject {
     
     // MARK: Backups
     
-    private var initialZoomScale: CGFloat = 1
-    private var initialPanningImageTransform = CGAffineTransform.identity
     private var thumbnailHiddenBackup = false
-    private var currentPageImageFrameInContainerBackup = CGRect.null
+    private var initialZoomScale: CGFloat = 1
+    private var initialImageTransform = CGAffineTransform.identity
+    private var initialImageFrameInContainer = CGRect.null
     
     // MARK: - Initializers
     
@@ -42,15 +42,15 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         // Back up
-        initialZoomScale = currentPageView.zoomScale
-        initialPanningImageTransform = currentPageImageView.transform
         thumbnailHiddenBackup = sourceThumbnailView.isHidden
-        currentPageImageFrameInContainerBackup = containerView.convert(currentPageImageView.frame,
-                                                                       from: currentPageImageView.superview)
+        initialZoomScale = currentPageView.zoomScale
+        initialImageTransform = currentPageImageView.transform
+        initialImageFrameInContainer = containerView.convert(currentPageImageView.frame,
+                                                             from: currentPageImageView.superview)
         
         // Prepare for transition
         currentPageView.destroyLayoutConfigurationBeforeTransition()
-        currentPageImageView.frame = currentPageImageFrameInContainerBackup
+        currentPageImageView.frame = initialImageFrameInContainer
         
         containerView.addSubview(toView)
         containerView.addSubview(fromView)
@@ -103,13 +103,13 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            currentPageImageView.frame = self.currentPageImageFrameInContainerBackup
+            currentPageImageView.frame = self.initialImageFrameInContainer
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
             self.sourceThumbnailView.isHidden = self.thumbnailHiddenBackup
             currentPageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
-            currentPageImageView.transform = self.initialPanningImageTransform
+            currentPageImageView.transform = self.initialImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
             
             transitionContext.completeTransition(false)
@@ -198,7 +198,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             // Image scale: not change during pull-up
             imageScale = 1
         }
-        return initialPanningImageTransform
+        return initialImageTransform
             .translatedBy(x: translationX / initialZoomScale,
                           y: translationY / initialZoomScale)
             .scaledBy(x: imageScale, y: imageScale)
