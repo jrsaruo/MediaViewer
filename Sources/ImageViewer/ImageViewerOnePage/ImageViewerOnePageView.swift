@@ -13,7 +13,7 @@ final class ImageViewerOnePageView: UIView {
         scrollView.zoomScale
     }
     
-    private let scrollView: UIScrollView = {
+    let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 50
