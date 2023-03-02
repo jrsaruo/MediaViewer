@@ -121,8 +121,8 @@ extension PhotosViewController: ImageViewerDataSource {
     }
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageAtPage page: Int) async -> UIImage? {
-        dataSource.snapshot().itemIdentifiers[page]
+                     imageSourceAtPage page: Int) -> ImageSource {
+        .sync(dataSource.snapshot().itemIdentifiers[page])
     }
     
     func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {

@@ -41,13 +41,13 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Returns: The number of images in `imageViewer`.
     func numberOfImages(in imageViewer: ImageViewerViewController) -> Int
     
-    /// Asks the data source to return an image to view at the particular page in the image viewer.
+    /// Asks the data source to return a source of an image to view at the particular page in the image viewer.
     /// - Parameters:
     ///   - imageViewer: An object representing the image viewer requesting this information.
     ///   - page: A page in the image viewer.
-    /// - Returns: An image to view at the particular page in `imageViewer`.
+    /// - Returns: A source of an image to view at `page` in `imageViewer`.
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageAtPage page: Int) async -> UIImage?
+                     imageSourceAtPage page: Int) -> ImageSource
     
     /// Asks the data source to return the thumbnail view for the current page of the image viewer.
     ///
@@ -304,11 +304,18 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         guard let imageViewerDataSource,
               0 <= page,
               page < imageViewerDataSource.numberOfImages(in: self) else { return nil }
+        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceAtPage: page)
+        
         let imageViewerPage = ImageViewerOnePageViewController(page: page)
         imageViewerPage.delegate = self
-        Task {
-            let image = await imageViewerDataSource.imageViewer(self, imageAtPage: page)
-            imageViewerPage.imageViewerOnePageView.setImage(image, with: .fade(duration: 0.2))
+        switch imageSource {
+        case .sync(let image):
+            imageViewerPage.imageViewerOnePageView.setImage(image, with: .none)
+        case .async(let transition, let imageProvider):
+            Task(priority: .high) {
+                let image = await imageProvider()
+                imageViewerPage.imageViewerOnePageView.setImage(image, with: transition)
+            }
         }
         return imageViewerPage
     }
