@@ -102,7 +102,7 @@ final class ImageViewerOnePageView: UIView {
         case .fade(let duration):
             UIView.transition(with: imageView,
                               duration: duration,
-                              options: [.transitionCrossDissolve, .curveEaseInOut]) {
+                              options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
                 self.setImage(image)
             }
         case .none:
