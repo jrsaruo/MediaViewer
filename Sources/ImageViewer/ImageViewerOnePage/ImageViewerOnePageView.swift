@@ -31,11 +31,9 @@ final class ImageViewerOnePageView: UIView {
     
     // MARK: - Initializers
     
-    init(image: UIImage) {
-        super.init(frame: .null)
-        
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setUpViews()
-        imageView.image = image
     }
     
     required init?(coder: NSCoder) {
@@ -84,6 +82,13 @@ final class ImageViewerOnePageView: UIView {
         configureLayoutBasedOnImageSize()
         layoutIfNeeded()
         adjustContentInset()
+    }
+    
+    func setImage(_ image: UIImage?) {
+        imageView.image = image
+        if didMakeAllLayoutConstraints {
+            invalidateLayout()
+        }
     }
     
     func updateZoomScaleOnDoubleTap(recognizedBy doubleTapRecognizer: UITapGestureRecognizer) {

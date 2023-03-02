@@ -79,17 +79,20 @@ open class ImageViewerViewController: UIPageViewController {
     
     /// Creates a new viewer.
     /// - Parameters:
-    ///   - image: The image you want to view.
     ///   - page: The page number of the image.
-    public init(image: UIImage, page: Int) {
+    ///   - dataSource: The data source for the viewer.
+    public init(page: Int, dataSource: any ImageViewerDataSource) {
         super.init(transitionStyle: .scroll,
                    navigationOrientation: .horizontal,
                    options: [
                     .interPageSpacing: 40,
                     .spineLocation: SpineLocation.none.rawValue
                    ])
-        let imageViewerPage = ImageViewerOnePageViewController(image: image, page: page)
-        imageViewerPage.delegate = self
+        imageViewerDataSource = dataSource
+        
+        guard let imageViewerPage = makeImageViewerPage(forPage: page) else {
+            preconditionFailure("Page \(page) out of range.")
+        }
         setViewControllers([imageViewerPage], direction: .forward, animated: false)
     }
     
@@ -266,8 +269,8 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
     private func makeImageViewerPage(forPage page: Int) -> ImageViewerOnePageViewController? {
         guard let images = imageViewerDataSource?.images(in: self),
               images.indices.contains(page) else { return nil }
-        let imageViewerPage = ImageViewerOnePageViewController(image: images[page],
-                                                               page: page)
+        let imageViewerPage = ImageViewerOnePageViewController(page: page)
+        imageViewerPage.imageViewerOnePageView.setImage(images[page])
         imageViewerPage.delegate = self
         return imageViewerPage
     }
