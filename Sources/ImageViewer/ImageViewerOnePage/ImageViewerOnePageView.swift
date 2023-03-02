@@ -7,6 +7,11 @@
 
 import UIKit
 
+enum ImageTransition: Hashable, Sendable {
+    case fade(duration: TimeInterval)
+    case none
+}
+
 final class ImageViewerOnePageView: UIView {
     
     private enum LayoutState {
@@ -92,7 +97,20 @@ final class ImageViewerOnePageView: UIView {
         layoutState = .laidOut
     }
     
-    func setImage(_ image: UIImage?) {
+    func setImage(_ image: UIImage?, with transition: ImageTransition) {
+        switch transition {
+        case .fade(let duration):
+            UIView.transition(with: imageView,
+                              duration: duration,
+                              options: [.transitionCrossDissolve, .curveEaseInOut]) {
+                self.setImage(image)
+            }
+        case .none:
+            setImage(image)
+        }
+    }
+    
+    private func setImage(_ image: UIImage?) {
         imageView.image = image
         if didMakeAllLayoutConstraints {
             if layoutState == .destroyedForTransition {

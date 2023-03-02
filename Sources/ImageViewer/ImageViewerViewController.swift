@@ -281,7 +281,7 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         imageViewerPage.delegate = self
         Task {
             let image = await imageViewerDataSource.imageViewer(self, imageAtPage: page)
-            imageViewerPage.imageViewerOnePageView.setImage(image)
+            imageViewerPage.imageViewerOnePageView.setImage(image, with: .fade(duration: 0.2))
         }
         return imageViewerPage
     }

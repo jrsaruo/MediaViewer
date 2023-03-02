@@ -70,7 +70,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let currentPageImageView = currentPageView.imageView
         if currentPageImageView.image == nil {
-            currentPageView.setImage(sourceThumbnailView.image)
+            currentPageView.setImage(sourceThumbnailView.image, with: .none)
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
