@@ -8,6 +8,31 @@
 import UIKit
 import Combine
 
+/// The way to animate the image transition.
+public enum ImageTransition: Hashable, Sendable {
+    
+    /// The fade animation with the specified duration.
+    case fade(duration: TimeInterval)
+    
+    /// No animation.
+    case none
+}
+
+/// The image source for the image viewer.
+public enum ImageSource {
+    
+    /// An image that can be acquired synchronously.
+    case sync(UIImage?)
+    
+    /// An image that can be acquired asynchronously.
+    ///
+    /// The viewer will use `provider` to acquire an image and display it using `transition`.
+    case async(transition: ImageTransition = .fade(duration: 0.2),
+               provider: () async -> UIImage?)
+}
+
+// MARK: - ImageViewerDataSource -
+
 /// The object you use to provide data for an image viewer.
 public protocol ImageViewerDataSource: AnyObject {
     
@@ -35,6 +60,8 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Returns: The thumbnail view for current page of `imageViewer`.
     func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
 }
+
+// MARK: - ImageViewerViewController -
 
 /// An image viewer.
 ///

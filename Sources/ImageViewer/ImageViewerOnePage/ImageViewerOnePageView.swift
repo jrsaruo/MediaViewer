@@ -7,11 +7,6 @@
 
 import UIKit
 
-enum ImageTransition: Hashable, Sendable {
-    case fade(duration: TimeInterval)
-    case none
-}
-
 final class ImageViewerOnePageView: UIView {
     
     private enum LayoutState {
