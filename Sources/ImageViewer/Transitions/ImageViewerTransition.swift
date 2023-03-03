@@ -63,11 +63,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let thumbnailHiddenBackup = sourceThumbnailView.isHidden
         
         // Prepare for transition
-        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
-        currentPageView.frame = transitionContext.finalFrame(for: imageViewer)
-        currentPageView.alpha = 0
-        currentPageView.layoutIfNeeded()
+        imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
+        imageViewerView.alpha = 0
+        imageViewerView.layoutIfNeeded()
         
+        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
         if currentPageImageView.image == nil {
             currentPageView.setImage(sourceThumbnailView.image, with: .none)
@@ -88,7 +88,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.68) {
-            currentPageView.alpha = 1
+            imageViewerView.alpha = 1
             currentPageImageView.frame = currentPageImageFrameInContainer
             currentPageImageView.transitioningConfiguration = configurationBackup
             
