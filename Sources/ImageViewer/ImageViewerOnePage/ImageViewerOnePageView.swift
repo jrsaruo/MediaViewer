@@ -89,10 +89,7 @@ final class ImageViewerOnePageView: UIView {
     /// Invalidates the current layout and triggers a layout update.
     func invalidateLayout() {
         NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
-        configureLayoutBasedOnImageSize()
-        layoutIfNeeded()
-        adjustContentInset()
-        layoutState = .laidOut
+        layOutBasedOnImageSize()
     }
     
     func setImage(_ image: UIImage?, with transition: ImageTransition) {
@@ -169,14 +166,11 @@ final class ImageViewerOnePageView: UIView {
     func restoreLayoutConfigurationAfterTransition() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageView)
-        configureLayoutBasedOnImageSize()
-        layoutIfNeeded()
-        adjustContentInset()
-        layoutState = .laidOut
+        layOutBasedOnImageSize()
     }
     
-    /// Configure the scrolling content layout and the image view aspect ratio based on the image size.
-    private func configureLayoutBasedOnImageSize() {
+    /// Lays out subviews based on the image size.
+    private func layOutBasedOnImageSize() {
         let imageSize = imageView.image?.size ?? bounds.size
         let imageWidthToHeight = imageSize.width / imageSize.height
         let viewWidthToHeight = bounds.width / bounds.height
@@ -204,6 +198,11 @@ final class ImageViewerOnePageView: UIView {
         constraintsBasedOnImageSize.append(contentsOf: scrollViewContentConstraints)
         
         NSLayoutConstraint.activate(constraintsBasedOnImageSize)
+        
+        layoutIfNeeded()
+        adjustContentInset()
+        
+        layoutState = .laidOut
     }
     
     /// Adjusts the content inset of the scroll view.
