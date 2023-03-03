@@ -9,6 +9,17 @@ import UIKit
 
 final class ImageViewerOnePageView: UIView {
     
+    private enum LayoutState {
+        
+        /// The layout has not yet been run.
+        ///
+        /// It can only be in this state until the first `layoutSubviews()` runs.
+        case notYet
+        
+        case laidOut
+        case destroyedForTransition
+    }
+    
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.minimumZoomScale = 1
@@ -26,8 +37,8 @@ final class ImageViewerOnePageView: UIView {
         return imageView
     }()
     
+    private var layoutState: LayoutState = .notYet
     private var constraintsBasedOnImageSize: [NSLayoutConstraint] = []
-    private var didMakeAllLayoutConstraints = false
     
     // MARK: - Initializers
     
@@ -64,14 +75,13 @@ final class ImageViewerOnePageView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        setUpLayoutIfNotYet()
-    }
-    
-    /// Configure the scrolling content layout and the image view aspect ratio if not yet.
-    private func setUpLayoutIfNotYet() {
-        guard !didMakeAllLayoutConstraints else { return }
-        didMakeAllLayoutConstraints = true
-        invalidateLayout()
+        
+        switch layoutState {
+        case .notYet:
+            invalidateLayout()
+        case .laidOut, .destroyedForTransition:
+            break
+        }
     }
     
     // MARK: - Methods
@@ -79,15 +89,31 @@ final class ImageViewerOnePageView: UIView {
     /// Invalidates the current layout and triggers a layout update.
     func invalidateLayout() {
         NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
-        configureLayoutBasedOnImageSize()
-        layoutIfNeeded()
-        adjustContentInset()
+        layOutBasedOnImageSize()
     }
     
-    func setImage(_ image: UIImage?) {
+    func setImage(_ image: UIImage?, with transition: ImageTransition) {
+        switch transition {
+        case .fade(let duration):
+            UIView.transition(with: imageView,
+                              duration: duration,
+                              options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
+                self.setImage(image)
+            }
+        case .none:
+            setImage(image)
+        }
+    }
+    
+    private func setImage(_ image: UIImage?) {
         imageView.image = image
-        if didMakeAllLayoutConstraints {
+        switch layoutState {
+        case .notYet:
+            break // Skip layout because layoutSubviews will run layout.
+        case .laidOut:
             invalidateLayout()
+        case .destroyedForTransition:
+            break // Skip layout during the transition.
         }
     }
     
@@ -134,15 +160,17 @@ final class ImageViewerOnePageView: UIView {
         removeConstraints(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.removeFromSuperview()
+        layoutState = .destroyedForTransition
     }
     
     func restoreLayoutConfigurationAfterTransition() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageView)
-        configureLayoutBasedOnImageSize()
+        layOutBasedOnImageSize()
     }
     
-    private func configureLayoutBasedOnImageSize() {
+    /// Lays out subviews based on the image size.
+    private func layOutBasedOnImageSize() {
         let imageSize = imageView.image?.size ?? bounds.size
         let imageWidthToHeight = imageSize.width / imageSize.height
         let viewWidthToHeight = bounds.width / bounds.height
@@ -170,6 +198,11 @@ final class ImageViewerOnePageView: UIView {
         constraintsBasedOnImageSize.append(contentsOf: scrollViewContentConstraints)
         
         NSLayoutConstraint.activate(constraintsBasedOnImageSize)
+        
+        layoutIfNeeded()
+        adjustContentInset()
+        
+        layoutState = .laidOut
     }
     
     /// Adjusts the content inset of the scroll view.

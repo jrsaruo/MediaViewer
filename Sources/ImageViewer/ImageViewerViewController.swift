@@ -8,13 +8,46 @@
 import UIKit
 import Combine
 
+/// The way to animate the image transition.
+public enum ImageTransition: Hashable, Sendable {
+    
+    /// The fade animation with the specified duration.
+    case fade(duration: TimeInterval)
+    
+    /// No animation.
+    case none
+}
+
+/// The image source for the image viewer.
+public enum ImageSource {
+    
+    /// An image that can be acquired synchronously.
+    case sync(UIImage?)
+    
+    /// An image that can be acquired asynchronously.
+    ///
+    /// The viewer will use `provider` to acquire an image and display it using `transition`.
+    case async(transition: ImageTransition = .fade(duration: 0.2),
+               provider: () async -> UIImage?)
+}
+
+// MARK: - ImageViewerDataSource -
+
 /// The object you use to provide data for an image viewer.
 public protocol ImageViewerDataSource: AnyObject {
     
-    /// Asks the data source to return images to view in the image viewer.
+    /// Asks the data source to return the number of images in the image viewer.
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
-    /// - Returns: Images to view in `imageViewer`.
-    func images(in imageViewer: ImageViewerViewController) -> [UIImage]
+    /// - Returns: The number of images in `imageViewer`.
+    func numberOfImages(in imageViewer: ImageViewerViewController) -> Int
+    
+    /// Asks the data source to return a source of an image to view at the particular page in the image viewer.
+    /// - Parameters:
+    ///   - imageViewer: An object representing the image viewer requesting this information.
+    ///   - page: A page in the image viewer.
+    /// - Returns: A source of an image to view at `page` in `imageViewer`.
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     imageSourceAtPage page: Int) -> ImageSource
     
     /// Asks the data source to return the thumbnail view for the current page of the image viewer.
     ///
@@ -27,6 +60,8 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Returns: The thumbnail view for current page of `imageViewer`.
     func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
 }
+
+// MARK: - ImageViewerViewController -
 
 /// An image viewer.
 ///
@@ -236,8 +271,7 @@ extension ImageViewerViewController: ImageViewerOnePageViewControllerDelegate {
 extension ImageViewerViewController: UIPageViewControllerDataSource {
     
     open func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        guard let images = imageViewerDataSource?.images(in: self) else { return 0 }
-        return images.count
+        imageViewerDataSource?.numberOfImages(in: self) ?? 0
     }
     
     open func pageViewController(_ pageViewController: UIPageViewController,
@@ -267,11 +301,22 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
     }
     
     private func makeImageViewerPage(forPage page: Int) -> ImageViewerOnePageViewController? {
-        guard let images = imageViewerDataSource?.images(in: self),
-              images.indices.contains(page) else { return nil }
+        guard let imageViewerDataSource,
+              0 <= page,
+              page < imageViewerDataSource.numberOfImages(in: self) else { return nil }
+        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceAtPage: page)
+        
         let imageViewerPage = ImageViewerOnePageViewController(page: page)
-        imageViewerPage.imageViewerOnePageView.setImage(images[page])
         imageViewerPage.delegate = self
+        switch imageSource {
+        case .sync(let image):
+            imageViewerPage.imageViewerOnePageView.setImage(image, with: .none)
+        case .async(let transition, let imageProvider):
+            Task(priority: .high) {
+                let image = await imageProvider()
+                imageViewerPage.imageViewerOnePageView.setImage(image, with: transition)
+            }
+        }
         return imageViewerPage
     }
 }
