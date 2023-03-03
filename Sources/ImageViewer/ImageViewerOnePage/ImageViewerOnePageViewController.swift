@@ -65,6 +65,11 @@ final class ImageViewerOnePageViewController: UIViewController {
         }
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        imageViewerOnePageView.scrollView.zoomScale = 1
+    }
+    
     // MARK: - Actions
     
     @objc
