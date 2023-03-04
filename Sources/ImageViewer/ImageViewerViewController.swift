@@ -370,8 +370,8 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
             // If the scroll position reaches the top edge, allow an interactive pop by pulldown.
             let isReachingTopEdge = imageScrollView.contentOffset.y <= 0
             if isReachingTopEdge && isMovingDown {
-                // Cancel scrolling
-                imageScrollView.panGestureRecognizer.state = .cancelled
+                // Make scrolling fail
+                imageScrollView.panGestureRecognizer.state = .failed
                 return true
             }
         case let pagingRecognizer as UIPanGestureRecognizer where pagingRecognizer.view is UIScrollView:
@@ -379,8 +379,8 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
                    "Unknown pan gesture recognizer: \(otherGestureRecognizer)")
             // Prefer an interactive pop over paging.
             if isMovingDown {
-                // Cancel paging
-                pagingRecognizer.state = .cancelled
+                // Make paging fail
+                pagingRecognizer.state = .failed
                 return true
             }
         default:
