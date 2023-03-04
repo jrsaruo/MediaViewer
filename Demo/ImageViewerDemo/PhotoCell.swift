@@ -7,10 +7,13 @@
 
 import UIKit
 import AceLayout
+import Photos
 
 final class PhotoCell: UICollectionViewCell {
     
     let imageView = UIImageView()
+    
+    private var imageRequestID: PHImageRequestID?
     
     // MARK: - Initializers
     
@@ -41,7 +44,25 @@ final class PhotoCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        
+        if let imageRequestID {
+            PHImageManager.default().cancelImageRequest(imageRequestID)
+        }
+        imageRequestID = nil
         imageView.image = nil
     }
     
+    // MARK: - Methods
+    
+    func configure(with asset: PHAsset, contentMode: UIView.ContentMode) {
+        imageView.contentMode = contentMode
+        imageRequestID = PHImageManager.default()
+            .requestImage(for: asset,
+                          targetSize: .init(width: bounds.size.width * 3,
+                                            height: bounds.size.height * 3),
+                          contentMode: .aspectFill,
+                          options: nil) { [weak self] image, _ in
+                self?.imageView.image = image
+            }
+    }
 }

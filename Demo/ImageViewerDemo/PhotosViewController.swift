@@ -41,15 +41,7 @@ final class PhotosViewController: UIViewController {
     private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: collectionView) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
-        cell.imageView.contentMode = self.preferredContentMode
-        PHImageManager.default()
-            .requestImage(for: asset,
-                          targetSize: .init(width: cell.bounds.size.width * 3,
-                                            height: cell.bounds.size.height * 3),
-                          contentMode: .aspectFill,
-                          options: nil) { image, _ in
-                cell.imageView.image = image
-            }
+        cell.configure(with: asset, contentMode: self.preferredContentMode)
         return cell
     }
     
