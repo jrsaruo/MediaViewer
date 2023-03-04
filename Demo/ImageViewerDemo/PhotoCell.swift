@@ -60,7 +60,7 @@ final class PhotoCell: UICollectionViewCell {
             .requestImage(for: asset,
                           targetSize: .init(width: bounds.size.width * 3,
                                             height: bounds.size.height * 3),
-                          contentMode: .aspectFill,
+                          contentMode: contentMode == .scaleAspectFit ? .aspectFit : .aspectFill,
                           options: nil) { [weak self] image, _ in
                 self?.imageView.image = image
             }
