@@ -7,6 +7,7 @@
 
 import UIKit
 import ImageViewer
+import Photos
 import SwiftyTable
 
 final class PhotosViewController: UIViewController {
@@ -37,11 +38,18 @@ final class PhotosViewController: UIViewController {
         return collectionView
     }()
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(collectionView: collectionView) { [weak self] collectionView, indexPath, photo in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: collectionView) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
-        cell.imageView.image = photo
         cell.imageView.contentMode = self.preferredContentMode
+        PHImageManager.default()
+            .requestImage(for: asset,
+                          targetSize: .init(width: cell.bounds.size.width * 3,
+                                            height: cell.bounds.size.height * 3),
+                          contentMode: .aspectFill,
+                          options: nil) { image, _ in
+                cell.imageView.image = image
+            }
         return cell
     }
     
@@ -58,7 +66,9 @@ final class PhotosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setUpViews()
+        loadPhotos()
     }
     
     private func setUpViews() {
@@ -71,11 +81,15 @@ final class PhotosViewController: UIViewController {
             self?.toggleContentMode()
         }
         navigationItem.rightBarButtonItem = toggleContentModeButton
+    }
+    
+    private func loadPhotos() {
+        let result = PHAsset.fetchAssets(with: .image, options: nil)
+        let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
         
-        // Subviews
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems((0...20).map { UIImage(systemName: "\($0).circle")! })
+        snapshot.appendItems(assets)
         dataSource.apply(snapshot)
     }
     
@@ -122,7 +136,23 @@ extension PhotosViewController: ImageViewerDataSource {
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceAtPage page: Int) -> ImageSource {
-        .sync(dataSource.snapshot().itemIdentifiers[page])
+        .async(transition: .fade(duration: 0.2)) { [weak self] in
+            guard let self else { return nil }
+            return await withCheckedContinuation { continuation in
+                let asset = self.dataSource.snapshot().itemIdentifiers[page]
+                let options = PHImageRequestOptions()
+                options.deliveryMode = .highQualityFormat
+                options.resizeMode = .none
+                options.isNetworkAccessAllowed = true
+                PHImageManager.default()
+                    .requestImage(for: asset,
+                                  targetSize: .zero,
+                                  contentMode: .aspectFit,
+                                  options: options) { image, _ in
+                        continuation.resume(returning: image)
+                    }
+            }
+        }
     }
     
     func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
