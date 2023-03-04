@@ -87,7 +87,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
-        let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.68) {
+        let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             imageViewerView.alpha = 1
             currentPageImageView.frame = currentPageImageFrameInContainer
             currentPageImageView.transitioningConfiguration = configurationBackup
