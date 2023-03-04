@@ -22,9 +22,10 @@ final class ImageViewerOnePageView: UIView {
     
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.decelerationRate = .fast
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 50
-        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         return scrollView
