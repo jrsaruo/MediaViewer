@@ -82,7 +82,17 @@ final class PhotosViewController: UIViewController {
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
         snapshot.appendItems(assets)
-        dataSource.apply(snapshot)
+        dataSource.apply(snapshot, animatingDifferences: false)
+        
+        if let lastAsset = result.lastObject {
+            collectionView.isHidden = true
+            Task {
+                collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
+                                            at: .bottom,
+                                            animated: false)
+                collectionView.isHidden = false
+            }
+        }
     }
     
     // MARK: - Methods
