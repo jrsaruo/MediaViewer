@@ -61,7 +61,10 @@ final class PhotoCell: UICollectionViewCell {
                           targetSize: .init(width: bounds.size.width * 3,
                                             height: bounds.size.height * 3),
                           contentMode: contentMode == .scaleAspectFit ? .aspectFit : .aspectFill,
-                          options: nil) { [weak self] image, _ in
+                          options: nil) { [weak self] image, info in
+                if let info, let isCancelled = info[PHImageCancelledKey] as? Bool, isCancelled {
+                    return
+                }
                 self?.imageView.image = image
             }
     }
