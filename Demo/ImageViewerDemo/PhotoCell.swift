@@ -36,4 +36,12 @@ final class PhotoCell: UICollectionViewCell {
             item.width.equal(to: item.height)
         }
     }
+    
+    // MARK: - Lifecycle
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.image = nil
+    }
+    
 }
