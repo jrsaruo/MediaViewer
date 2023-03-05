@@ -84,6 +84,16 @@ final class PhotosViewController: UIViewController {
         let result = PHAsset.fetchAssets(with: .image, options: nil)
         let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
         
+        // Hide the collection view until ready
+        collectionView.isHidden = true
+        defer {
+            UIView.transition(with: collectionView,
+                              duration: 0.2,
+                              options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
+                self.collectionView.isHidden = false
+            }
+        }
+        
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
         snapshot.appendItems(assets)
@@ -91,13 +101,9 @@ final class PhotosViewController: UIViewController {
         
         // Scroll to the bottom if needed
         if let lastAsset = result.lastObject {
-            collectionView.isHidden = true // Hide until scrolling is done
-            Task {
-                collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
-                                            at: .bottom,
-                                            animated: false)
-                collectionView.isHidden = false
-            }
+            collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
+                                        at: .bottom,
+                                        animated: false)
         }
     }
     
