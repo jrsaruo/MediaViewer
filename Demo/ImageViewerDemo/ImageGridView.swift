@@ -37,7 +37,7 @@ final class ImageGridView: UIView {
         }
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.register(PhotoCell.self)
+        collectionView.register(ImageCell.self)
         return collectionView
     }()
     

@@ -16,7 +16,7 @@ final class PhotosViewController: UIViewController {
     
     private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: imageGridView.collectionView) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
-        let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
         cell.configure(with: asset,
                        contentMode: self.preferredContentMode,
                        screenScale: self.view.window!.screen.scale)
@@ -175,7 +175,7 @@ extension PhotosViewController: ImageViewerDataSource {
     func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
-        guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(at: indexPathForCurrentImage) as? PhotoCell else {
+        guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(at: indexPathForCurrentImage) as? ImageCell else {
             return nil
         }
         return cellForCurrentImage.imageView

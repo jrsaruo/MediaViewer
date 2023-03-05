@@ -1,5 +1,5 @@
 //
-//  PhotoCell.swift
+//  ImageCell.swift
 //  ImageViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -9,7 +9,7 @@ import UIKit
 import AceLayout
 import Photos
 
-final class PhotoCell: UICollectionViewCell {
+final class ImageCell: UICollectionViewCell {
     
     let imageView = UIImageView()
     
