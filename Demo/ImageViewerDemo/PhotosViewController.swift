@@ -89,8 +89,9 @@ final class PhotosViewController: UIViewController {
         snapshot.appendItems(assets)
         await dataSource.apply(snapshot, animatingDifferences: false)
         
+        // Scroll to the bottom if needed
         if let lastAsset = result.lastObject {
-            collectionView.isHidden = true
+            collectionView.isHidden = true // Hide until scrolling is done
             Task {
                 collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
                                             at: .bottom,
@@ -115,6 +116,7 @@ final class PhotosViewController: UIViewController {
         preferredContentMode = newContentMode
         toggleContentModeButton.image = .init(systemName: systemImageName)
         
+        // Reload to reflect new content mode
         var snapshot = dataSource.snapshot()
         let visibleItems = dataSource.snapshot(for: 0).visibleItems
         snapshot.reloadItems(visibleItems)
