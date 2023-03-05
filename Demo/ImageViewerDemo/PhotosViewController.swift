@@ -7,6 +7,7 @@
 
 import UIKit
 import ImageViewer
+import Photos
 import SwiftyTable
 
 final class PhotosViewController: UIViewController {
@@ -14,21 +15,26 @@ final class PhotosViewController: UIViewController {
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { _, layoutEnvironment in
             let columnCount = 3
+            let itemSpacing: CGFloat = 2
+            
+            let effectiveFullWidth = layoutEnvironment.container.effectiveContentSize.width
+            let totalSpacing = itemSpacing * CGFloat(columnCount - 1)
+            let estimatedItemWidth = (effectiveFullWidth - totalSpacing) / CGFloat(columnCount)
             let group = NSCollectionLayoutGroup.horizontal(
                 layoutSize: .init(
                     widthDimension: .fractionalWidth(1),
-                    heightDimension: .estimated(130)
+                    heightDimension: .estimated(estimatedItemWidth)
                 ),
                 repeatingSubitem: .init(layoutSize: .init(
                     widthDimension: .fractionalWidth(1 / CGFloat(columnCount)),
-                    heightDimension: .estimated(130)
+                    heightDimension: .estimated(estimatedItemWidth)
                 )),
                 count: columnCount
             )
-            group.interItemSpacing = .fixed(2)
+            group.interItemSpacing = .fixed(itemSpacing)
             
             let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 2
+            section.interGroupSpacing = itemSpacing
             return section
         }
         
@@ -37,11 +43,10 @@ final class PhotosViewController: UIViewController {
         return collectionView
     }()
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(collectionView: collectionView) { [weak self] collectionView, indexPath, photo in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: collectionView) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
-        cell.imageView.image = photo
-        cell.imageView.contentMode = self.preferredContentMode
+        cell.configure(with: asset, contentMode: self.preferredContentMode)
         return cell
     }
     
@@ -58,7 +63,12 @@ final class PhotosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setUpViews()
+        
+        Task(priority: .high) {
+            await loadPhotos()
+        }
     }
     
     private func setUpViews() {
@@ -71,12 +81,35 @@ final class PhotosViewController: UIViewController {
             self?.toggleContentMode()
         }
         navigationItem.rightBarButtonItem = toggleContentModeButton
+    }
+    
+    private func loadPhotos() async {
+        await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         
-        // Subviews
+        let result = PHAsset.fetchAssets(with: .image, options: nil)
+        let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+        
+        // Hide the collection view until ready
+        collectionView.isHidden = true
+        defer {
+            UIView.transition(with: collectionView,
+                              duration: 0.2,
+                              options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
+                self.collectionView.isHidden = false
+            }
+        }
+        
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems((0...20).map { UIImage(systemName: "\($0).circle")! })
-        dataSource.apply(snapshot)
+        snapshot.appendItems(assets)
+        await dataSource.apply(snapshot, animatingDifferences: false)
+        
+        // Scroll to the bottom if needed
+        if let lastAsset = result.lastObject {
+            collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
+                                        at: .bottom,
+                                        animated: false)
+        }
     }
     
     // MARK: - Methods
@@ -94,10 +127,13 @@ final class PhotosViewController: UIViewController {
         preferredContentMode = newContentMode
         toggleContentModeButton.image = .init(systemName: systemImageName)
         
+        // Reload to reflect new content mode
         var snapshot = dataSource.snapshot()
         let visibleItems = dataSource.snapshot(for: 0).visibleItems
         snapshot.reloadItems(visibleItems)
-        dataSource.apply(snapshot)
+        Task {
+            await dataSource.apply(snapshot)
+        }
     }
 }
 
@@ -122,7 +158,23 @@ extension PhotosViewController: ImageViewerDataSource {
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceAtPage page: Int) -> ImageSource {
-        .sync(dataSource.snapshot().itemIdentifiers[page])
+        .async(transition: .fade(duration: 0.2)) { [weak self] in
+            guard let self else { return nil }
+            return await withCheckedContinuation { continuation in
+                let asset = self.dataSource.snapshot().itemIdentifiers[page]
+                let options = PHImageRequestOptions()
+                options.deliveryMode = .highQualityFormat
+                options.resizeMode = .none
+                options.isNetworkAccessAllowed = true
+                PHImageManager.default()
+                    .requestImage(for: asset,
+                                  targetSize: .zero,
+                                  contentMode: .aspectFit,
+                                  options: options) { image, _ in
+                        continuation.resume(returning: image)
+                    }
+            }
+        }
     }
     
     func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
