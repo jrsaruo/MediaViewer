@@ -33,9 +33,8 @@ final class SyncImagesViewController: UIViewController {
     }
     
     private func setUpViews() {
-        title = "Photos"
-        
         // Navigation
+        navigationItem.title = "Sync Sample"
         navigationItem.backButtonDisplayMode = .minimal
         
         // Subviews

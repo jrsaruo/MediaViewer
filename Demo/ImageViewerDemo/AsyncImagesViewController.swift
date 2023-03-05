@@ -45,9 +45,8 @@ final class AsyncImagesViewController: UIViewController {
     }
     
     private func setUpViews() {
-        title = "Photos"
-        
         // Navigation
+        navigationItem.title = "Async Sample"
         navigationItem.backButtonDisplayMode = .minimal
         
         toggleContentModeButton.primaryAction = UIAction(image: .init(systemName: "rectangle.arrowtriangle.2.inward")) { [weak self] _ in

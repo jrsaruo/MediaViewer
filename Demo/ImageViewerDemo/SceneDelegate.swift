@@ -16,11 +16,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let windowScene = scene as? UIWindowScene else { return }
+        let syncImagesVC = SyncImagesViewController()
+        let asyncImagesVC = AsyncImagesViewController()
+        syncImagesVC.tabBarItem = .init(title: "Sync", image: .init(systemName: "0.circle"), tag: 0)
+        asyncImagesVC.tabBarItem = .init(title: "Async", image: .init(systemName: "rectangle.stack.fill"), tag: 1)
         let tabBarController = UITabBarController()
         tabBarController.setViewControllers(
             [
-                UINavigationController(rootViewController: SyncImagesViewController()),
-                UINavigationController(rootViewController: AsyncImagesViewController())
+                UINavigationController(rootViewController: syncImagesVC),
+                UINavigationController(rootViewController: asyncImagesVC)
             ],
             animated: false
         )
