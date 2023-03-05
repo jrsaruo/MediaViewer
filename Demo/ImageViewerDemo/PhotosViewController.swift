@@ -60,7 +60,10 @@ final class PhotosViewController: UIViewController {
         super.viewDidLoad()
         
         setUpViews()
-        loadPhotos()
+        
+        Task(priority: .high) {
+            await loadPhotos()
+        }
     }
     
     private func setUpViews() {
@@ -75,14 +78,16 @@ final class PhotosViewController: UIViewController {
         navigationItem.rightBarButtonItem = toggleContentModeButton
     }
     
-    private func loadPhotos() {
+    private func loadPhotos() async {
+        await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        
         let result = PHAsset.fetchAssets(with: .image, options: nil)
         let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
         
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
         snapshot.appendItems(assets)
-        dataSource.apply(snapshot, animatingDifferences: false)
+        await dataSource.apply(snapshot, animatingDifferences: false)
         
         if let lastAsset = result.lastObject {
             collectionView.isHidden = true
