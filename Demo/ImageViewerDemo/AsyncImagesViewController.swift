@@ -1,5 +1,5 @@
 //
-//  PhotosViewController.swift
+//  AsyncImagesViewController.swift
 //  ImageViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -10,7 +10,7 @@ import ImageViewer
 import Photos
 import SwiftyTable
 
-final class PhotosViewController: UIViewController {
+final class AsyncImagesViewController: UIViewController {
     
     private let imageGridView = ImageGridView()
     
@@ -112,7 +112,7 @@ final class PhotosViewController: UIViewController {
 
 // MARK: - UICollectionViewDelegate -
 
-extension PhotosViewController: UICollectionViewDelegate {
+extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
@@ -124,7 +124,7 @@ extension PhotosViewController: UICollectionViewDelegate {
 
 // MARK: - ImageViewerDataSource -
 
-extension PhotosViewController: ImageViewerDataSource {
+extension AsyncImagesViewController: ImageViewerDataSource {
     
     func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
@@ -184,7 +184,7 @@ extension PhotosViewController: ImageViewerDataSource {
 
 // MARK: - ImageViewerDelegate -
 
-extension PhotosViewController: ImageViewerDelegate {
+extension AsyncImagesViewController: ImageViewerDelegate {
     
     func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]

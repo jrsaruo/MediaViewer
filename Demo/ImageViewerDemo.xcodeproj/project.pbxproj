@@ -13,7 +13,7 @@
 		5A54613329A2594800F16456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613229A2594800F16456 /* Assets.xcassets */; };
 		5A54613629A2594800F16456 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613429A2594800F16456 /* LaunchScreen.storyboard */; };
 		5A54614129A25A5600F16456 /* ImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614029A25A5600F16456 /* ImageViewer */; };
-		5A54614329A25A8900F16456 /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614229A25A8900F16456 /* PhotosViewController.swift */; };
+		5A54614329A25A8900F16456 /* AsyncImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */; };
 		5A54614629A25B7800F16456 /* SwiftyTable in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614529A25B7800F16456 /* SwiftyTable */; };
 		5A54614929A25BCD00F16456 /* AceLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614829A25BCD00F16456 /* AceLayout */; };
 		5A54614B29A25CDF00F16456 /* ImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614A29A25CDF00F16456 /* ImageCell.swift */; };
@@ -28,7 +28,7 @@
 		5A54613529A2594800F16456 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A54613729A2594800F16456 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5A54613E29A25A2C00F16456 /* ImageViewer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ImageViewer; path = ..; sourceTree = "<group>"; };
-		5A54614229A25A8900F16456 /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
+		5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImagesViewController.swift; sourceTree = "<group>"; };
 		5A54614A29A25CDF00F16456 /* ImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -69,7 +69,7 @@
 			children = (
 				5A54612929A2594700F16456 /* AppDelegate.swift */,
 				5A54612B29A2594700F16456 /* SceneDelegate.swift */,
-				5A54614229A25A8900F16456 /* PhotosViewController.swift */,
+				5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */,
 				5A09B7A929B47C670042E3F1 /* ImageGridView.swift */,
 				5A54614A29A25CDF00F16456 /* ImageCell.swift */,
 				5A54613229A2594800F16456 /* Assets.xcassets */,
@@ -175,7 +175,7 @@
 			files = (
 				5A09B7AA29B47C670042E3F1 /* ImageGridView.swift in Sources */,
 				5A54614B29A25CDF00F16456 /* ImageCell.swift in Sources */,
-				5A54614329A25A8900F16456 /* PhotosViewController.swift in Sources */,
+				5A54614329A25A8900F16456 /* AsyncImagesViewController.swift in Sources */,
 				5A54612A29A2594700F16456 /* AppDelegate.swift in Sources */,
 				5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */,
 			);
