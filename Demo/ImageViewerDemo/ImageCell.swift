@@ -54,6 +54,11 @@ final class ImageCell: UICollectionViewCell {
     
     // MARK: - Methods
     
+    func configure(with image: UIImage?, contentMode: UIView.ContentMode) {
+        imageView.image = image
+        imageView.contentMode = contentMode
+    }
+    
     func configure(with asset: PHAsset,
                    contentMode: UIView.ContentMode,
                    screenScale: CGFloat) {
