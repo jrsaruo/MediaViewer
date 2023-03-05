@@ -120,7 +120,9 @@ final class PhotosViewController: UIViewController {
         var snapshot = dataSource.snapshot()
         let visibleItems = dataSource.snapshot(for: 0).visibleItems
         snapshot.reloadItems(visibleItems)
-        dataSource.apply(snapshot)
+        Task {
+            await dataSource.apply(snapshot)
+        }
     }
 }
 
