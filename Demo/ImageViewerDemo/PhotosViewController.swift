@@ -15,21 +15,26 @@ final class PhotosViewController: UIViewController {
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { _, layoutEnvironment in
             let columnCount = 3
+            let itemSpacing: CGFloat = 2
+            
+            let effectiveFullWidth = layoutEnvironment.container.effectiveContentSize.width
+            let totalSpacing = itemSpacing * CGFloat(columnCount - 1)
+            let estimatedItemWidth = (effectiveFullWidth - totalSpacing) / CGFloat(columnCount)
             let group = NSCollectionLayoutGroup.horizontal(
                 layoutSize: .init(
                     widthDimension: .fractionalWidth(1),
-                    heightDimension: .estimated(130)
+                    heightDimension: .estimated(estimatedItemWidth)
                 ),
                 repeatingSubitem: .init(layoutSize: .init(
                     widthDimension: .fractionalWidth(1 / CGFloat(columnCount)),
-                    heightDimension: .estimated(130)
+                    heightDimension: .estimated(estimatedItemWidth)
                 )),
                 count: columnCount
             )
-            group.interItemSpacing = .fixed(2)
+            group.interItemSpacing = .fixed(itemSpacing)
             
             let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 2
+            section.interGroupSpacing = itemSpacing
             return section
         }
         
