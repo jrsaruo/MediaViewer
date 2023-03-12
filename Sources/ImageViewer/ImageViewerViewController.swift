@@ -61,6 +61,21 @@ public protocol ImageViewerDataSource: AnyObject {
     func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
+// MARK: - ImageViewerDelegate -
+
+public protocol ImageViewerDelegate: AnyObject {
+    
+    /// Tells the delegate an image viewer has moved to a particular page.
+    /// - Parameters:
+    ///   - imageViewer: An image viewer informing the delegate about the page move.
+    ///   - page: A destination page.
+    func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int)
+}
+
+extension ImageViewerDelegate {
+    public func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int) {}
+}
+
 // MARK: - ImageViewerViewController -
 
 /// An image viewer.
@@ -80,6 +95,9 @@ open class ImageViewerViewController: UIPageViewController {
     
     /// The data source of the image viewer object.
     open weak var imageViewerDataSource: (any ImageViewerDataSource)?
+    
+    /// The object that acts as the delegate of the image viewer.
+    open weak var imageViewerDelegate: (any ImageViewerDelegate)?
     
     /// The current page of the image viewer.
     public var currentPage: Int {
