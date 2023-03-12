@@ -177,7 +177,7 @@ extension PhotosViewController: ImageViewerDataSource {
         }
     }
     
-    func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
+    func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         guard let cellForCurrentImage = collectionView.cellForItem(at: indexPathForCurrentImage) as? PhotoCell else {

@@ -49,16 +49,16 @@ public protocol ImageViewerDataSource: AnyObject {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceAtPage page: Int) -> ImageSource
     
-    /// Asks the data source to return the thumbnail view for the current page of the image viewer.
+    /// Asks the data source to return the transition source image view for the current page of the image viewer.
     ///
-    /// The image viewer uses this thumbnail view for push or pop transitions.
-    /// On the push transition, an animation runs as the image expands from this thumbnail view. The reverse happens on the pop.
+    /// The image viewer uses this view for push or pop transitions.
+    /// On the push transition, an animation runs as the image expands from this view. The reverse happens on the pop.
     ///
     /// If `nil`, the default animation runs on the transition.
     ///
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
-    /// - Returns: The thumbnail view for current page of `imageViewer`.
-    func thumbnailView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
+    /// - Returns: The transition source view for current page of `imageViewer`.
+    func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
 }
 
 // MARK: - ImageViewerViewController -
@@ -246,11 +246,11 @@ open class ImageViewerViewController: UIPageViewController {
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
         // Check whether to transition interactively
-        guard let sourceThumbnailView = imageViewerDataSource?.thumbnailView(forCurrentPageOf: self) else { return }
+        guard let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self) else { return }
         
         if recognizer.state == .began {
             // Start the interactive pop transition
-            interactivePopTransition = .init(sourceThumbnailView: sourceThumbnailView)
+            interactivePopTransition = .init(sourceImageView: sourceImageView)
             navigationController?.popViewController(animated: true)
         }
         
@@ -355,8 +355,8 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        guard let sourceThumbnailView = imageViewerDataSource?.thumbnailView(forCurrentPageOf: self) else { return nil }
-        return ImageViewerTransition(operation: operation, sourceThumbnailView: sourceThumbnailView)
+        guard let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self) else { return nil }
+        return ImageViewerTransition(operation: operation, sourceImageView: sourceImageView)
     }
     
     public func navigationController(_ navigationController: UINavigationController,
