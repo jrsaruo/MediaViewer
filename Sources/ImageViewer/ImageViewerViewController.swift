@@ -176,6 +176,14 @@ open class ImageViewerViewController: UIPageViewController {
         
         setUpGestureRecognizers()
         setUpSubscriptions()
+        
+        /*
+         * NOTE:
+         * This delegate method is also called at initialization time,
+         * but since the delegate has not yet been set by the caller,
+         * it needs to be told to the caller again at this time.
+         */
+        imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
     }
     
     private func setUpGestureRecognizers() {
@@ -252,6 +260,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     private func pageDidChange() {
         singleTapRecognizer.require(toFail: currentPageViewController.imageDoubleTapRecognizer)
+        imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
     }
     
     // MARK: - Actions
