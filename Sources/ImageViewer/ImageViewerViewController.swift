@@ -105,6 +105,12 @@ open class ImageViewerViewController: UIPageViewController {
     
     private var interactivePopTransition: ImageViewerInteractivePopTransition?
     
+    private var shouldHideHomeIndicator = false {
+        didSet {
+            setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
+    }
+    
     // MARK: Backups
     
     private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
@@ -167,6 +173,8 @@ open class ImageViewerViewController: UIPageViewController {
         imageViewerVM.$showsImageOnly
             .sink { [weak self] showsImageOnly in
                 guard let self else { return }
+                self.shouldHideHomeIndicator = showsImageOnly
+                
                 let animator = UIViewPropertyAnimator(duration: UINavigationController.hideShowBarDuration,
                                                       dampingRatio: 1) {
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
@@ -205,6 +213,10 @@ open class ImageViewerViewController: UIPageViewController {
     
     open override var prefersStatusBarHidden: Bool {
         true
+    }
+    
+    open override var prefersHomeIndicatorAutoHidden: Bool {
+        shouldHideHomeIndicator
     }
     
     open override func setViewControllers(_ viewControllers: [UIViewController]?,
