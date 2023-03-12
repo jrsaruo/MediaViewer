@@ -143,6 +143,7 @@ extension PhotosViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
+        imageViewer.imageViewerDelegate = self
         navigationController?.delegate = imageViewer
         navigationController?.pushViewController(imageViewer, animated: true)
     }
@@ -184,5 +185,16 @@ extension PhotosViewController: ImageViewerDataSource {
             return nil
         }
         return cellForCurrentImage.imageView
+    }
+}
+
+// MARK: - ImageViewerDelegate -
+
+extension PhotosViewController: ImageViewerDelegate {
+    
+    func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int) {
+        let asset = dataSource.snapshot().itemIdentifiers[page]
+        let dateDescription = asset.creationDate?.formatted()
+        imageViewer.title = dateDescription
     }
 }
