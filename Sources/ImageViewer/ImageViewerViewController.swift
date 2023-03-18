@@ -113,6 +113,8 @@ open class ImageViewerViewController: UIPageViewController {
     
     private let imageViewerVM = ImageViewerViewModel()
     
+    private let pageControlBar = ImageViewerPageControlBar()
+    
     private let singleTapRecognizer = UITapGestureRecognizer()
     
     private let panRecognizer: UIPanGestureRecognizer = {
@@ -174,6 +176,7 @@ open class ImageViewerViewController: UIPageViewController {
         navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
+        setUpViews()
         setUpGestureRecognizers()
         setUpSubscriptions()
         
@@ -184,6 +187,19 @@ open class ImageViewerViewController: UIPageViewController {
          * it needs to be told to the caller again at this time.
          */
         imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
+    }
+    
+    private func setUpViews() {
+        // Subviews
+        view.addSubview(pageControlBar)
+        
+        // Layout
+        pageControlBar.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            pageControlBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pageControlBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageControlBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
     }
     
     private func setUpGestureRecognizers() {
