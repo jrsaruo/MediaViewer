@@ -168,6 +168,7 @@ open class ImageViewerViewController: UIPageViewController {
         
         dataSource = self
         delegate = self
+        pageControlBar.delegate = self
         
         guard let navigationController else {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
@@ -274,6 +275,15 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: - Methods
     
+    /// Move to show an image on the specified page.
+    /// - Parameter page: The destination page.
+    open func move(toPage page: Int, animated: Bool) {
+        guard let imageViewerPage = makeImageViewerPage(forPage: page) else { return }
+        setViewControllers([imageViewerPage],
+                           direction: page < currentPage ? .reverse : .forward,
+                           animated: animated)
+    }
+    
     private func pageDidChange() {
         singleTapRecognizer.require(toFail: currentPageViewController.imageDoubleTapRecognizer)
         imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
@@ -373,6 +383,16 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
             }
         }
         return imageViewerPage
+    }
+}
+
+// MARK: - ImageViewerPageControlBarDelegate -
+
+extension ImageViewerViewController: ImageViewerPageControlBarDelegate {
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   didVisitThumbnailOnPage page: Int) {
+        move(toPage: page, animated: false)
     }
 }
 
