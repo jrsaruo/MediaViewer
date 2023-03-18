@@ -7,7 +7,14 @@
 
 import UIKit
 
+protocol ImageViewerPageControlBarDelegate: AnyObject {
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   didVisitThumbnailOnPage page: Int)
+}
+
 final class ImageViewerPageControlBar: UIView {
+    
+    weak var delegate: (any ImageViewerPageControlBarDelegate)?
     
     // MARK: - Initializers
     
