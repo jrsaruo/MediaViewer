@@ -9,6 +9,8 @@ import UIKit
 
 final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
+    var indexPathForExpandingItem: IndexPath?
+    
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
     
@@ -25,21 +27,48 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         
         guard let collectionView, collectionView.numberOfSections == 1 else { return }
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
+        let expandingImageWidthToHeight: CGFloat = 1.8 // TODO: Use the correct ratio
         
         let compactItemWidth: CGFloat = 21
+        let expandedItemWidth: CGFloat = collectionView.bounds.height * expandingImageWidthToHeight
         let compactItemSpacing: CGFloat = 1
+        let expandedItemSpacing: CGFloat = 12
         
-        let contentWidth = (compactItemWidth + compactItemSpacing) * CGFloat(numberOfItems) - compactItemSpacing
-        contentSize = CGSize(width: contentWidth,
-                             height: collectionView.bounds.height)
-        
+        // Calculate frames for each item
+        var frames: [IndexPath: CGRect] = [:]
         for item in 0 ..< numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
+            let previousIndexPath = IndexPath(item: item - 1, section: 0)
+            let width: CGFloat
+            let itemSpacing: CGFloat
+            switch indexPathForExpandingItem {
+            case indexPath:
+                width = expandedItemWidth
+                itemSpacing = expandedItemSpacing
+            case previousIndexPath:
+                width = compactItemWidth
+                itemSpacing = expandedItemSpacing
+            default:
+                width = compactItemWidth
+                itemSpacing = compactItemSpacing
+            }
+            let previousFrame = frames[previousIndexPath]
+            let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
+            frames[indexPath] = CGRect(x: x,
+                                       y: 0,
+                                       width: width,
+                                       height: collectionView.bounds.height)
+        }
+        
+        // Calculate the content size
+        let lastItemFrame = frames[IndexPath(item: numberOfItems - 1, section: 0)]!
+        contentSize = CGSize(width: lastItemFrame.maxX,
+                             height: collectionView.bounds.height)
+        
+        // Set up layout attributes
+        for (indexPath, frame) in frames {
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
-            attributes.frame = CGRect(x: (compactItemWidth + compactItemSpacing) * CGFloat(item),
-                                      y: 0,
-                                      width: compactItemWidth,
-                                      height: collectionView.bounds.height)
+            attributes.frame = frame
             attributesDictionary[indexPath] = attributes
         }
     }
