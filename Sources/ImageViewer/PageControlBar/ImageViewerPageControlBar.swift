@@ -24,6 +24,19 @@ final class ImageViewerPageControlBar: UIView {
         return collectionView
     }()
     
+    // TODO: Specify the correct ItemIdentifierType
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
+        guard let self else { return nil }
+        return collectionView.dequeueConfiguredReusableCell(using: self.cellRegistration,
+                                                            for: indexPath,
+                                                            item: item)
+    }
+    
+    private let cellRegistration = UICollectionView.CellRegistration<PageControlBarThumbnailCell, Int> { cell, indexPath, item in
+        // TODO: Set the correct image
+        cell.imageView.image = .init(systemName: "\(item).circle")
+    }
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
