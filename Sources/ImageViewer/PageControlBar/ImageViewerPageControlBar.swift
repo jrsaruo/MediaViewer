@@ -7,6 +7,11 @@
 
 import UIKit
 
+protocol ImageViewerPageControlBarDataSource: AnyObject {
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   thumbnailOnPage page: Int) -> ImageSource
+}
+
 protocol ImageViewerPageControlBarDelegate: AnyObject {
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    didVisitThumbnailOnPage page: Int)
@@ -14,6 +19,7 @@ protocol ImageViewerPageControlBarDelegate: AnyObject {
 
 final class ImageViewerPageControlBar: UIView {
     
+    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     weak var delegate: (any ImageViewerPageControlBarDelegate)?
     
     private let layout = ImageViewerPageControlBarLayout()
@@ -25,7 +31,7 @@ final class ImageViewerPageControlBar: UIView {
     }()
     
     // TODO: Specify the correct ItemIdentifierType
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(using: self.cellRegistration,
                                                             for: indexPath,
