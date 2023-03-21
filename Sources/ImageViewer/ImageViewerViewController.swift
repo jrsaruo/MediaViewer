@@ -49,6 +49,14 @@ public protocol ImageViewerDataSource: AnyObject {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceAtPage page: Int) -> ImageSource
     
+    /// Asks the data source to return a source of a thumbnail image on the page control bar in the image viewer.
+    /// - Parameters:
+    ///   - imageViewer: An object representing the image viewer requesting this information.
+    ///   - page: A page in the image viewer.
+    /// - Returns: A source of a thumbnail image on the page control bar in `imageViewer`.
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     pageThumbnailAtPage page: Int) -> ImageSource
+    
     /// Asks the data source to return the transition source image view for the current page of the image viewer.
     ///
     /// The image viewer uses this view for push or pop transitions.
@@ -59,6 +67,14 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
     /// - Returns: The transition source view for current page of `imageViewer`.
     func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
+}
+
+extension ImageViewerDataSource {
+    
+    public func imageViewer(_ imageViewer: ImageViewerViewController,
+                            pageThumbnailAtPage page: Int) -> ImageSource {
+        self.imageViewer(imageViewer, imageSourceAtPage: page)
+    }
 }
 
 // MARK: - ImageViewerDelegate -
@@ -168,6 +184,7 @@ open class ImageViewerViewController: UIPageViewController {
         
         dataSource = self
         delegate = self
+        pageControlBar.dataSource = self
         pageControlBar.delegate = self
         
         guard let navigationController else {
@@ -383,6 +400,16 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
             }
         }
         return imageViewerPage
+    }
+}
+
+// MARK: - ImageViewerPageControlBarDataSource -
+
+extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   thumbnailOnPage page: Int) -> ImageSource {
+        imageViewerDataSource?.imageViewer(self, pageThumbnailAtPage: page) ?? .sync(nil)
     }
 }
 
