@@ -29,6 +29,11 @@ public enum ImageSource {
     /// The viewer will use `provider` to acquire an image and display it using `transition`.
     case async(transition: ImageTransition = .fade(duration: 0.2),
                provider: () async -> UIImage?)
+    
+    /// An image source that represents the lack of an image.
+    ///
+    /// This is equivalent to `.sync(nil)`.
+    static var none: Self { .sync(nil) }
 }
 
 // MARK: - ImageViewerDataSource -
@@ -409,7 +414,7 @@ extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
     
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    thumbnailOnPage page: Int) -> ImageSource {
-        imageViewerDataSource?.imageViewer(self, pageThumbnailAtPage: page) ?? .sync(nil)
+        imageViewerDataSource?.imageViewer(self, pageThumbnailAtPage: page) ?? .none
     }
 }
 
