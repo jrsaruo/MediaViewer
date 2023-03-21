@@ -27,6 +27,8 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         
         guard let collectionView, collectionView.numberOfSections == 1 else { return }
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
+        guard numberOfItems > 0 else { return }
+        
         let expandingImageWidthToHeight: CGFloat = 1.8 // TODO: Use the correct ratio
         
         let compactItemWidth: CGFloat = 21

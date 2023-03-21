@@ -214,6 +214,10 @@ open class ImageViewerViewController: UIPageViewController {
     
     private func setUpViews() {
         // Subviews
+        if let imageViewerDataSource {
+            let numberOfPages = imageViewerDataSource.numberOfImages(in: self)
+            pageControlBar.configure(numberOfPages: numberOfPages)
+        }
         view.addSubview(pageControlBar)
         
         // Layout

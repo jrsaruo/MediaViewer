@@ -9,7 +9,7 @@ import UIKit
 
 final class PageControlBarThumbnailCell: UICollectionViewCell {
     
-    let imageView: UIImageView = {
+    private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         return imageView
@@ -41,5 +41,11 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+    
+    // MARK: - Methods
+    
+    func configure(with imageSource: ImageSource) {
+        imageView.load(from: imageSource)
     }
 }

@@ -30,17 +30,20 @@ final class ImageViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    // TODO: Specify the correct ItemIdentifierType
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, page in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(using: self.cellRegistration,
                                                             for: indexPath,
-                                                            item: item)
+                                                            item: page)
     }
     
-    private let cellRegistration = UICollectionView.CellRegistration<PageControlBarThumbnailCell, Int> { cell, indexPath, item in
-        // TODO: Set the correct image
-        cell.imageView.image = .init(systemName: "\(item).circle")
+    private lazy var cellRegistration = UICollectionView.CellRegistration<PageControlBarThumbnailCell, Int> { [weak self] cell, indexPath, page in
+        guard let self,
+              let thumbnailSource = self.dataSource?.imageViewerPageControlBar(self,
+                                                                               thumbnailOnPage: page) else {
+            return
+        }
+        cell.configure(with: thumbnailSource)
     }
     
     // MARK: - Initializers
@@ -56,6 +59,9 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func setUpViews() {
+        // FIXME: [Workaround] Initialize cellRegistration before applying a snapshot to diffableDataSource.
+        _ = cellRegistration
+        
         // Subviews
         addSubview(collectionView)
         
@@ -74,5 +80,14 @@ final class ImageViewerPageControlBar: UIView {
     override var intrinsicContentSize: CGSize {
         CGSize(width: super.intrinsicContentSize.width,
                height: 42)
+    }
+    
+    // MARK: - Methods
+    
+    func configure(numberOfPages: Int) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(Array(0 ..< numberOfPages))
+        diffableDataSource.apply(snapshot)
     }
 }
