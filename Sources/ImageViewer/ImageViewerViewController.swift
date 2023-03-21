@@ -248,6 +248,7 @@ open class ImageViewerViewController: UIPageViewController {
                                                       dampingRatio: 1) {
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
                     self.view.backgroundColor = showsImageOnly ? .black : .systemBackground
+                    self.pageControlBar.isHidden = showsImageOnly
                 }
                 if showsImageOnly {
                     animator.addCompletion { position in
