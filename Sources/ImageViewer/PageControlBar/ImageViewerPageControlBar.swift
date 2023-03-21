@@ -63,6 +63,7 @@ final class ImageViewerPageControlBar: UIView {
         _ = cellRegistration
         
         // Subviews
+        collectionView.delegate = self
         addSubview(collectionView)
         
         // Layout
@@ -98,5 +99,19 @@ final class ImageViewerPageControlBar: UIView {
         collectionView.scrollToItem(at: indexPath,
                                     at: .centeredHorizontally,
                                     animated: animated)
+    }
+}
+
+// MARK: - UICollectionViewDelegate -
+
+extension ImageViewerPageControlBar: UICollectionViewDelegate {
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetX = collectionView.contentOffset.x
+        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
+        if let indexPathForCenterItem = collectionView.indexPathForItem(at: center),
+           layout.indexPathForExpandingItem != indexPathForCenterItem {
+            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCenterItem.item)
+        }
     }
 }
