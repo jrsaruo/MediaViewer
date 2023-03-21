@@ -84,10 +84,19 @@ final class ImageViewerPageControlBar: UIView {
     
     // MARK: - Methods
     
-    func configure(numberOfPages: Int) {
+    func configure(numberOfPages: Int, currentPage: Int) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
         snapshot.appendSections([0])
         snapshot.appendItems(Array(0 ..< numberOfPages))
-        diffableDataSource.apply(snapshot)
+        diffableDataSource.apply(snapshot) {
+            self.scroll(toPage: currentPage, animated: false)
+        }
+    }
+    
+    func scroll(toPage page: Int, animated: Bool) {
+        let indexPath = IndexPath(item: page, section: 0)
+        collectionView.scrollToItem(at: indexPath,
+                                    at: .centeredHorizontally,
+                                    animated: animated)
     }
 }
