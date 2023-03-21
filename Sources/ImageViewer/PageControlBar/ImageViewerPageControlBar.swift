@@ -46,6 +46,8 @@ final class ImageViewerPageControlBar: UIView {
         cell.configure(with: thumbnailSource)
     }
     
+    private var shouldDetectScrolling = true
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
@@ -89,8 +91,12 @@ final class ImageViewerPageControlBar: UIView {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
         snapshot.appendSections([0])
         snapshot.appendItems(Array(0 ..< numberOfPages))
+        
+        // Ignore scrolling until setup is complete
+        shouldDetectScrolling = false
         diffableDataSource.apply(snapshot) {
             self.scroll(toPage: currentPage, animated: false)
+            self.shouldDetectScrolling = true
         }
     }
     
@@ -107,6 +113,7 @@ final class ImageViewerPageControlBar: UIView {
 extension ImageViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard shouldDetectScrolling else { return }
         let offsetX = collectionView.contentOffset.x
         let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
         if let indexPathForCenterItem = collectionView.indexPathForItem(at: center),
