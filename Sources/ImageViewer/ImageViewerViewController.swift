@@ -485,14 +485,20 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
                 imageScrollView.panGestureRecognizer.state = .failed
                 return true
             }
-        case let pagingRecognizer as UIPanGestureRecognizer where pagingRecognizer.view is UIScrollView:
-            assert(pagingRecognizer.view?.superview == view,
-                   "Unknown pan gesture recognizer: \(otherGestureRecognizer)")
-            // Prefer an interactive pop over paging.
-            if isMovingDown {
-                // Make paging fail
-                pagingRecognizer.state = .failed
-                return true
+        case let pagingRecognizer as UIPanGestureRecognizer
+            where pagingRecognizer.view is UIScrollView:
+            switch pagingRecognizer.view?.superview {
+            case view:
+                // Prefer an interactive pop over paging.
+                if isMovingDown {
+                    // Make paging fail
+                    pagingRecognizer.state = .failed
+                    return true
+                }
+            case is ImageViewerPageControlBar:
+                return false
+            default:
+                assertionFailure("Unknown pan gesture recognizer: \(otherGestureRecognizer)")
             }
         default:
             break
