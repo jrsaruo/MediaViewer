@@ -54,6 +54,12 @@ final class ImageViewerPageControlBar: UIView {
     
     private var shouldDetectScrolling = true
     
+    private var indexPathForCurrentCenterItem: IndexPath? {
+        let offsetX = collectionView.contentOffset.x
+        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
+        return collectionView.indexPathForItem(at: center)
+    }
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
@@ -141,11 +147,31 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard shouldDetectScrolling else { return }
-        let offsetX = collectionView.contentOffset.x
-        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
-        if let indexPathForCenterItem = collectionView.indexPathForItem(at: center),
-           layout.indexPathForExpandingItem != indexPathForCenterItem {
-            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCenterItem.item)
+        if let indexPathForCurrentCenterItem,
+           layout.indexPathForExpandingItem != indexPathForCurrentCenterItem {
+            layout.indexPathForExpandingItem = indexPathForCurrentCenterItem
+            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
+        }
+    }
+    
+    private func scrollToCenterItem(animated: Bool) {
+        guard let indexPathForCurrentCenterItem else { return }
+        collectionView.scrollToItem(at: indexPathForCurrentCenterItem,
+                                    at: .centeredHorizontally,
+                                    animated: animated)
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        scrollToCenterItem(animated: true)
+    }
+    
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        scrollToCenterItem(animated: true)
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            scrollToCenterItem(animated: true)
         }
     }
 }
