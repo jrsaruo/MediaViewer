@@ -81,7 +81,15 @@ extension ImageViewerDataSource {
     public func imageViewer(_ imageViewer: ImageViewerViewController,
                             pageThumbnailAtPage page: Int,
                             preferredThumbnailSize: CGSize) -> ImageSource {
-        self.imageViewer(imageViewer, imageSourceAtPage: page)
+        switch self.imageViewer(imageViewer, imageSourceAtPage: page) {
+        case .sync(let image):
+            return .sync(image?.preparingThumbnail(of: preferredThumbnailSize))
+        case .async(let transition, let imageProvider):
+            return .async(transition: transition) {
+                let image = await imageProvider()
+                return await image?.byPreparingThumbnail(ofSize: preferredThumbnailSize)
+            }
+        }
     }
 }
 
