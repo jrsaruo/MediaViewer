@@ -9,12 +9,14 @@ import UIKit
 
 extension UIImageView {
     
-    func load(from imageSource: ImageSource) {
+    @discardableResult
+    func load(from imageSource: ImageSource) -> Task<(), Never>? {
         switch imageSource {
         case .sync(let image):
             self.image = image
+            return nil
         case .async(let transition, let imageProvider):
-            Task.detached(priority: .high) {
+            return Task.detached(priority: .high) {
                 let image = await imageProvider()
                 Task { @MainActor in
                     switch transition {

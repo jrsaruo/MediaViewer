@@ -15,6 +15,8 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
         return imageView
     }()
     
+    private var imageLoadingTask: Task<(), Never>?
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
@@ -43,9 +45,19 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
         ])
     }
     
+    // MARK: Lifecycle
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        imageLoadingTask?.cancel()
+        imageLoadingTask = nil
+        imageView.image = nil
+    }
+    
     // MARK: - Methods
     
     func configure(with imageSource: ImageSource) {
-        imageView.load(from: imageSource)
+        imageLoadingTask = imageView.load(from: imageSource)
     }
 }
