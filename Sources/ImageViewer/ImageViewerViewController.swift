@@ -147,8 +147,6 @@ open class ImageViewerViewController: UIPageViewController {
     
     private let pageControlBar = ImageViewerPageControlBar()
     
-    private let singleTapRecognizer = UITapGestureRecognizer()
-    
     private let panRecognizer: UIPanGestureRecognizer = {
         let recognizer = UIPanGestureRecognizer()
         recognizer.maximumNumberOfTouches = 1
@@ -241,9 +239,6 @@ open class ImageViewerViewController: UIPageViewController {
     }
     
     private func setUpGestureRecognizers() {
-        singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
-        view.addGestureRecognizer(singleTapRecognizer)
-        
         panRecognizer.delegate = self
         panRecognizer.addTarget(self, action: #selector(panned))
         view.addGestureRecognizer(panRecognizer)
@@ -323,16 +318,10 @@ open class ImageViewerViewController: UIPageViewController {
     }
     
     private func pageDidChange() {
-        singleTapRecognizer.require(toFail: currentPageViewController.imageDoubleTapRecognizer)
         imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
     }
     
     // MARK: - Actions
-    
-    @objc
-    private func backgroundTapped(recognizer: UITapGestureRecognizer) {
-        imageViewerVM.showsImageOnly.toggle()
-    }
     
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
@@ -362,6 +351,10 @@ open class ImageViewerViewController: UIPageViewController {
 // MARK: - ImageViewerOnePageViewControllerDelegate -
 
 extension ImageViewerViewController: ImageViewerOnePageViewControllerDelegate {
+    
+    func imageViewerPageTapped(_ imageViewerPage: ImageViewerOnePageViewController) {
+        imageViewerVM.showsImageOnly.toggle()
+    }
     
     func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
                          didDoubleTap imageView: UIImageView) {
