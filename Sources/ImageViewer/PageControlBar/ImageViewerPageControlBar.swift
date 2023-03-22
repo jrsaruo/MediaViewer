@@ -134,6 +134,11 @@ final class ImageViewerPageControlBar: UIView {
 
 extension ImageViewerPageControlBar: UICollectionViewDelegate {
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: false)
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+    }
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard shouldDetectScrolling else { return }
         let offsetX = collectionView.contentOffset.x
