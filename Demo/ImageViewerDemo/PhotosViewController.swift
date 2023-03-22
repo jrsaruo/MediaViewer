@@ -180,7 +180,7 @@ extension PhotosViewController: ImageViewerDataSource {
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      pageThumbnailAtPage page: Int,
-                     preferredThumbnailSize: CGSize) -> ImageSource {
+                     filling preferredThumbnailSize: CGSize) -> ImageSource {
         .async(transition: .fade(duration: 0.1)) { [weak self] in
             guard let self else { return nil }
             return await withCheckedContinuation { continuation in

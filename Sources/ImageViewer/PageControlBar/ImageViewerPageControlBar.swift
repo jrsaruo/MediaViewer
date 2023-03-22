@@ -10,7 +10,7 @@ import UIKit
 protocol ImageViewerPageControlBarDataSource: AnyObject {
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    thumbnailOnPage page: Int,
-                                   preferredThumbnailSize: CGSize) -> ImageSource
+                                   filling preferredThumbnailSize: CGSize) -> ImageSource
 }
 
 protocol ImageViewerPageControlBarDelegate: AnyObject {
@@ -41,14 +41,12 @@ final class ImageViewerPageControlBar: UIView {
     private lazy var cellRegistration = UICollectionView.CellRegistration<PageControlBarThumbnailCell, Int> { [weak self] cell, indexPath, page in
         guard let self, let dataSource = self.dataSource else { return }
         let scale = self.window?.screen.scale ?? 3
-        let imageWidthToHeight: CGFloat = 1 // TODO: Use the correct ratio
-        let preferredHeight = self.bounds.height
-        let preferredSize = CGSize(width: preferredHeight * imageWidthToHeight * scale,
-                                   height: preferredHeight * scale)
+        let preferredSize = CGSize(width: cell.bounds.width * scale,
+                                   height: cell.bounds.height * scale)
         let thumbnailSource = dataSource.imageViewerPageControlBar(
             self,
             thumbnailOnPage: page,
-            preferredThumbnailSize: preferredSize
+            filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
     }

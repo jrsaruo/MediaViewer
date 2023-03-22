@@ -11,6 +11,8 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     var indexPathForExpandingItem: IndexPath?
     
+    let compactItemWidth: CGFloat = 21
+    
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
     
@@ -31,7 +33,6 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         
         let expandingImageWidthToHeight: CGFloat = 1.8 // TODO: Use the correct ratio
         
-        let compactItemWidth: CGFloat = 21
         let expandedItemWidth: CGFloat = collectionView.bounds.height * expandingImageWidthToHeight
         let compactItemSpacing: CGFloat = 1
         let expandedItemSpacing: CGFloat = 12

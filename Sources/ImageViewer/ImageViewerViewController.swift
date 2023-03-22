@@ -58,11 +58,11 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Parameters:
     ///   - imageViewer: An object representing the image viewer requesting this information.
     ///   - page: A page in the image viewer.
-    ///   - preferredThumbnailSize: An expected size of the thumbnail image. It is preferable to reduce the thumbnail image to this size for better performance.
+    ///   - preferredThumbnailSize: An expected size of the thumbnail image. For better performance, it is preferable to shrink the thumbnail image to a size that fills this size.
     /// - Returns: A source of a thumbnail image on the page control bar in `imageViewer`.
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      pageThumbnailAtPage page: Int,
-                     preferredThumbnailSize: CGSize) -> ImageSource
+                     filling preferredThumbnailSize: CGSize) -> ImageSource
     
     /// Asks the data source to return the transition source image view for the current page of the image viewer.
     ///
@@ -80,7 +80,7 @@ extension ImageViewerDataSource {
     
     public func imageViewer(_ imageViewer: ImageViewerViewController,
                             pageThumbnailAtPage page: Int,
-                            preferredThumbnailSize: CGSize) -> ImageSource {
+                            filling preferredThumbnailSize: CGSize) -> ImageSource {
         switch self.imageViewer(imageViewer, imageSourceAtPage: page) {
         case .sync(let image):
             return .sync(image?.preparingThumbnail(of: preferredThumbnailSize))
@@ -430,11 +430,11 @@ extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
     
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    thumbnailOnPage page: Int,
-                                   preferredThumbnailSize: CGSize) -> ImageSource {
+                                   filling preferredThumbnailSize: CGSize) -> ImageSource {
         guard let imageViewerDataSource else { return .none }
         return imageViewerDataSource.imageViewer(self,
                                                  pageThumbnailAtPage: page,
-                                                 preferredThumbnailSize: preferredThumbnailSize)
+                                                 filling: preferredThumbnailSize)
     }
 }
 
