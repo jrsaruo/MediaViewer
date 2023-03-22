@@ -58,9 +58,11 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Parameters:
     ///   - imageViewer: An object representing the image viewer requesting this information.
     ///   - page: A page in the image viewer.
+    ///   - preferredThumbnailSize: An expected size of the thumbnail image. It is preferable to reduce the thumbnail image to this size for better performance.
     /// - Returns: A source of a thumbnail image on the page control bar in `imageViewer`.
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     pageThumbnailAtPage page: Int) -> ImageSource
+                     pageThumbnailAtPage page: Int,
+                     preferredThumbnailSize: CGSize) -> ImageSource
     
     /// Asks the data source to return the transition source image view for the current page of the image viewer.
     ///
@@ -77,7 +79,8 @@ public protocol ImageViewerDataSource: AnyObject {
 extension ImageViewerDataSource {
     
     public func imageViewer(_ imageViewer: ImageViewerViewController,
-                            pageThumbnailAtPage page: Int) -> ImageSource {
+                            pageThumbnailAtPage page: Int,
+                            preferredThumbnailSize: CGSize) -> ImageSource {
         self.imageViewer(imageViewer, imageSourceAtPage: page)
     }
 }
@@ -418,8 +421,12 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
 extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
     
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
-                                   thumbnailOnPage page: Int) -> ImageSource {
-        imageViewerDataSource?.imageViewer(self, pageThumbnailAtPage: page) ?? .none
+                                   thumbnailOnPage page: Int,
+                                   preferredThumbnailSize: CGSize) -> ImageSource {
+        guard let imageViewerDataSource else { return .none }
+        return imageViewerDataSource.imageViewer(self,
+                                                 pageThumbnailAtPage: page,
+                                                 preferredThumbnailSize: preferredThumbnailSize)
     }
 }
 
