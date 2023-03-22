@@ -145,6 +145,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     private let imageViewerVM = ImageViewerViewModel()
     
+    private let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
     
     private let panRecognizer: UIPanGestureRecognizer = {
@@ -223,18 +224,26 @@ open class ImageViewerViewController: UIPageViewController {
     
     private func setUpViews() {
         // Subviews
+        view.addSubview(pageControlToolbar)
+        
         if let imageViewerDataSource {
             let numberOfPages = imageViewerDataSource.numberOfImages(in: self)
             pageControlBar.configure(numberOfPages: numberOfPages, currentPage: currentPage)
         }
-        view.addSubview(pageControlBar)
+        pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
+        pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlBar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            pageControlBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageControlBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageControlBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            pageControlToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            pageControlBar.topAnchor.constraint(equalTo: pageControlToolbar.topAnchor, constant: 1),
+            pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
+            pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),
+            pageControlBar.bottomAnchor.constraint(equalTo: pageControlToolbar.bottomAnchor, constant: -1),
         ])
     }
     
@@ -254,7 +263,7 @@ open class ImageViewerViewController: UIPageViewController {
                                                       dampingRatio: 1) {
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
                     self.view.backgroundColor = showsImageOnly ? .black : .systemBackground
-                    self.pageControlBar.isHidden = showsImageOnly
+                    self.pageControlToolbar.isHidden = showsImageOnly
                 }
                 if showsImageOnly {
                     animator.addCompletion { position in
