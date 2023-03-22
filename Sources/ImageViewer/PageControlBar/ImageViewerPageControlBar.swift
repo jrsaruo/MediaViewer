@@ -91,6 +91,22 @@ final class ImageViewerPageControlBar: UIView {
                height: 42)
     }
     
+    // MARK: - Lifecycle
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        adjustContentInset()
+    }
+    
+    private func adjustContentInset() {
+        guard bounds.width > 0 else { return }
+        let offset = (bounds.width - layout.compactItemWidth) / 2
+        collectionView.contentInset = .init(top: 0,
+                                            left: offset,
+                                            bottom: 0,
+                                            right: offset)
+    }
+    
     // MARK: - Methods
     
     func configure(numberOfPages: Int, currentPage: Int) {
