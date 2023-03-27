@@ -39,6 +39,7 @@ public enum ImageSource {
 // MARK: - ImageViewerDataSource -
 
 /// The object you use to provide data for an image viewer.
+@MainActor
 public protocol ImageViewerDataSource: AnyObject {
     
     /// Asks the data source to return the number of images in the image viewer.
@@ -95,6 +96,7 @@ extension ImageViewerDataSource {
 
 // MARK: - ImageViewerDelegate -
 
+@MainActor
 public protocol ImageViewerDelegate: AnyObject {
     
     /// Tells the delegate an image viewer has moved to a particular page.
