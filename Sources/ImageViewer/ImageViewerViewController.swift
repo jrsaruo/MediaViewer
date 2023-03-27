@@ -52,7 +52,7 @@ public protocol ImageViewerDataSource: AnyObject {
     ///   - page: A page in the image viewer.
     /// - Returns: A source of an image to view at `page` in `imageViewer`.
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageSourceAtPage page: Int) -> ImageSource
+                     imageSourceOnPage page: Int) -> ImageSource
     
     /// Asks the data source to return a source of a thumbnail image on the page control bar in the image viewer.
     /// - Parameters:
@@ -61,7 +61,7 @@ public protocol ImageViewerDataSource: AnyObject {
     ///   - preferredThumbnailSize: An expected size of the thumbnail image. For better performance, it is preferable to shrink the thumbnail image to a size that fills this size.
     /// - Returns: A source of a thumbnail image on the page control bar in `imageViewer`.
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     pageThumbnailAtPage page: Int,
+                     pageThumbnailOnPage page: Int,
                      filling preferredThumbnailSize: CGSize) -> ImageSource
     
     /// Asks the data source to return the transition source image view for the current page of the image viewer.
@@ -79,9 +79,9 @@ public protocol ImageViewerDataSource: AnyObject {
 extension ImageViewerDataSource {
     
     public func imageViewer(_ imageViewer: ImageViewerViewController,
-                            pageThumbnailAtPage page: Int,
+                            pageThumbnailOnPage page: Int,
                             filling preferredThumbnailSize: CGSize) -> ImageSource {
-        switch self.imageViewer(imageViewer, imageSourceAtPage: page) {
+        switch self.imageViewer(imageViewer, imageSourceOnPage: page) {
         case .sync(let image):
             return .sync(image?.preparingThumbnail(of: preferredThumbnailSize))
         case .async(let transition, let imageProvider):
@@ -409,7 +409,7 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         guard let imageViewerDataSource,
               0 <= page,
               page < imageViewerDataSource.numberOfImages(in: self) else { return nil }
-        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceAtPage: page)
+        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceOnPage: page)
         
         let imageViewerPage = ImageViewerOnePageViewController(page: page)
         imageViewerPage.delegate = self
@@ -435,7 +435,7 @@ extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
                                    filling preferredThumbnailSize: CGSize) -> ImageSource {
         guard let imageViewerDataSource else { return .none }
         return imageViewerDataSource.imageViewer(self,
-                                                 pageThumbnailAtPage: page,
+                                                 pageThumbnailOnPage: page,
                                                  filling: preferredThumbnailSize)
     }
 }
