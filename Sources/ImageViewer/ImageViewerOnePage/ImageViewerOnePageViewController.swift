@@ -8,6 +8,8 @@
 import UIKit
 
 protocol ImageViewerOnePageViewControllerDelegate: AnyObject {
+    func imageViewerPageTapped(_ imageViewerPage: ImageViewerOnePageViewController)
+    
     func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
                          didDoubleTap imageView: UIImageView)
 }
@@ -19,6 +21,8 @@ final class ImageViewerOnePageViewController: UIViewController {
     weak var delegate: (any ImageViewerOnePageViewControllerDelegate)?
     
     let imageViewerOnePageView = ImageViewerOnePageView()
+    
+    let singleTapRecognizer = UITapGestureRecognizer()
     
     let imageDoubleTapRecognizer: UITapGestureRecognizer = {
         let recognizer = UITapGestureRecognizer()
@@ -51,8 +55,14 @@ final class ImageViewerOnePageViewController: UIViewController {
     }
     
     private func setUpGestureRecognizers() {
+        singleTapRecognizer.addTarget(self, action: #selector(singleTapped))
+        view.addGestureRecognizer(singleTapRecognizer)
+        
         imageDoubleTapRecognizer.addTarget(self, action: #selector(imageDoubleTapped))
         imageViewerOnePageView.imageView.addGestureRecognizer(imageDoubleTapRecognizer)
+        
+        // Dependencies
+        singleTapRecognizer.require(toFail: imageDoubleTapRecognizer)
     }
     
     override func viewWillTransition(to size: CGSize,
@@ -71,6 +81,11 @@ final class ImageViewerOnePageViewController: UIViewController {
     }
     
     // MARK: - Actions
+    
+    @objc
+    private func singleTapped() {
+        delegate?.imageViewerPageTapped(self)
+    }
     
     @objc
     private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {

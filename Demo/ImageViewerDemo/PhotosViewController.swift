@@ -158,8 +158,8 @@ extension PhotosViewController: ImageViewerDataSource {
     }
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageSourceAtPage page: Int) -> ImageSource {
-        .async(transition: .fade(duration: 0.2)) { [weak self] in
+                     imageSourceOnPage page: Int) -> ImageSource {
+        .async { [weak self] in
             guard let self else { return nil }
             return await withCheckedContinuation { continuation in
                 let asset = self.dataSource.snapshot().itemIdentifiers[page]
@@ -171,6 +171,27 @@ extension PhotosViewController: ImageViewerDataSource {
                     .requestImage(for: asset,
                                   targetSize: .zero,
                                   contentMode: .aspectFit,
+                                  options: options) { image, _ in
+                        continuation.resume(returning: image)
+                    }
+            }
+        }
+    }
+    
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     pageThumbnailOnPage page: Int,
+                     filling preferredThumbnailSize: CGSize) -> ImageSource {
+        .async(transition: .fade(duration: 0.1)) { [weak self] in
+            guard let self else { return nil }
+            return await withCheckedContinuation { continuation in
+                let asset = self.dataSource.snapshot().itemIdentifiers[page]
+                let options = PHImageRequestOptions()
+                options.deliveryMode = .highQualityFormat
+                options.isNetworkAccessAllowed = true
+                PHImageManager.default()
+                    .requestImage(for: asset,
+                                  targetSize: preferredThumbnailSize,
+                                  contentMode: .aspectFill,
                                   options: options) { image, _ in
                         continuation.resume(returning: image)
                     }

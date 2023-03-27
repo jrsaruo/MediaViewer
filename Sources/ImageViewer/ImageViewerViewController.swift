@@ -29,6 +29,11 @@ public enum ImageSource {
     /// The viewer will use `provider` to acquire an image and display it using `transition`.
     case async(transition: ImageTransition = .fade(duration: 0.2),
                provider: () async -> UIImage?)
+    
+    /// An image source that represents the lack of an image.
+    ///
+    /// This is equivalent to `.sync(nil)`.
+    static var none: Self { .sync(nil) }
 }
 
 // MARK: - ImageViewerDataSource -
@@ -47,7 +52,17 @@ public protocol ImageViewerDataSource: AnyObject {
     ///   - page: A page in the image viewer.
     /// - Returns: A source of an image to view at `page` in `imageViewer`.
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageSourceAtPage page: Int) -> ImageSource
+                     imageSourceOnPage page: Int) -> ImageSource
+    
+    /// Asks the data source to return a source of a thumbnail image on the page control bar in the image viewer.
+    /// - Parameters:
+    ///   - imageViewer: An object representing the image viewer requesting this information.
+    ///   - page: A page in the image viewer.
+    ///   - preferredThumbnailSize: An expected size of the thumbnail image. For better performance, it is preferable to shrink the thumbnail image to a size that fills this size.
+    /// - Returns: A source of a thumbnail image on the page control bar in `imageViewer`.
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     pageThumbnailOnPage page: Int,
+                     filling preferredThumbnailSize: CGSize) -> ImageSource
     
     /// Asks the data source to return the transition source image view for the current page of the image viewer.
     ///
@@ -59,6 +74,23 @@ public protocol ImageViewerDataSource: AnyObject {
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
     /// - Returns: The transition source view for current page of `imageViewer`.
     func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView?
+}
+
+extension ImageViewerDataSource {
+    
+    public func imageViewer(_ imageViewer: ImageViewerViewController,
+                            pageThumbnailOnPage page: Int,
+                            filling preferredThumbnailSize: CGSize) -> ImageSource {
+        switch self.imageViewer(imageViewer, imageSourceOnPage: page) {
+        case .sync(let image):
+            return .sync(image?.preparingThumbnail(of: preferredThumbnailSize))
+        case .async(let transition, let imageProvider):
+            return .async(transition: transition) {
+                let image = await imageProvider()
+                return await image?.byPreparingThumbnail(ofSize: preferredThumbnailSize)
+            }
+        }
+    }
 }
 
 // MARK: - ImageViewerDelegate -
@@ -113,7 +145,8 @@ open class ImageViewerViewController: UIPageViewController {
     
     private let imageViewerVM = ImageViewerViewModel()
     
-    private let singleTapRecognizer = UITapGestureRecognizer()
+    private let pageControlToolbar = UIToolbar()
+    private let pageControlBar = ImageViewerPageControlBar()
     
     private let panRecognizer: UIPanGestureRecognizer = {
         let recognizer = UIPanGestureRecognizer()
@@ -166,6 +199,8 @@ open class ImageViewerViewController: UIPageViewController {
         
         dataSource = self
         delegate = self
+        pageControlBar.dataSource = self
+        pageControlBar.delegate = self
         
         guard let navigationController else {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
@@ -174,6 +209,7 @@ open class ImageViewerViewController: UIPageViewController {
         navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
+        setUpViews()
         setUpGestureRecognizers()
         setUpSubscriptions()
         
@@ -186,10 +222,32 @@ open class ImageViewerViewController: UIPageViewController {
         imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
     }
     
-    private func setUpGestureRecognizers() {
-        singleTapRecognizer.addTarget(self, action: #selector(backgroundTapped))
-        view.addGestureRecognizer(singleTapRecognizer)
+    private func setUpViews() {
+        // Subviews
+        view.addSubview(pageControlToolbar)
         
+        if let imageViewerDataSource {
+            let numberOfPages = imageViewerDataSource.numberOfImages(in: self)
+            pageControlBar.configure(numberOfPages: numberOfPages, currentPage: currentPage)
+        }
+        pageControlToolbar.addSubview(pageControlBar)
+        
+        // Layout
+        pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
+        pageControlBar.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            pageControlToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            pageControlBar.topAnchor.constraint(equalTo: pageControlToolbar.topAnchor, constant: 1),
+            pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
+            pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),
+            pageControlBar.bottomAnchor.constraint(equalTo: pageControlToolbar.bottomAnchor, constant: -1),
+        ])
+    }
+    
+    private func setUpGestureRecognizers() {
         panRecognizer.delegate = self
         panRecognizer.addTarget(self, action: #selector(panned))
         view.addGestureRecognizer(panRecognizer)
@@ -205,6 +263,7 @@ open class ImageViewerViewController: UIPageViewController {
                                                       dampingRatio: 1) {
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
                     self.view.backgroundColor = showsImageOnly ? .black : .systemBackground
+                    self.pageControlToolbar.isHidden = showsImageOnly
                 }
                 if showsImageOnly {
                     animator.addCompletion { position in
@@ -258,17 +317,20 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: - Methods
     
+    /// Move to show an image on the specified page.
+    /// - Parameter page: The destination page.
+    open func move(toPage page: Int, animated: Bool) {
+        guard let imageViewerPage = makeImageViewerPage(forPage: page) else { return }
+        setViewControllers([imageViewerPage],
+                           direction: page < currentPage ? .reverse : .forward,
+                           animated: animated)
+    }
+    
     private func pageDidChange() {
-        singleTapRecognizer.require(toFail: currentPageViewController.imageDoubleTapRecognizer)
         imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
     }
     
     // MARK: - Actions
-    
-    @objc
-    private func backgroundTapped(recognizer: UITapGestureRecognizer) {
-        imageViewerVM.showsImageOnly.toggle()
-    }
     
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
@@ -298,6 +360,10 @@ open class ImageViewerViewController: UIPageViewController {
 // MARK: - ImageViewerOnePageViewControllerDelegate -
 
 extension ImageViewerViewController: ImageViewerOnePageViewControllerDelegate {
+    
+    func imageViewerPageTapped(_ imageViewerPage: ImageViewerOnePageViewController) {
+        imageViewerVM.showsImageOnly.toggle()
+    }
     
     func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
                          didDoubleTap imageView: UIImageView) {
@@ -343,7 +409,7 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
         guard let imageViewerDataSource,
               0 <= page,
               page < imageViewerDataSource.numberOfImages(in: self) else { return nil }
-        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceAtPage: page)
+        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceOnPage: page)
         
         let imageViewerPage = ImageViewerOnePageViewController(page: page)
         imageViewerPage.delegate = self
@@ -357,6 +423,30 @@ extension ImageViewerViewController: UIPageViewControllerDataSource {
             }
         }
         return imageViewerPage
+    }
+}
+
+// MARK: - ImageViewerPageControlBarDataSource -
+
+extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   thumbnailOnPage page: Int,
+                                   filling preferredThumbnailSize: CGSize) -> ImageSource {
+        guard let imageViewerDataSource else { return .none }
+        return imageViewerDataSource.imageViewer(self,
+                                                 pageThumbnailOnPage: page,
+                                                 filling: preferredThumbnailSize)
+    }
+}
+
+// MARK: - ImageViewerPageControlBarDelegate -
+
+extension ImageViewerViewController: ImageViewerPageControlBarDelegate {
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   didVisitThumbnailOnPage page: Int) {
+        move(toPage: page, animated: false)
     }
 }
 
@@ -413,14 +503,20 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
                 imageScrollView.panGestureRecognizer.state = .failed
                 return true
             }
-        case let pagingRecognizer as UIPanGestureRecognizer where pagingRecognizer.view is UIScrollView:
-            assert(pagingRecognizer.view?.superview == view,
-                   "Unknown pan gesture recognizer: \(otherGestureRecognizer)")
-            // Prefer an interactive pop over paging.
-            if isMovingDown {
-                // Make paging fail
-                pagingRecognizer.state = .failed
-                return true
+        case let pagingRecognizer as UIPanGestureRecognizer
+            where pagingRecognizer.view is UIScrollView:
+            switch pagingRecognizer.view?.superview {
+            case view:
+                // Prefer an interactive pop over paging.
+                if isMovingDown {
+                    // Make paging fail
+                    pagingRecognizer.state = .failed
+                    return true
+                }
+            case is ImageViewerPageControlBar:
+                return false
+            default:
+                assertionFailure("Unknown pan gesture recognizer: \(otherGestureRecognizer)")
             }
         default:
             break
