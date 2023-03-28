@@ -54,8 +54,6 @@ final class ImageViewerOnePageView: UIView {
     }
     
     private func setUpViews() {
-        backgroundColor = .black
-        
         // Subviews
         scrollView.delegate = self
         scrollView.addSubview(imageView)
