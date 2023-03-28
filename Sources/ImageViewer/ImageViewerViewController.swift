@@ -84,11 +84,11 @@ extension ImageViewerDataSource {
                             filling preferredThumbnailSize: CGSize) -> ImageSource {
         switch self.imageViewer(imageViewer, imageSourceOnPage: page) {
         case .sync(let image):
-            return .sync(image?.preparingThumbnail(of: preferredThumbnailSize))
+            return .sync(image?.preparingThumbnail(of: preferredThumbnailSize) ?? image)
         case .async(let transition, let imageProvider):
             return .async(transition: transition) {
                 let image = await imageProvider()
-                return await image?.byPreparingThumbnail(ofSize: preferredThumbnailSize)
+                return await image?.byPreparingThumbnail(ofSize: preferredThumbnailSize) ?? image
             }
         }
     }
