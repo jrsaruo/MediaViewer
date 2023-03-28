@@ -46,7 +46,9 @@ final class PhotosViewController: UIViewController {
     private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: collectionView) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
-        cell.configure(with: asset, contentMode: self.preferredContentMode)
+        cell.configure(with: asset,
+                       contentMode: self.preferredContentMode,
+                       screenScale: self.view.window!.screen.scale)
         return cell
     }
     
