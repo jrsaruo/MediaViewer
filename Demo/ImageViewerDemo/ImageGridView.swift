@@ -54,6 +54,8 @@ final class ImageGridView: UIView {
     }
     
     private func setUpViews() {
+        backgroundColor = .systemBackground
+        
         // Subviews
         addSubview(collectionView)
         
