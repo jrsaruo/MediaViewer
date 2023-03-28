@@ -188,6 +188,8 @@ open class ImageViewerViewController: UIPageViewController {
             preconditionFailure("Page \(page) out of range.")
         }
         setViewControllers([imageViewerPage], direction: .forward, animated: false)
+        
+        hidesBottomBarWhenPushed = true
     }
     
     required public init?(coder: NSCoder) {

@@ -1,5 +1,5 @@
 //
-//  PhotosViewController.swift
+//  AsyncImagesViewController.swift
 //  ImageViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -10,42 +10,13 @@ import ImageViewer
 import Photos
 import SwiftyTable
 
-final class PhotosViewController: UIViewController {
+final class AsyncImagesViewController: UIViewController {
     
-    private let collectionView: UICollectionView = {
-        let layout = UICollectionViewCompositionalLayout { _, layoutEnvironment in
-            let columnCount = 3
-            let itemSpacing: CGFloat = 2
-            
-            let effectiveFullWidth = layoutEnvironment.container.effectiveContentSize.width
-            let totalSpacing = itemSpacing * CGFloat(columnCount - 1)
-            let estimatedItemWidth = (effectiveFullWidth - totalSpacing) / CGFloat(columnCount)
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: .init(
-                    widthDimension: .fractionalWidth(1),
-                    heightDimension: .estimated(estimatedItemWidth)
-                ),
-                repeatingSubitem: .init(layoutSize: .init(
-                    widthDimension: .fractionalWidth(1 / CGFloat(columnCount)),
-                    heightDimension: .estimated(estimatedItemWidth)
-                )),
-                count: columnCount
-            )
-            group.interItemSpacing = .fixed(itemSpacing)
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = itemSpacing
-            return section
-        }
-        
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.register(PhotoCell.self)
-        return collectionView
-    }()
+    private let imageGridView = ImageGridView()
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: collectionView) { [weak self] collectionView, indexPath, asset in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: imageGridView.collectionView) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
-        let cell = collectionView.dequeueReusableCell(of: PhotoCell.self, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
         cell.configure(with: asset,
                        contentMode: self.preferredContentMode,
                        screenScale: self.view.window!.screen.scale)
@@ -59,8 +30,8 @@ final class PhotosViewController: UIViewController {
     // MARK: - Lifecycle
     
     override func loadView() {
-        collectionView.delegate = self
-        view = collectionView
+        imageGridView.collectionView.delegate = self
+        view = imageGridView
     }
     
     override func viewDidLoad() {
@@ -74,9 +45,8 @@ final class PhotosViewController: UIViewController {
     }
     
     private func setUpViews() {
-        title = "Photos"
-        
         // Navigation
+        navigationItem.title = "Async Sample"
         navigationItem.backButtonDisplayMode = .minimal
         
         toggleContentModeButton.primaryAction = UIAction(image: .init(systemName: "rectangle.arrowtriangle.2.inward")) { [weak self] _ in
@@ -92,12 +62,12 @@ final class PhotosViewController: UIViewController {
         let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
         
         // Hide the collection view until ready
-        collectionView.isHidden = true
+        imageGridView.collectionView.isHidden = true
         defer {
-            UIView.transition(with: collectionView,
+            UIView.transition(with: imageGridView.collectionView,
                               duration: 0.2,
                               options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
-                self.collectionView.isHidden = false
+                self.imageGridView.collectionView.isHidden = false
             }
         }
         
@@ -108,9 +78,9 @@ final class PhotosViewController: UIViewController {
         
         // Scroll to the bottom if needed
         if let lastAsset = result.lastObject {
-            collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
-                                        at: .bottom,
-                                        animated: false)
+            imageGridView.collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
+                                                      at: .bottom,
+                                                      animated: false)
         }
     }
     
@@ -141,7 +111,7 @@ final class PhotosViewController: UIViewController {
 
 // MARK: - UICollectionViewDelegate -
 
-extension PhotosViewController: UICollectionViewDelegate {
+extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
@@ -153,7 +123,7 @@ extension PhotosViewController: UICollectionViewDelegate {
 
 // MARK: - ImageViewerDataSource -
 
-extension PhotosViewController: ImageViewerDataSource {
+extension AsyncImagesViewController: ImageViewerDataSource {
     
     func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
@@ -204,7 +174,7 @@ extension PhotosViewController: ImageViewerDataSource {
     func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
-        guard let cellForCurrentImage = collectionView.cellForItem(at: indexPathForCurrentImage) as? PhotoCell else {
+        guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(at: indexPathForCurrentImage) as? ImageCell else {
             return nil
         }
         return cellForCurrentImage.imageView
@@ -213,7 +183,7 @@ extension PhotosViewController: ImageViewerDataSource {
 
 // MARK: - ImageViewerDelegate -
 
-extension PhotosViewController: ImageViewerDelegate {
+extension AsyncImagesViewController: ImageViewerDelegate {
     
     func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]

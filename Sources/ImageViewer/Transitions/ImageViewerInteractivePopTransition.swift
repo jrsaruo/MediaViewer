@@ -14,9 +14,16 @@ final class ImageViewerInteractivePopTransition: NSObject {
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
     
+    private var shouldShowTabBarAfterTransition = false
+    
+    private var tabBar: UITabBar? {
+        transitionContext?.viewController(forKey: .to)?.tabBarController?.tabBar
+    }
+    
     // MARK: Backups
     
     private var sourceImageHiddenBackup = false
+    private var tabBarAlphaBackup: CGFloat?
     private var initialZoomScale: CGFloat = 1
     private var initialImageTransform = CGAffineTransform.identity
     private var initialImageFrameInContainer = CGRect.null
@@ -45,12 +52,17 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // Back up
         sourceImageHiddenBackup = sourceImageView.isHidden
+        tabBarAlphaBackup = tabBar?.alpha
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
         initialImageFrameInContainer = containerView.convert(currentPageImageView.frame,
                                                              from: currentPageView.scrollView)
         
         // Prepare for transition
+        if tabBar?.alpha == 0 && !toVC.hidesBottomBarWhenPushed {
+            shouldShowTabBarAfterTransition = true
+        }
+        
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = initialImageFrameInContainer
         
@@ -84,6 +96,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageImageView.frame = sourceImageFrameInContainer
             currentPageImageView.transitioningConfiguration = self.sourceImageView.transitioningConfiguration
             currentPageImageView.layer.masksToBounds = true // TODO: Change according to the source configuration
+            
+            if self.shouldShowTabBarAfterTransition {
+                self.tabBar?.alpha = 1
+            }
         }
         finishAnimator.addCompletion { _ in
             self.sourceImageView.isHidden = self.sourceImageHiddenBackup
@@ -107,6 +123,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             currentPageImageView.frame = self.initialImageFrameInContainer
+            
+            if let tabBarAlphaBackup = self.tabBarAlphaBackup {
+                self.tabBar?.alpha = tabBarAlphaBackup
+            }
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
@@ -132,6 +152,12 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView
         
+        if let tabBar,
+           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
+            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
+            shouldShowTabBarAfterTransition = true
+        }
+        
         switch recognizer.state {
         case .possible, .began:
             // Adjust the anchor point to scale the image around a finger
@@ -150,6 +176,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             let transitionProgress = translation.y * 2 / panAreaSize.height
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)
+            
+            if shouldShowTabBarAfterTransition {
+                tabBar?.alpha = transitionProgress
+            }
             
             panningImageView.transform = panningImageTransform(translation: translation,
                                                                panAreaSize: panAreaSize)

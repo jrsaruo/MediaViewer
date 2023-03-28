@@ -59,8 +59,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let containerView = transitionContext.containerView
         containerView.addSubview(imageViewerView)
         
+        let tabBar = imageViewer.tabBarController?.tabBar
+        
         // Back up
         let sourceImageHiddenBackup = sourceImageView.isHidden
+        let tabBarSuperviewBackup = tabBar?.superview
         
         // Prepare for transition
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
@@ -85,6 +88,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         containerView.addSubview(currentPageImageView)
         sourceImageView.isHidden = true
         
+        if let tabBar {
+            containerView.addSubview(tabBar)
+        }
+        
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
@@ -102,6 +109,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceImageView.isHidden = sourceImageHiddenBackup
+                
+                if let tabBar {
+                    tabBarSuperviewBackup?.addSubview(tabBar)
+                }
+                
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure()
@@ -111,6 +123,17 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         animator.startAnimation()
+        
+        // Customize the tab bar animation
+        if imageViewer.hidesBottomBarWhenPushed,
+           let tabBar,
+           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
+            assert(defaultTabBarAnimationKey == "position")
+            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
+            animator.addAnimations {
+                tabBar.alpha = 0
+            }
+        }
     }
     
     private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
@@ -166,5 +189,27 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         animator.startAnimation()
+        
+        // Customize the tab bar animation
+        if let tabBar = toVC.tabBarController?.tabBar,
+           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
+            assert(defaultTabBarAnimationKey == "position")
+            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
+            if toVC.hidesBottomBarWhenPushed {
+                animator.addAnimations {
+                    tabBar.alpha = 0
+                }
+                animator.addCompletion { position in
+                    if position == .end {
+                        tabBar.alpha = 1
+                    }
+                }
+            } else {
+                tabBar.alpha = 0
+                animator.addAnimations {
+                    tabBar.alpha = 1
+                }
+            }
+        }
     }
 }
