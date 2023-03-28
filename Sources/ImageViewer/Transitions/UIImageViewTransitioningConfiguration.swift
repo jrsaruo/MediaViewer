@@ -9,6 +9,7 @@ import UIKit
 
 /// The set of `UIImageView` properties to be animated during transitions.
 struct UIImageViewTransitioningConfiguration {
+    var alpha: CGFloat
     var backgroundColor: UIColor?
     var tintColor: UIColor?
     var contentMode: UIView.ContentMode
@@ -22,7 +23,8 @@ extension UIImageView {
     
     var transitioningConfiguration: UIImageViewTransitioningConfiguration {
         get {
-            .init(backgroundColor: backgroundColor,
+            .init(alpha: alpha,
+                  backgroundColor: backgroundColor,
                   tintColor: tintColor,
                   contentMode: contentMode,
                   cornerRadius: layer.cornerRadius,
@@ -31,6 +33,7 @@ extension UIImageView {
                   masksToBounds: layer.masksToBounds)
         }
         set {
+            alpha = newValue.alpha
             backgroundColor = newValue.backgroundColor
             tintColor = newValue.tintColor
             contentMode = newValue.contentMode
