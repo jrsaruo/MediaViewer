@@ -54,12 +54,14 @@ final class PhotoCell: UICollectionViewCell {
     
     // MARK: - Methods
     
-    func configure(with asset: PHAsset, contentMode: UIView.ContentMode) {
+    func configure(with asset: PHAsset,
+                   contentMode: UIView.ContentMode,
+                   screenScale: CGFloat) {
         imageView.contentMode = contentMode
         imageRequestID = PHImageManager.default()
             .requestImage(for: asset,
-                          targetSize: .init(width: bounds.size.width * 3,
-                                            height: bounds.size.height * 3),
+                          targetSize: .init(width: bounds.size.width * screenScale,
+                                            height: bounds.size.height * screenScale),
                           contentMode: contentMode == .scaleAspectFit ? .aspectFit : .aspectFill,
                           options: nil) { [weak self] image, info in
                 if let info, let isCancelled = info[PHImageCancelledKey] as? Bool, isCancelled {
