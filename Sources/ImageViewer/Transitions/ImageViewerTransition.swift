@@ -10,12 +10,12 @@ import UIKit
 final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
     let operation: UINavigationController.Operation
-    let sourceImageView: UIImageView
+    let sourceImageView: UIImageView?
     
     // MARK: - Initializers
     
     init(operation: UINavigationController.Operation,
-         sourceImageView: UIImageView) {
+         sourceImageView: UIImageView?) {
         self.operation = operation
         self.sourceImageView = sourceImageView
     }
@@ -62,7 +62,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let tabBar = imageViewer.tabBarController?.tabBar
         
         // Back up
-        let sourceImageHiddenBackup = sourceImageView.isHidden
+        let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
         
         // Prepare for transition
@@ -72,21 +72,26 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
-        if currentPageImageView.image == nil {
+        if currentPageImageView.image == nil, let sourceImageView {
             currentPageView.setImage(sourceImageView.image, with: .none)
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
         let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
                                                                      from: currentPageImageView)
-        let sourceImageFrameInContainer = containerView.convert(sourceImageView.frame,
-                                                                from: sourceImageView)
-        currentPageView.destroyLayoutConfigurationBeforeTransition()
-        currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
-        currentPageImageView.frame = sourceImageFrameInContainer
+        if let sourceImageView {
+            let sourceImageFrameInContainer = containerView.convert(sourceImageView.frame,
+                                                                    from: sourceImageView)
+            currentPageView.destroyLayoutConfigurationBeforeTransition()
+            currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
+            currentPageImageView.frame = sourceImageFrameInContainer
+        } else {
+            currentPageView.destroyLayoutConfigurationBeforeTransition()
+            currentPageImageView.frame = currentPageImageFrameInContainer
+        }
         currentPageImageView.layer.masksToBounds = true
         containerView.addSubview(currentPageImageView)
-        sourceImageView.isHidden = true
+        sourceImageView?.isHidden = true
         
         if let tabBar {
             containerView.addSubview(tabBar)
@@ -100,7 +105,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.transitioningConfiguration = configurationBackup
             
             // NOTE: Keep following properties during transition for smooth animation
-            currentPageImageView.contentMode = self.sourceImageView.contentMode
+            if let sourceImageView = self.sourceImageView {
+                currentPageImageView.contentMode = sourceImageView.contentMode
+            }
             currentPageImageView.layer.masksToBounds = true
         }
         animator.addCompletion { position in
@@ -108,7 +115,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             case .end:
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
-                self.sourceImageView.isHidden = sourceImageHiddenBackup
+                self.sourceImageView?.isHidden = sourceImageHiddenBackup
                 
                 if let tabBar {
                     tabBarSuperviewBackup?.addSubview(tabBar)
@@ -149,7 +156,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         containerView.addSubview(toView)
         
         // Back up
-        let sourceImageHiddenBackup = sourceImageView.isHidden
+        let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         
         // Prepare for transition
         toView.frame = transitionContext.finalFrame(for: toVC)
@@ -160,26 +167,31 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let currentPageImageView = currentPageView.imageView
         let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
                                                                      from: currentPageView.scrollView)
-        let sourceImageFrameInContainer = containerView.convert(sourceImageView.frame,
-                                                                from: sourceImageView)
+        let sourceImageFrameInContainer = sourceImageView.map {
+            containerView.convert($0.frame, from: $0)
+        }
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = currentPageImageFrameInContainer
         containerView.addSubview(currentPageImageView)
-        sourceImageView.isHidden = true
+        sourceImageView?.isHidden = true
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             toView.alpha = 1
-            currentPageImageView.frame = sourceImageFrameInContainer
-            currentPageImageView.transitioningConfiguration = self.sourceImageView.transitioningConfiguration
+            if let sourceImageFrameInContainer {
+                currentPageImageView.frame = sourceImageFrameInContainer
+                currentPageImageView.transitioningConfiguration = self.sourceImageView!.transitioningConfiguration
+            } else {
+                currentPageImageView.alpha = 0
+            }
             currentPageImageView.clipsToBounds = true // TODO: Change according to the source configuration
         }
         animator.addCompletion { position in
             switch position {
             case .end:
                 currentPageImageView.removeFromSuperview()
-                self.sourceImageView.isHidden = sourceImageHiddenBackup
+                self.sourceImageView?.isHidden = sourceImageHiddenBackup
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure()
