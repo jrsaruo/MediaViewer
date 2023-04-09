@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 final class ImageViewerInteractivePopTransition: NSObject {
     
     private let sourceImageView: UIImageView?

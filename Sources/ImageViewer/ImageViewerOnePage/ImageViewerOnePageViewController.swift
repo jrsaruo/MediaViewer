@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 protocol ImageViewerOnePageViewControllerDelegate: AnyObject {
     func imageViewerPageTapped(_ imageViewerPage: ImageViewerOnePageViewController)
     
