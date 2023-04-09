@@ -70,7 +70,7 @@ public protocol ImageViewerDataSource: AnyObject {
     /// The image viewer uses this view for push or pop transitions.
     /// On the push transition, an animation runs as the image expands from this view. The reverse happens on the pop.
     ///
-    /// If `nil`, the default animation runs on the transition.
+    /// If `nil`, the animation looks like cross-dissolve.
     ///
     /// - Parameter imageViewer: An object representing the image viewer requesting this information.
     /// - Returns: The transition source view for current page of `imageViewer`.
