@@ -339,7 +339,7 @@ open class ImageViewerViewController: UIPageViewController {
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
         // Check whether to transition interactively
-        guard let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self) else { return }
+        let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self)
         
         if recognizer.state == .began {
             // Start the interactive pop transition
@@ -476,7 +476,7 @@ extension ImageViewerViewController: UINavigationControllerDelegate {
                                      animationControllerFor operation: UINavigationController.Operation,
                                      from fromVC: UIViewController,
                                      to toVC: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        guard let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self) else { return nil }
+        let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self)
         return ImageViewerTransition(operation: operation, sourceImageView: sourceImageView)
     }
     
