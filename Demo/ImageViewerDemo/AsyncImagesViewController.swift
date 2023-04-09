@@ -7,8 +7,8 @@
 
 import UIKit
 import ImageViewer
-import Photos
 import SwiftyTable
+@preconcurrency import Photos
 
 final class AsyncImagesViewController: UIViewController {
     
