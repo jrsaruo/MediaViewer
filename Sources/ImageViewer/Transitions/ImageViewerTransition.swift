@@ -167,8 +167,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let currentPageImageView = currentPageView.imageView
         let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
                                                                      from: currentPageView.scrollView)
-        let sourceImageFrameInContainer = sourceImageView.map {
-            containerView.convert($0.frame, from: $0)
+        let sourceImageFrameInContainer = sourceImageView.map { sourceView in
+            containerView.convert(sourceView.frame, from: sourceView)
         }
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = currentPageImageFrameInContainer
