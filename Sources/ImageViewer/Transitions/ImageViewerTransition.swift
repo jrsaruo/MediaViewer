@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
     let operation: UINavigationController.Operation

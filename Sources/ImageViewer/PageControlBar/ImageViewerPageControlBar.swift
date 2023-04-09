@@ -7,12 +7,14 @@
 
 import UIKit
 
+@MainActor
 protocol ImageViewerPageControlBarDataSource: AnyObject {
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    thumbnailOnPage page: Int,
                                    filling preferredThumbnailSize: CGSize) -> ImageSource
 }
 
+@MainActor
 protocol ImageViewerPageControlBarDelegate: AnyObject {
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    didVisitThumbnailOnPage page: Int)
