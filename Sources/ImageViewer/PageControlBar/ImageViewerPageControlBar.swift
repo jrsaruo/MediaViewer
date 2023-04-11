@@ -25,9 +25,12 @@ final class ImageViewerPageControlBar: UIView {
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     weak var delegate: (any ImageViewerPageControlBarDelegate)?
     
-    private let layout = ImageViewerPageControlBarLayout()
+    private var layout: ImageViewerPageControlBarLayout {
+        collectionView.collectionViewLayout as! ImageViewerPageControlBarLayout
+    }
     
     private lazy var collectionView: UICollectionView = {
+        let layout = ImageViewerPageControlBarLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
