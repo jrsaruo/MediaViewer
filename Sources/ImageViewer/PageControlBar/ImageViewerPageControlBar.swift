@@ -57,8 +57,6 @@ final class ImageViewerPageControlBar: UIView {
         cell.configure(with: thumbnailSource)
     }
     
-    private var shouldDetectScrolling = true
-    
     private var indexPathForCurrentCenterItem: IndexPath? {
         let offsetX = collectionView.contentOffset.x
         let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
@@ -127,13 +125,10 @@ final class ImageViewerPageControlBar: UIView {
         snapshot.appendSections([0])
         snapshot.appendItems(Array(0 ..< numberOfPages))
         
-        // Ignore scrolling until setup is complete
-        shouldDetectScrolling = false
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
             self.updateLayout(expandingItemAt: indexPath, animated: false)
             self.scroll(toPage: currentPage, animated: false)
-            self.shouldDetectScrolling = true
         }
     }
     
@@ -193,7 +188,6 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard shouldDetectScrolling else { return }
         if let indexPathForCurrentCenterItem,
            indexPathForPreviousVisitedItem != indexPathForCurrentCenterItem {
             indexPathForPreviousVisitedItem = indexPathForCurrentCenterItem
