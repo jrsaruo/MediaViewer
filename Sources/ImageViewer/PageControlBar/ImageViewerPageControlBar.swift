@@ -65,6 +65,8 @@ final class ImageViewerPageControlBar: UIView {
         return collectionView.indexPathForItem(at: center)
     }
     
+    private var indexPathForPreviousVisitedItem: IndexPath?
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
@@ -194,8 +196,8 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard shouldDetectScrolling else { return }
         if let indexPathForCurrentCenterItem,
-           layout.indexPathForExpandingItem != indexPathForCurrentCenterItem {
-            layout.indexPathForExpandingItem = indexPathForCurrentCenterItem
+           indexPathForPreviousVisitedItem != indexPathForCurrentCenterItem {
+            indexPathForPreviousVisitedItem = indexPathForCurrentCenterItem
             if scrollView.isDragging {
                 delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
             }
