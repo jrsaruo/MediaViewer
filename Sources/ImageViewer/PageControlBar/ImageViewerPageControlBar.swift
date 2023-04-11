@@ -206,10 +206,6 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         expandAndScrollToCenterItem()
     }
     
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        expandAndScrollToCenterItem()
-    }
-    
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
             expandAndScrollToCenterItem()
