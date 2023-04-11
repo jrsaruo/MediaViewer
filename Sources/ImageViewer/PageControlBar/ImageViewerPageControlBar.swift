@@ -157,6 +157,16 @@ final class ImageViewerPageControlBar: UIView {
                                              animated: false)
         }.startAnimation()
     }
+    
+    private func collapseItem() {
+        guard let indexPath = layout.indexPathForExpandingItem else { return }
+        UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
+            self.updateLayout(expandingItemAt: nil, animated: false)
+            self.collectionView.scrollToItem(at: indexPath,
+                                             at: .centeredHorizontally,
+                                             animated: false)
+        }.startAnimation()
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
@@ -170,6 +180,10 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
             delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPath.item)
             expandAndScrollToItem(at: indexPath)
         }
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        collapseItem()
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
