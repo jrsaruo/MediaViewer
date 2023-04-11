@@ -158,6 +158,11 @@ final class ImageViewerPageControlBar: UIView {
         }.startAnimation()
     }
     
+    private func expandAndScrollToCenterItem() {
+        guard let indexPathForCurrentCenterItem else { return }
+        expandAndScrollToItem(at: indexPathForCurrentCenterItem)
+    }
+    
     private func collapseItem() {
         guard let indexPath = layout.indexPathForExpandingItem else { return }
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
@@ -197,24 +202,17 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         }
     }
     
-    private func scrollToCenterItem(animated: Bool) {
-        guard let indexPathForCurrentCenterItem else { return }
-        collectionView.scrollToItem(at: indexPathForCurrentCenterItem,
-                                    at: .centeredHorizontally,
-                                    animated: animated)
-    }
-    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        scrollToCenterItem(animated: true)
+        expandAndScrollToCenterItem()
     }
     
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        scrollToCenterItem(animated: true)
+        expandAndScrollToCenterItem()
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
-            scrollToCenterItem(animated: true)
+            expandAndScrollToCenterItem()
         }
     }
 }
