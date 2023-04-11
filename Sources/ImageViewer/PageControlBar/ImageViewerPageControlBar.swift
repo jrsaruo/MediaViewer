@@ -145,6 +145,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPath.item)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -152,7 +153,9 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         if let indexPathForCurrentCenterItem,
            layout.indexPathForExpandingItem != indexPathForCurrentCenterItem {
             layout.indexPathForExpandingItem = indexPathForCurrentCenterItem
-            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
+            if scrollView.isDragging {
+                delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
+            }
         }
     }
     
