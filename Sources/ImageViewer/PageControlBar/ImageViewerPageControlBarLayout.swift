@@ -9,12 +9,24 @@ import UIKit
 
 final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
-    var indexPathForExpandingItem: IndexPath?
+    let indexPathForExpandingItem: IndexPath?
     
     let compactItemWidth: CGFloat = 21
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
+    
+    // MARK: - Initializers
+    
+    init(indexPathForExpandingItem: IndexPath?) {
+        self.indexPathForExpandingItem = indexPathForExpandingItem
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        self.indexPathForExpandingItem = nil
+        super.init(coder: coder)
+    }
     
     // MARK: - Override
     

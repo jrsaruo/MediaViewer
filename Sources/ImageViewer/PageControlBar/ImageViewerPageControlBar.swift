@@ -30,7 +30,7 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private lazy var collectionView: UICollectionView = {
-        let layout = ImageViewerPageControlBarLayout()
+        let layout = ImageViewerPageControlBarLayout(indexPathForExpandingItem: nil)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
@@ -146,8 +146,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func updateLayout(expandingItemAt indexPath: IndexPath?,
                               animated: Bool) {
-        let layout = ImageViewerPageControlBarLayout()
-        layout.indexPathForExpandingItem = indexPath
+        let layout = ImageViewerPageControlBarLayout(indexPathForExpandingItem: indexPath)
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
