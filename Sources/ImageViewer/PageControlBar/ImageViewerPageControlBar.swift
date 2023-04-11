@@ -128,6 +128,8 @@ final class ImageViewerPageControlBar: UIView {
         // Ignore scrolling until setup is complete
         shouldDetectScrolling = false
         diffableDataSource.apply(snapshot) {
+            let indexPath = IndexPath(item: currentPage, section: 0)
+            self.updateLayout(expandingItemAt: indexPath, animated: false)
             self.scroll(toPage: currentPage, animated: false)
             self.shouldDetectScrolling = true
         }
