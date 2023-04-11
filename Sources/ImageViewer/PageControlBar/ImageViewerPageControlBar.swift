@@ -139,6 +139,13 @@ final class ImageViewerPageControlBar: UIView {
                                     at: .centeredHorizontally,
                                     animated: animated)
     }
+    
+    private func updateLayout(expandingItemAt indexPath: IndexPath?,
+                              animated: Bool) {
+        let layout = ImageViewerPageControlBarLayout()
+        layout.indexPathForExpandingItem = indexPath
+        collectionView.setCollectionViewLayout(layout, animated: animated)
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
