@@ -148,6 +148,15 @@ final class ImageViewerPageControlBar: UIView {
         layout.indexPathForExpandingItem = indexPath
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
+    
+    private func expandAndScrollToItem(at indexPath: IndexPath) {
+        UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
+            self.updateLayout(expandingItemAt: indexPath, animated: false)
+            self.collectionView.scrollToItem(at: indexPath,
+                                             at: .centeredHorizontally,
+                                             animated: false)
+        }.startAnimation()
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
@@ -156,8 +165,11 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
-        delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPath.item)
+        
+        if layout.indexPathForExpandingItem != indexPath {
+            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPath.item)
+            expandAndScrollToItem(at: indexPath)
+        }
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
