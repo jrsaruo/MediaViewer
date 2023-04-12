@@ -204,7 +204,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         if let indexPathForCurrentCenterItem,
            indexPathForPreviousVisitedItem != indexPathForCurrentCenterItem {
             indexPathForPreviousVisitedItem = indexPathForCurrentCenterItem
-            if scrollView.isDragging {
+            if scrollView.isDragging && state == .collapsed {
                 delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
             }
         }
