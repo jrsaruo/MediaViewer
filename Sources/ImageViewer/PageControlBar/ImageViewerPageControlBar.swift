@@ -28,10 +28,23 @@ final class ImageViewerPageControlBar: UIView {
     
     private var state: State = .collapsed
     
+    /// The index path for where you will eventually arrive after ending dragging.
+    private var indexPathForFinalDestinationItem: IndexPath?
+    
+    private var indexPathForCurrentCenterItem: IndexPath? {
+        let offsetX = collectionView.contentOffset.x
+        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
+        return collectionView.indexPathForItem(at: center)
+    }
+    
+    // MARK: Publishers
+    
     var pageDidChange: some Publisher<Int, Never> {
         _pageDidChange.removeDuplicates()
     }
     private let _pageDidChange = PassthroughSubject<Int, Never>()
+    
+    // MARK: UI components
     
     private var layout: ImageViewerPageControlBarLayout {
         collectionView.collectionViewLayout as! ImageViewerPageControlBarLayout
@@ -64,15 +77,6 @@ final class ImageViewerPageControlBar: UIView {
         )
         cell.configure(with: thumbnailSource)
     }
-    
-    private var indexPathForCurrentCenterItem: IndexPath? {
-        let offsetX = collectionView.contentOffset.x
-        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
-        return collectionView.indexPathForItem(at: center)
-    }
-    
-    /// The index path for where you will eventually arrive after ending dragging.
-    private var indexPathForFinalDestinationItem: IndexPath?
     
     // MARK: - Initializers
     
