@@ -230,7 +230,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
          * when the finger is released at the point where it exceeds the limit of left and right edges.
          */
         if !scrollView.isDragging {
-            guard let indexPath = indexPathForFinalDestinationItem ?? indexPathForCurrentCenterItem else {
+            guard let indexPath = indexPathForCurrentCenterItem ?? indexPathForFinalDestinationItem else {
                 return
             }
             expandAndScrollToItem(at: indexPath)
