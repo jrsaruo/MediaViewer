@@ -74,6 +74,9 @@ final class ImageViewerPageControlBar: UIView {
     
     private var indexPathForPreviousVisitedItem: IndexPath?
     
+    /// The index path for where you will eventually arrive after ending dragging.
+    private var indexPathForFinalDestinationItem: IndexPath?
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
@@ -210,13 +213,31 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         }
     }
     
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        expandAndScrollToCenterItem()
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView,
+                                   withVelocity velocity: CGPoint,
+                                   targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let targetPoint = CGPoint(
+            x: targetContentOffset.pointee.x + collectionView.adjustedContentInset.left,
+            y: 0
+        )
+        indexPathForFinalDestinationItem = collectionView.indexPathForItem(at: targetPoint)
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate {
-            expandAndScrollToCenterItem()
+        /*
+         * When the finger is released with the finger stopped
+         * or
+         * when the finger is released at the point where it exceeds the limit of left and right edges.
+         */
+        if !scrollView.isDragging {
+            guard let indexPath = indexPathForFinalDestinationItem ?? indexPathForCurrentCenterItem else {
+                return
+            }
+            expandAndScrollToItem(at: indexPath)
         }
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        expandAndScrollToCenterItem()
     }
 }
