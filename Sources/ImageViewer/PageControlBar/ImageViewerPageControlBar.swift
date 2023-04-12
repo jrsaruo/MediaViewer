@@ -6,18 +6,13 @@
 //
 
 import UIKit
+import Combine
 
 @MainActor
 protocol ImageViewerPageControlBarDataSource: AnyObject {
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    thumbnailOnPage page: Int,
                                    filling preferredThumbnailSize: CGSize) -> ImageSource
-}
-
-@MainActor
-protocol ImageViewerPageControlBarDelegate: AnyObject {
-    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
-                                   didVisitThumbnailOnPage page: Int)
 }
 
 final class ImageViewerPageControlBar: UIView {
@@ -29,10 +24,14 @@ final class ImageViewerPageControlBar: UIView {
         case expanded
     }
     
+    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
+    
     private var state: State = .collapsed
     
-    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
-    weak var delegate: (any ImageViewerPageControlBarDelegate)?
+    var pageDidChange: some Publisher<Int, Never> {
+        _pageDidChange.removeDuplicates()
+    }
+    private let _pageDidChange = PassthroughSubject<Int, Never>()
     
     private var layout: ImageViewerPageControlBarLayout {
         collectionView.collectionViewLayout as! ImageViewerPageControlBarLayout
@@ -71,8 +70,6 @@ final class ImageViewerPageControlBar: UIView {
         let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
         return collectionView.indexPathForItem(at: center)
     }
-    
-    private var indexPathForPreviousVisitedItem: IndexPath?
     
     /// The index path for where you will eventually arrive after ending dragging.
     private var indexPathForFinalDestinationItem: IndexPath?
@@ -159,6 +156,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func expandAndScrollToItem(at indexPath: IndexPath) {
         state = .expanding
+        _pageDidChange.send(indexPath.item)
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: indexPath, animated: false)
             self.collectionView.scrollToItem(at: indexPath,
@@ -194,7 +192,6 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: false)
         
         if layout.indexPathForExpandingItem != indexPath {
-            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPath.item)
             expandAndScrollToItem(at: indexPath)
         }
     }
@@ -204,12 +201,13 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if let indexPathForCurrentCenterItem,
-           indexPathForPreviousVisitedItem != indexPathForCurrentCenterItem {
-            indexPathForPreviousVisitedItem = indexPathForCurrentCenterItem
-            if scrollView.isDragging && state == .collapsed {
-                delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
-            }
+        switch state {
+        case .collapsed:
+            guard let indexPathForCurrentCenterItem,
+                  scrollView.isDragging else { return }
+            _pageDidChange.send(indexPathForCurrentCenterItem.item)
+        case .collapsing, .expanding, .expanded:
+            break
         }
     }
     

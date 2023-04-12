@@ -204,7 +204,6 @@ open class ImageViewerViewController: UIPageViewController {
         dataSource = self
         delegate = self
         pageControlBar.dataSource = self
-        pageControlBar.delegate = self
         
         guard let navigationController else {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
@@ -279,6 +278,12 @@ open class ImageViewerViewController: UIPageViewController {
                     self.navigationController?.isNavigationBarHidden = false
                 }
                 animator.startAnimation()
+            }
+            .store(in: &cancellables)
+        
+        pageControlBar.pageDidChange
+            .sink { [weak self] page in
+                self?.move(toPage: page, animated: false)
             }
             .store(in: &cancellables)
     }
@@ -441,16 +446,6 @@ extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
         return imageViewerDataSource.imageViewer(self,
                                                  pageThumbnailOnPage: page,
                                                  filling: preferredThumbnailSize)
-    }
-}
-
-// MARK: - ImageViewerPageControlBarDelegate -
-
-extension ImageViewerViewController: ImageViewerPageControlBarDelegate {
-    
-    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
-                                   didVisitThumbnailOnPage page: Int) {
-        move(toPage: page, animated: false)
     }
 }
 
