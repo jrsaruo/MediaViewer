@@ -45,7 +45,10 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         
         let expandingImageWidthToHeight: CGFloat = 1.8 // TODO: Use the correct ratio
         
-        let expandedItemWidth: CGFloat = collectionView.bounds.height * expandingImageWidthToHeight
+        let expandedItemWidth: CGFloat = max(
+            collectionView.bounds.height * expandingImageWidthToHeight,
+            compactItemWidth
+        )
         let compactItemSpacing: CGFloat = 1
         let expandedItemSpacing: CGFloat = 12
         
