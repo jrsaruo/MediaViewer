@@ -238,6 +238,11 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        expandAndScrollToCenterItem()
+        switch state {
+        case .collapsing, .collapsed:
+            expandAndScrollToCenterItem()
+        case .expanding, .expanded:
+            break // NOP
+        }
     }
 }
