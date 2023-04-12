@@ -22,6 +22,15 @@ protocol ImageViewerPageControlBarDelegate: AnyObject {
 
 final class ImageViewerPageControlBar: UIView {
     
+    enum State {
+        case collapsing
+        case collapsed
+        case expanding
+        case expanded
+    }
+    
+    private var state: State = .collapsed
+    
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     weak var delegate: (any ImageViewerPageControlBarDelegate)?
     
@@ -146,11 +155,13 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func expandAndScrollToItem(at indexPath: IndexPath) {
+        state = .expanding
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: indexPath, animated: false)
             self.collectionView.scrollToItem(at: indexPath,
                                              at: .centeredHorizontally,
                                              animated: false)
+            self.state = .expanded
         }.startAnimation()
     }
     
@@ -161,11 +172,13 @@ final class ImageViewerPageControlBar: UIView {
     
     private func collapseItem() {
         guard let indexPath = layout.indexPathForExpandingItem else { return }
+        self.state = .collapsing
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: nil, animated: false)
             self.collectionView.scrollToItem(at: indexPath,
                                              at: .centeredHorizontally,
                                              animated: false)
+            self.state = .collapsed
         }.startAnimation()
     }
 }
