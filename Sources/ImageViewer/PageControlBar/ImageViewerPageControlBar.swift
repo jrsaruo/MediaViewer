@@ -213,12 +213,33 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         switch state {
-        case .collapsed:
+        case .collapsed(let indexPathForFinalDestinationItem):
             guard let indexPathForCurrentCenterItem,
                   scrollView.isDragging else { return }
             _pageDidChange.send(indexPathForCurrentCenterItem.item)
+            
+            /*
+             * NOTE:
+             * Start expanding when the final destination approaches.
+             * However, if the destination is the first or last item,
+             * ignore it and wait until the scroll is done
+             * because the scroll may bounce on the edge.
+             */
+            if indexPathForCurrentCenterItem == indexPathForFinalDestinationItem,
+               !isEdgeIndexPath(indexPathForCurrentCenterItem) {
+                expandAndScrollToCenterItem()
+            }
         case .collapsing, .expanding, .expanded:
             break
+        }
+    }
+    
+    private func isEdgeIndexPath(_ indexPath: IndexPath) -> Bool {
+        switch indexPath.item {
+        case 0, collectionView.numberOfItems(inSection: 0) - 1:
+            return true
+        default:
+            return false
         }
     }
     
