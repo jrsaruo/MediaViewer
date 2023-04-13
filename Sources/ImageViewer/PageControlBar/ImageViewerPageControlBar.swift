@@ -19,17 +19,24 @@ final class ImageViewerPageControlBar: UIView {
     
     enum State {
         case collapsing
-        case collapsed
+        
+        /// The collapsed state during scroll.
+        /// - Parameters:
+        ///   - indexPathForFinalDestinationItem: The index path for where you will eventually arrive after ending dragging.
+        case collapsed(indexPathForFinalDestinationItem: IndexPath?)
+        
         case expanding
         case expanded
+        
+        var indexPathForFinalDestinationItem: IndexPath? {
+            guard case .collapsed(let indexPath) = self else { return nil }
+            return indexPath
+        }
     }
     
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     
-    private var state: State = .collapsed
-    
-    /// The index path for where you will eventually arrive after ending dragging.
-    private var indexPathForFinalDestinationItem: IndexPath?
+    private var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
     
     private var indexPathForCurrentCenterItem: IndexPath? {
         let offsetX = collectionView.contentOffset.x
@@ -183,7 +190,7 @@ final class ImageViewerPageControlBar: UIView {
             self.collectionView.scrollToItem(at: indexPath,
                                              at: .centeredHorizontally,
                                              animated: false)
-            self.state = .collapsed
+            self.state = .collapsed(indexPathForFinalDestinationItem: nil)
         }.startAnimation()
     }
 }
@@ -222,7 +229,10 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
             x: targetContentOffset.pointee.x + collectionView.adjustedContentInset.left,
             y: 0
         )
-        indexPathForFinalDestinationItem = collectionView.indexPathForItem(at: targetPoint)
+        let targetIndexPath = collectionView.indexPathForItem(at: targetPoint)
+        state = .collapsed(
+            indexPathForFinalDestinationItem: targetIndexPath
+        )
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
@@ -232,7 +242,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
          * when the finger is released at the point where it exceeds the limit of left and right edges.
          */
         if !scrollView.isDragging {
-            guard let indexPath = indexPathForCurrentCenterItem ?? indexPathForFinalDestinationItem else {
+            guard let indexPath = indexPathForCurrentCenterItem ?? state.indexPathForFinalDestinationItem else {
                 return
             }
             expandAndScrollToItem(at: indexPath)
