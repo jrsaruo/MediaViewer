@@ -55,6 +55,18 @@ public protocol ImageViewerDataSource: AnyObject {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceOnPage page: Int) -> ImageSource
     
+    /// Asks the data source to return an aspect ratio of image.
+    ///
+    /// The ratio will be used to determine a size of page thumbnail.
+    /// This method should return immediately.
+    ///
+    /// - Parameters:
+    ///   - imageViewer: An object representing the image viewer requesting this information.
+    ///   - page: A page in the image viewer.
+    /// - Returns: An aspect ratio of image on the specified page.
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     imageWidthToHeightOnPage page: Int) -> CGFloat?
+    
     /// Asks the data source to return a source of a thumbnail image on the page control bar in the image viewer.
     /// - Parameters:
     ///   - imageViewer: An object representing the image viewer requesting this information.
@@ -78,6 +90,17 @@ public protocol ImageViewerDataSource: AnyObject {
 }
 
 extension ImageViewerDataSource {
+    
+    public func imageViewer(_ imageViewer: ImageViewerViewController,
+                            imageWidthToHeightOnPage page: Int) -> CGFloat? {
+        let imageSource = self.imageViewer(imageViewer, imageSourceOnPage: page)
+        switch imageSource {
+        case .sync(let image?) where image.size.height > 0:
+            return image.size.width / image.size.height
+        case .sync, .async:
+            return nil
+        }
+    }
     
     public func imageViewer(_ imageViewer: ImageViewerViewController,
                             pageThumbnailOnPage page: Int,
@@ -446,6 +469,11 @@ extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
         return imageViewerDataSource.imageViewer(self,
                                                  pageThumbnailOnPage: page,
                                                  filling: preferredThumbnailSize)
+    }
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   imageWidthToHeightOnPage page: Int) -> CGFloat? {
+        imageViewerDataSource?.imageViewer(self, imageWidthToHeightOnPage: page)
     }
 }
 

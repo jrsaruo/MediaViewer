@@ -10,7 +10,7 @@ import UIKit
 final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     enum Style {
-        case expanded(IndexPath, referenceSizeForAspectRatio: CGSize?)
+        case expanded(IndexPath, expandingImageWidthToHeight: CGFloat?)
         case collapsed
         
         var indexPathForExpandingItem: IndexPath? {
@@ -105,30 +105,26 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     private func expandingItemWidth(in collectionView: UICollectionView) -> CGFloat {
-        // Determine the expanding item size
-        let expandingImageSize: CGSize
+        let expandingImageWidthToHeight: CGFloat
         switch style {
-        case .expanded(let indexPath, let referenceSize):
-            if let referenceSize {
-                expandingImageSize = referenceSize
+        case .expanded(let indexPath, let imageWidthToHeight):
+            if let imageWidthToHeight {
+                expandingImageWidthToHeight = imageWidthToHeight
             } else if let cell = collectionView.cellForItem(at: indexPath) {
                 let cell = cell as! PageControlBarThumbnailCell
                 let image = cell.imageView.image
-                expandingImageSize = image?.size ?? .zero
+                if let imageSize = image?.size, imageSize.height > 0 {
+                    expandingImageWidthToHeight = imageSize.width / imageSize.height
+                } else {
+                    expandingImageWidthToHeight = 0
+                }
             } else {
-                expandingImageSize = .zero
+                expandingImageWidthToHeight = 0
             }
         case .collapsed:
-            expandingImageSize = .zero
-        }
-        
-        // Calculate the expanding item width
-        let expandingImageWidthToHeight: CGFloat
-        if expandingImageSize.height > 0 {
-            expandingImageWidthToHeight = expandingImageSize.width / expandingImageSize.height
-        } else {
             expandingImageWidthToHeight = 0
         }
+        
         return max(
             collectionView.bounds.height * expandingImageWidthToHeight,
             collapsedItemWidth

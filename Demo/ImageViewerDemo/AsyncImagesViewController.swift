@@ -151,6 +151,25 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     }
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
+                     imageWidthToHeightOnPage page: Int) -> CGFloat? {
+        let asset = dataSource.snapshot().itemIdentifiers[page]
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .fastFormat
+        options.resizeMode = .fast
+        options.isSynchronous = true
+        var size: CGSize?
+        PHImageManager.default()
+            .requestImage(for: asset,
+                          targetSize: CGSize(width: 100, height: 100),
+                          contentMode: .aspectFit,
+                          options: options) { image, _ in
+                size = image?.size
+            }
+        guard let size, size.height > 0 else { return nil }
+        return size.width / size.height
+    }
+    
+    func imageViewer(_ imageViewer: ImageViewerViewController,
                      pageThumbnailOnPage page: Int,
                      filling preferredThumbnailSize: CGSize) -> ImageSource {
         .async(transition: .fade(duration: 0.1)) { [weak self] in
