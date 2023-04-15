@@ -147,16 +147,8 @@ final class ImageViewerPageControlBar: UIView {
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
-            self.updateLayout(expandingItemAt: indexPath, animated: false)
-            self.scroll(toPage: currentPage, animated: false)
+            self.expandAndScrollToItem(at: indexPath, animated: false)
         }
-    }
-    
-    func scroll(toPage page: Int, animated: Bool) {
-        let indexPath = IndexPath(item: page, section: 0)
-        collectionView.scrollToItem(at: indexPath,
-                                    at: .centeredHorizontally,
-                                    animated: animated)
     }
     
     private func updateLayout(expandingItemAt indexPath: IndexPath?,
@@ -165,21 +157,30 @@ final class ImageViewerPageControlBar: UIView {
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
-    private func expandAndScrollToItem(at indexPath: IndexPath) {
+    private func expandAndScrollToItem(at indexPath: IndexPath, animated: Bool) {
         state = .expanding
         _pageDidChange.send(indexPath.item)
-        UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
-            self.updateLayout(expandingItemAt: indexPath, animated: false)
-            self.collectionView.scrollToItem(at: indexPath,
-                                             at: .centeredHorizontally,
-                                             animated: false)
-            self.state = .expanded
-        }.startAnimation()
+        
+        func expandAndScroll() {
+            updateLayout(expandingItemAt: indexPath, animated: false)
+            collectionView.scrollToItem(at: indexPath,
+                                        at: .centeredHorizontally,
+                                        animated: false)
+            state = .expanded
+        }
+        if animated {
+            UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
+                expandAndScroll()
+            }.startAnimation()
+        } else {
+            expandAndScroll()
+        }
     }
     
-    private func expandAndScrollToCenterItem() {
+    private func expandAndScrollToCenterItem(animated: Bool) {
         guard let indexPathForCurrentCenterItem else { return }
-        expandAndScrollToItem(at: indexPathForCurrentCenterItem)
+        expandAndScrollToItem(at: indexPathForCurrentCenterItem,
+                              animated: animated)
     }
     
     private func collapseItem() {
@@ -203,7 +204,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: false)
         
         if layout.indexPathForExpandingItem != indexPath {
-            expandAndScrollToItem(at: indexPath)
+            expandAndScrollToItem(at: indexPath, animated: true)
         }
     }
     
@@ -227,7 +228,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
              */
             if indexPathForCurrentCenterItem == indexPathForFinalDestinationItem,
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
-                expandAndScrollToCenterItem()
+                expandAndScrollToCenterItem(animated: true)
             }
         case .collapsing, .expanding, .expanded:
             break
@@ -266,14 +267,14 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
             guard let indexPath = indexPathForCurrentCenterItem ?? state.indexPathForFinalDestinationItem else {
                 return
             }
-            expandAndScrollToItem(at: indexPath)
+            expandAndScrollToItem(at: indexPath, animated: true)
         }
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         switch state {
         case .collapsing, .collapsed:
-            expandAndScrollToCenterItem()
+            expandAndScrollToCenterItem(animated: true)
         case .expanding, .expanded:
             break // NOP
         }
