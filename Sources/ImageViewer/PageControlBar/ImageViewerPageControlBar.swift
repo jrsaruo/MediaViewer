@@ -47,7 +47,9 @@ final class ImageViewerPageControlBar: UIView {
     // MARK: Publishers
     
     var pageDidChange: some Publisher<Int, Never> {
-        _pageDidChange.removeDuplicates()
+        _pageDidChange
+            .removeDuplicates()
+            .dropFirst() // Initial
     }
     private let _pageDidChange = PassthroughSubject<Int, Never>()
     
