@@ -154,10 +154,12 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func updateLayout(expandingItemAt indexPath: IndexPath?,
+                              referenceSizeForAspectRatio: CGSize? = nil,
                               animated: Bool) {
         let style: ImageViewerPageControlBarLayout.Style
         if let indexPath {
-            style = .expanded(indexPath, referenceSizeForAspectRatio: nil)
+            style = .expanded(indexPath,
+                              referenceSizeForAspectRatio: referenceSizeForAspectRatio)
         } else {
             style = .collapsed
         }
@@ -165,16 +167,24 @@ final class ImageViewerPageControlBar: UIView {
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
-    private func expandAndScrollToItem(at indexPath: IndexPath, animated: Bool) {
+    private func expandAndScrollToItem(at indexPath: IndexPath,
+                                       referenceSizeForAspectRatio: CGSize? = nil,
+                                       animated: Bool) {
         state = .expanding
         _pageDidChange.send(indexPath.item)
         
         func expandAndScroll() {
-            updateLayout(expandingItemAt: indexPath, animated: false)
+            updateLayout(expandingItemAt: indexPath,
+                         referenceSizeForAspectRatio: referenceSizeForAspectRatio,
+                         animated: false)
             collectionView.scrollToItem(at: indexPath,
                                         at: .centeredHorizontally,
                                         animated: false)
             state = .expanded
+            
+            if referenceSizeForAspectRatio == nil {
+                correctExpandingItemAspectRatioIfNeeded()
+            }
         }
         if animated {
             UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
@@ -182,6 +192,35 @@ final class ImageViewerPageControlBar: UIView {
             }.startAnimation()
         } else {
             expandAndScroll()
+        }
+    }
+    
+    private func correctExpandingItemAspectRatioIfNeeded() {
+        guard let indexPathForCurrentCenterItem, let dataSource else { return }
+        let thumbnailSource = dataSource.imageViewerPageControlBar(
+            self,
+            thumbnailOnPage: indexPathForCurrentCenterItem.item,
+            filling: .init(width: 100, height: 100)
+        )
+        switch thumbnailSource {
+        case .sync(let thumbnail):
+            guard let thumbnail else { return }
+            expandAndScrollToItem(
+                at: indexPathForCurrentCenterItem,
+                referenceSizeForAspectRatio: thumbnail.size,
+                animated: false
+            )
+        case .async(_, let thumbnailProvider):
+            Task {
+                guard let thumbnail = await thumbnailProvider(),
+                      state == .expanded,
+                      self.indexPathForCurrentCenterItem == indexPathForCurrentCenterItem else { return }
+                expandAndScrollToItem(
+                    at: indexPathForCurrentCenterItem,
+                    referenceSizeForAspectRatio: thumbnail.size,
+                    animated: true
+                )
+            }
         }
     }
     
