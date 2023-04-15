@@ -47,11 +47,10 @@ final class ImageViewerPageControlBar: UIView {
     // MARK: Publishers
     
     var pageDidChange: some Publisher<Int, Never> {
-        _pageDidChange
-            .removeDuplicates()
+        page.removeDuplicates()
             .dropFirst() // Initial
     }
-    private let _pageDidChange = PassthroughSubject<Int, Never>()
+    private let page = PassthroughSubject<Int, Never>()
     
     // MARK: UI components
     
@@ -178,7 +177,7 @@ final class ImageViewerPageControlBar: UIView {
                                        duration: CGFloat = 0.5,
                                        animated: Bool) {
         state = .expanding
-        _pageDidChange.send(indexPath.item)
+        page.send(indexPath.item)
         
         func expandAndScroll() {
             updateLayout(expandingItemAt: indexPath,
@@ -272,7 +271,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         case .collapsed(let indexPathForFinalDestinationItem):
             guard let indexPathForCurrentCenterItem,
                   scrollView.isDragging else { return }
-            _pageDidChange.send(indexPathForCurrentCenterItem.item)
+            page.send(indexPathForCurrentCenterItem.item)
             
             /*
              * NOTE:
