@@ -9,7 +9,21 @@ import UIKit
 
 final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
-    let indexPathForExpandingItem: IndexPath?
+    enum Style {
+        case expanded(IndexPath, preferredExpandingImageSize: CGSize?)
+        case collapsed
+        
+        var indexPathForExpandingItem: IndexPath? {
+            switch self {
+            case .expanded(let indexPath, _):
+                return indexPath
+            case .collapsed:
+                return nil
+            }
+        }
+    }
+    
+    let style: Style
     
     let compactItemWidth: CGFloat = 21
     
@@ -18,13 +32,13 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     // MARK: - Initializers
     
-    init(indexPathForExpandingItem: IndexPath?) {
-        self.indexPathForExpandingItem = indexPathForExpandingItem
+    init(style: Style) {
+        self.style = style
         super.init()
     }
     
     required init?(coder: NSCoder) {
-        self.indexPathForExpandingItem = nil
+        self.style = .collapsed
         super.init(coder: coder)
     }
     
@@ -59,7 +73,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
             let width: CGFloat
             let itemSpacing: CGFloat
-            switch indexPathForExpandingItem {
+            switch style.indexPathForExpandingItem {
             case indexPath:
                 width = expandedItemWidth
                 itemSpacing = expandedItemSpacing

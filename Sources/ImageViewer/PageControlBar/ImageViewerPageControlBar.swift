@@ -58,7 +58,7 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private lazy var collectionView: UICollectionView = {
-        let layout = ImageViewerPageControlBarLayout(indexPathForExpandingItem: nil)
+        let layout = ImageViewerPageControlBarLayout(style: .collapsed)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
@@ -153,7 +153,13 @@ final class ImageViewerPageControlBar: UIView {
     
     private func updateLayout(expandingItemAt indexPath: IndexPath?,
                               animated: Bool) {
-        let layout = ImageViewerPageControlBarLayout(indexPathForExpandingItem: indexPath)
+        let style: ImageViewerPageControlBarLayout.Style
+        if let indexPath {
+            style = .expanded(indexPath, preferredExpandingImageSize: nil)
+        } else {
+            style = .collapsed
+        }
+        let layout = ImageViewerPageControlBarLayout(style: style)
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
@@ -184,7 +190,7 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func collapseItem() {
-        guard let indexPath = layout.indexPathForExpandingItem else { return }
+        guard let indexPath = layout.style.indexPathForExpandingItem else { return }
         self.state = .collapsing
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: nil, animated: false)
@@ -203,7 +209,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
-        if layout.indexPathForExpandingItem != indexPath {
+        if layout.style.indexPathForExpandingItem != indexPath {
             expandAndScrollToItem(at: indexPath, animated: true)
         }
     }
