@@ -25,6 +25,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     let style: Style
     
+    var expandedItemWidth: CGFloat?
     let collapsedItemWidth: CGFloat = 21
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
@@ -57,7 +58,10 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
         guard numberOfItems > 0 else { return }
         
-        let expandedItemWidth = expandingItemWidth(in: collectionView)
+        // NOTE: Cache and reuse expandedItemWidth for smooth animation.
+        let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
+        self.expandedItemWidth = expandedItemWidth
+        
         let collapsedItemSpacing: CGFloat = 1
         let expandedItemSpacing: CGFloat = 12
         
