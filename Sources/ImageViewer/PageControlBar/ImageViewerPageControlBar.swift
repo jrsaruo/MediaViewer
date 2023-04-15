@@ -157,7 +157,7 @@ final class ImageViewerPageControlBar: UIView {
                               animated: Bool) {
         let style: ImageViewerPageControlBarLayout.Style
         if let indexPath {
-            style = .expanded(indexPath, preferredExpandingImageSize: nil)
+            style = .expanded(indexPath, referenceSizeForAspectRatio: nil)
         } else {
             style = .collapsed
         }

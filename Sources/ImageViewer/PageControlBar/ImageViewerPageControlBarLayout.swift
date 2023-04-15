@@ -10,7 +10,7 @@ import UIKit
 final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     enum Style {
-        case expanded(IndexPath, preferredExpandingImageSize: CGSize?)
+        case expanded(IndexPath, referenceSizeForAspectRatio: CGSize?)
         case collapsed
         
         var indexPathForExpandingItem: IndexPath? {
@@ -108,9 +108,9 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         // Determine the expanding item size
         let expandingImageSize: CGSize
         switch style {
-        case .expanded(let indexPath, let preferredImageSize):
-            if let preferredImageSize {
-                expandingImageSize = preferredImageSize
+        case .expanded(let indexPath, let referenceSize):
+            if let referenceSize {
+                expandingImageSize = referenceSize
             } else if let cell = collectionView.cellForItem(at: indexPath) {
                 let cell = cell as! PageControlBarThumbnailCell
                 let image = cell.imageView.image
