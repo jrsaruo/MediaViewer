@@ -13,6 +13,9 @@ protocol ImageViewerPageControlBarDataSource: AnyObject {
     func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
                                    thumbnailOnPage page: Int,
                                    filling preferredThumbnailSize: CGSize) -> ImageSource
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   imageSizeOnPage page: Int) -> CGSize?
 }
 
 final class ImageViewerPageControlBar: UIView {

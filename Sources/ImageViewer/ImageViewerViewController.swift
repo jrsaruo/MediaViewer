@@ -55,6 +55,18 @@ public protocol ImageViewerDataSource: AnyObject {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceOnPage page: Int) -> ImageSource
     
+    /// Asks the data source to return a size of image.
+    ///
+    /// This size will be used to determine a size of page thumbnail.
+    /// This method should return immediately.
+    ///
+    /// - Parameters:
+    ///   - imageViewer: An object representing the image viewer requesting this information.
+    ///   - page: A page in the image viewer.
+    /// - Returns: The size of image on the specified page.
+    func imageViewer(_ imageViewer: ImageViewerViewController,
+                     imageSizeOnPage page: Int) -> CGSize?
+    
     /// Asks the data source to return a source of a thumbnail image on the page control bar in the image viewer.
     /// - Parameters:
     ///   - imageViewer: An object representing the image viewer requesting this information.
@@ -78,6 +90,17 @@ public protocol ImageViewerDataSource: AnyObject {
 }
 
 extension ImageViewerDataSource {
+    
+    public func imageViewer(_ imageViewer: ImageViewerViewController,
+                            imageSizeOnPage page: Int) -> CGSize? {
+        let imageSource = self.imageViewer(imageViewer, imageSourceOnPage: page)
+        switch imageSource {
+        case .sync(let image):
+            return image?.size
+        case .async:
+            return nil
+        }
+    }
     
     public func imageViewer(_ imageViewer: ImageViewerViewController,
                             pageThumbnailOnPage page: Int,
@@ -446,6 +469,11 @@ extension ImageViewerViewController: ImageViewerPageControlBarDataSource {
         return imageViewerDataSource.imageViewer(self,
                                                  pageThumbnailOnPage: page,
                                                  filling: preferredThumbnailSize)
+    }
+    
+    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
+                                   imageSizeOnPage page: Int) -> CGSize? {
+        imageViewerDataSource?.imageViewer(self, imageSizeOnPage: page)
     }
 }
 
