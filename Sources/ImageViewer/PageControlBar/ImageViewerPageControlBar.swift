@@ -167,6 +167,12 @@ final class ImageViewerPageControlBar: UIView {
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
+    /// Expand an item and scroll there.
+    /// - Parameters:
+    ///   - indexPath: An index path for the expanding item.
+    ///   - referenceSizeForAspectRatio: A reference size to calculate the size of expanding item.
+    ///   - duration: The total duration of the animation.
+    ///   - animated: Whether to animate expanding and scrolling.
     private func expandAndScrollToItem(at indexPath: IndexPath,
                                        referenceSizeForAspectRatio: CGSize? = nil,
                                        duration: CGFloat = 0.5,
