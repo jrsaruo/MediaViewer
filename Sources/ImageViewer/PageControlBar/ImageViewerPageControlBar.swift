@@ -169,6 +169,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func expandAndScrollToItem(at indexPath: IndexPath,
                                        referenceSizeForAspectRatio: CGSize? = nil,
+                                       duration: CGFloat = 0.5,
                                        animated: Bool) {
         state = .expanding
         _pageDidChange.send(indexPath.item)
@@ -187,7 +188,7 @@ final class ImageViewerPageControlBar: UIView {
             }
         }
         if animated {
-            UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
+            UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
                 expandAndScroll()
             }.startAnimation()
         } else {
@@ -218,6 +219,7 @@ final class ImageViewerPageControlBar: UIView {
                 expandAndScrollToItem(
                     at: indexPathForCurrentCenterItem,
                     referenceSizeForAspectRatio: thumbnail.size,
+                    duration: 0.2,
                     animated: true
                 )
             }
