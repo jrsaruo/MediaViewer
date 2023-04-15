@@ -17,7 +17,7 @@ protocol ImageViewerPageControlBarDataSource: AnyObject {
 
 final class ImageViewerPageControlBar: UIView {
     
-    enum State {
+    enum State: Hashable, Sendable {
         case collapsing
         
         /// The collapsed state during scroll.
