@@ -57,12 +57,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
         guard numberOfItems > 0 else { return }
         
-        let expandingImageWidthToHeight: CGFloat = 1.8 // TODO: Use the correct ratio
-        
-        let expandedItemWidth: CGFloat = max(
-            collectionView.bounds.height * expandingImageWidthToHeight,
-            compactItemWidth
-        )
+        let expandedItemWidth = expandingItemWidth(in: collectionView)
         let compactItemSpacing: CGFloat = 1
         let expandedItemSpacing: CGFloat = 12
         
@@ -103,6 +98,37 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             attributes.frame = frame
             attributesDictionary[indexPath] = attributes
         }
+    }
+    
+    private func expandingItemWidth(in collectionView: UICollectionView) -> CGFloat {
+        // Determine the expanding item size
+        let expandingImageSize: CGSize
+        switch style {
+        case .expanded(let indexPath, let preferredImageSize):
+            if let preferredImageSize {
+                expandingImageSize = preferredImageSize
+            } else if let cell = collectionView.cellForItem(at: indexPath) {
+                let cell = cell as! PageControlBarThumbnailCell
+                let image = cell.imageView.image
+                expandingImageSize = image?.size ?? .zero
+            } else {
+                expandingImageSize = .zero
+            }
+        case .collapsed:
+            expandingImageSize = .zero
+        }
+        
+        // Calculate the expanding item width
+        let expandingImageWidthToHeight: CGFloat
+        if expandingImageSize.height > 0 {
+            expandingImageWidthToHeight = expandingImageSize.width / expandingImageSize.height
+        } else {
+            expandingImageWidthToHeight = 0
+        }
+        return max(
+            collectionView.bounds.height * expandingImageWidthToHeight,
+            compactItemWidth
+        )
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
