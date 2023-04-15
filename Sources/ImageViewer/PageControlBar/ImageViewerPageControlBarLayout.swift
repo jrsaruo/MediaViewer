@@ -9,12 +9,39 @@ import UIKit
 
 final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
-    var indexPathForExpandingItem: IndexPath?
+    enum Style {
+        case expanded(IndexPath, referenceSizeForAspectRatio: CGSize?)
+        case collapsed
+        
+        var indexPathForExpandingItem: IndexPath? {
+            switch self {
+            case .expanded(let indexPath, _):
+                return indexPath
+            case .collapsed:
+                return nil
+            }
+        }
+    }
     
-    let compactItemWidth: CGFloat = 21
+    let style: Style
+    
+    var expandedItemWidth: CGFloat?
+    let collapsedItemWidth: CGFloat = 21
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
+    
+    // MARK: - Initializers
+    
+    init(style: Style) {
+        self.style = style
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        self.style = .collapsed
+        super.init(coder: coder)
+    }
     
     // MARK: - Override
     
@@ -31,10 +58,11 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
         guard numberOfItems > 0 else { return }
         
-        let expandingImageWidthToHeight: CGFloat = 1.8 // TODO: Use the correct ratio
+        // NOTE: Cache and reuse expandedItemWidth for smooth animation.
+        let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
+        self.expandedItemWidth = expandedItemWidth
         
-        let expandedItemWidth: CGFloat = collectionView.bounds.height * expandingImageWidthToHeight
-        let compactItemSpacing: CGFloat = 1
+        let collapsedItemSpacing: CGFloat = 1
         let expandedItemSpacing: CGFloat = 12
         
         // Calculate frames for each item
@@ -44,16 +72,16 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
             let width: CGFloat
             let itemSpacing: CGFloat
-            switch indexPathForExpandingItem {
+            switch style.indexPathForExpandingItem {
             case indexPath:
                 width = expandedItemWidth
                 itemSpacing = expandedItemSpacing
             case previousIndexPath:
-                width = compactItemWidth
+                width = collapsedItemWidth
                 itemSpacing = expandedItemSpacing
             default:
-                width = compactItemWidth
-                itemSpacing = compactItemSpacing
+                width = collapsedItemWidth
+                itemSpacing = collapsedItemSpacing
             }
             let previousFrame = frames[previousIndexPath]
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
@@ -74,6 +102,37 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             attributes.frame = frame
             attributesDictionary[indexPath] = attributes
         }
+    }
+    
+    private func expandingItemWidth(in collectionView: UICollectionView) -> CGFloat {
+        // Determine the expanding item size
+        let expandingImageSize: CGSize
+        switch style {
+        case .expanded(let indexPath, let referenceSize):
+            if let referenceSize {
+                expandingImageSize = referenceSize
+            } else if let cell = collectionView.cellForItem(at: indexPath) {
+                let cell = cell as! PageControlBarThumbnailCell
+                let image = cell.imageView.image
+                expandingImageSize = image?.size ?? .zero
+            } else {
+                expandingImageSize = .zero
+            }
+        case .collapsed:
+            expandingImageSize = .zero
+        }
+        
+        // Calculate the expanding item width
+        let expandingImageWidthToHeight: CGFloat
+        if expandingImageSize.height > 0 {
+            expandingImageWidthToHeight = expandingImageSize.width / expandingImageSize.height
+        } else {
+            expandingImageWidthToHeight = 0
+        }
+        return max(
+            collectionView.bounds.height * expandingImageWidthToHeight,
+            collapsedItemWidth
+        )
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {

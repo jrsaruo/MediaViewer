@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 @MainActor
 protocol ImageViewerPageControlBarDataSource: AnyObject {
@@ -14,20 +15,51 @@ protocol ImageViewerPageControlBarDataSource: AnyObject {
                                    filling preferredThumbnailSize: CGSize) -> ImageSource
 }
 
-@MainActor
-protocol ImageViewerPageControlBarDelegate: AnyObject {
-    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
-                                   didVisitThumbnailOnPage page: Int)
-}
-
 final class ImageViewerPageControlBar: UIView {
     
-    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
-    weak var delegate: (any ImageViewerPageControlBarDelegate)?
+    enum State: Hashable, Sendable {
+        case collapsing
+        
+        /// The collapsed state during scroll.
+        /// - Parameters:
+        ///   - indexPathForFinalDestinationItem: The index path for where you will eventually arrive after ending dragging.
+        case collapsed(indexPathForFinalDestinationItem: IndexPath?)
+        
+        case expanding
+        case expanded
+        
+        var indexPathForFinalDestinationItem: IndexPath? {
+            guard case .collapsed(let indexPath) = self else { return nil }
+            return indexPath
+        }
+    }
     
-    private let layout = ImageViewerPageControlBarLayout()
+    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
+    
+    private var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
+    
+    private var indexPathForCurrentCenterItem: IndexPath? {
+        let offsetX = collectionView.contentOffset.x
+        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
+        return collectionView.indexPathForItem(at: center)
+    }
+    
+    // MARK: Publishers
+    
+    var pageDidChange: some Publisher<Int, Never> {
+        page.removeDuplicates()
+            .dropFirst() // Initial
+    }
+    private let page = PassthroughSubject<Int, Never>()
+    
+    // MARK: UI components
+    
+    private var layout: ImageViewerPageControlBarLayout {
+        collectionView.collectionViewLayout as! ImageViewerPageControlBarLayout
+    }
     
     private lazy var collectionView: UICollectionView = {
+        let layout = ImageViewerPageControlBarLayout(style: .collapsed)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
@@ -52,14 +84,6 @@ final class ImageViewerPageControlBar: UIView {
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
-    }
-    
-    private var shouldDetectScrolling = true
-    
-    private var indexPathForCurrentCenterItem: IndexPath? {
-        let offsetX = collectionView.contentOffset.x
-        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
-        return collectionView.indexPathForItem(at: center)
     }
     
     // MARK: - Initializers
@@ -108,7 +132,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
-        let offset = (bounds.width - layout.compactItemWidth) / 2
+        let offset = (bounds.width - layout.collapsedItemWidth) / 2
         collectionView.contentInset = .init(top: 0,
                                             left: offset,
                                             bottom: 0,
@@ -122,19 +146,107 @@ final class ImageViewerPageControlBar: UIView {
         snapshot.appendSections([0])
         snapshot.appendItems(Array(0 ..< numberOfPages))
         
-        // Ignore scrolling until setup is complete
-        shouldDetectScrolling = false
         diffableDataSource.apply(snapshot) {
-            self.scroll(toPage: currentPage, animated: false)
-            self.shouldDetectScrolling = true
+            let indexPath = IndexPath(item: currentPage, section: 0)
+            self.expandAndScrollToItem(at: indexPath, animated: false)
         }
     }
     
-    func scroll(toPage page: Int, animated: Bool) {
-        let indexPath = IndexPath(item: page, section: 0)
-        collectionView.scrollToItem(at: indexPath,
-                                    at: .centeredHorizontally,
-                                    animated: animated)
+    private func updateLayout(expandingItemAt indexPath: IndexPath?,
+                              referenceSizeForAspectRatio: CGSize? = nil,
+                              animated: Bool) {
+        let style: ImageViewerPageControlBarLayout.Style
+        if let indexPath {
+            style = .expanded(indexPath,
+                              referenceSizeForAspectRatio: referenceSizeForAspectRatio)
+        } else {
+            style = .collapsed
+        }
+        let layout = ImageViewerPageControlBarLayout(style: style)
+        collectionView.setCollectionViewLayout(layout, animated: animated)
+    }
+    
+    /// Expand an item and scroll there.
+    /// - Parameters:
+    ///   - indexPath: An index path for the expanding item.
+    ///   - referenceSizeForAspectRatio: A reference size to calculate the size of expanding item.
+    ///   - duration: The total duration of the animation.
+    ///   - animated: Whether to animate expanding and scrolling.
+    private func expandAndScrollToItem(at indexPath: IndexPath,
+                                       referenceSizeForAspectRatio: CGSize? = nil,
+                                       duration: CGFloat = 0.5,
+                                       animated: Bool) {
+        state = .expanding
+        page.send(indexPath.item)
+        
+        func expandAndScroll() {
+            updateLayout(expandingItemAt: indexPath,
+                         referenceSizeForAspectRatio: referenceSizeForAspectRatio,
+                         animated: false)
+            collectionView.scrollToItem(at: indexPath,
+                                        at: .centeredHorizontally,
+                                        animated: false)
+            state = .expanded
+            
+            if referenceSizeForAspectRatio == nil {
+                correctExpandingItemAspectRatioIfNeeded()
+            }
+        }
+        if animated {
+            UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
+                expandAndScroll()
+            }.startAnimation()
+        } else {
+            expandAndScroll()
+        }
+    }
+    
+    private func correctExpandingItemAspectRatioIfNeeded() {
+        guard let indexPathForCurrentCenterItem, let dataSource else { return }
+        let thumbnailSource = dataSource.imageViewerPageControlBar(
+            self,
+            thumbnailOnPage: indexPathForCurrentCenterItem.item,
+            filling: .init(width: 100, height: 100)
+        )
+        switch thumbnailSource {
+        case .sync(let thumbnail):
+            guard let thumbnail else { return }
+            expandAndScrollToItem(
+                at: indexPathForCurrentCenterItem,
+                referenceSizeForAspectRatio: thumbnail.size,
+                animated: false
+            )
+        case .async(_, let thumbnailProvider):
+            Task {
+                guard let thumbnail = await thumbnailProvider(),
+                      state == .expanded,
+                      self.indexPathForCurrentCenterItem == indexPathForCurrentCenterItem else { return }
+                expandAndScrollToItem(
+                    at: indexPathForCurrentCenterItem,
+                    referenceSizeForAspectRatio: thumbnail.size,
+                    duration: 0.2,
+                    animated: true
+                )
+            }
+        }
+    }
+    
+    private func expandAndScrollToCenterItem(animated: Bool) {
+        guard let indexPathForCurrentCenterItem else { return }
+        expandAndScrollToItem(at: indexPathForCurrentCenterItem,
+                              animated: animated)
+    }
+    
+    private func collapseItem() {
+        guard let indexPath = layout.style.indexPathForExpandingItem else { return }
+        self.state = .collapsing
+        UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
+            self.updateLayout(expandingItemAt: nil, animated: false)
+            self.collectionView.scrollToItem(at: indexPath,
+                                             at: .centeredHorizontally,
+                                             animated: false)
+            self.state = .collapsed(indexPathForFinalDestinationItem: nil)
+        }.startAnimation()
     }
 }
 
@@ -144,36 +256,81 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard shouldDetectScrolling else { return }
-        if let indexPathForCurrentCenterItem,
-           layout.indexPathForExpandingItem != indexPathForCurrentCenterItem {
-            layout.indexPathForExpandingItem = indexPathForCurrentCenterItem
-            delegate?.imageViewerPageControlBar(self, didVisitThumbnailOnPage: indexPathForCurrentCenterItem.item)
+        
+        if layout.style.indexPathForExpandingItem != indexPath {
+            expandAndScrollToItem(at: indexPath, animated: true)
         }
     }
     
-    private func scrollToCenterItem(animated: Bool) {
-        guard let indexPathForCurrentCenterItem else { return }
-        collectionView.scrollToItem(at: indexPathForCurrentCenterItem,
-                                    at: .centeredHorizontally,
-                                    animated: animated)
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        collapseItem()
     }
     
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        scrollToCenterItem(animated: true)
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        switch state {
+        case .collapsed(let indexPathForFinalDestinationItem):
+            guard let indexPathForCurrentCenterItem,
+                  scrollView.isDragging else { return }
+            page.send(indexPathForCurrentCenterItem.item)
+            
+            /*
+             * NOTE:
+             * Start expanding when the final destination approaches.
+             * However, if the destination is the first or last item,
+             * ignore it and wait until the scroll is done
+             * because the scroll may bounce on the edge.
+             */
+            if indexPathForCurrentCenterItem == indexPathForFinalDestinationItem,
+               !isEdgeIndexPath(indexPathForCurrentCenterItem) {
+                expandAndScrollToCenterItem(animated: true)
+            }
+        case .collapsing, .expanding, .expanded:
+            break
+        }
     }
     
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        scrollToCenterItem(animated: true)
+    private func isEdgeIndexPath(_ indexPath: IndexPath) -> Bool {
+        switch indexPath.item {
+        case 0, collectionView.numberOfItems(inSection: 0) - 1:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView,
+                                   withVelocity velocity: CGPoint,
+                                   targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let targetPoint = CGPoint(
+            x: targetContentOffset.pointee.x + collectionView.adjustedContentInset.left,
+            y: 0
+        )
+        let targetIndexPath = collectionView.indexPathForItem(at: targetPoint)
+        state = .collapsed(
+            indexPathForFinalDestinationItem: targetIndexPath
+        )
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate {
-            scrollToCenterItem(animated: true)
+        /*
+         * When the finger is released with the finger stopped
+         * or
+         * when the finger is released at the point where it exceeds the limit of left and right edges.
+         */
+        if !scrollView.isDragging {
+            guard let indexPath = indexPathForCurrentCenterItem ?? state.indexPathForFinalDestinationItem else {
+                return
+            }
+            expandAndScrollToItem(at: indexPath, animated: true)
+        }
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        switch state {
+        case .collapsing, .collapsed:
+            expandAndScrollToCenterItem(animated: true)
+        case .expanding, .expanded:
+            break // NOP
         }
     }
 }
