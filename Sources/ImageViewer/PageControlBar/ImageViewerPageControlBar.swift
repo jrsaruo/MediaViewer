@@ -206,9 +206,20 @@ final class ImageViewerPageControlBar: UIView {
     
     private func correctExpandingItemAspectRatioIfNeeded() {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
+        let page = indexPathForCurrentCenterItem.item
+        
+        if let imageSize = dataSource.imageViewerPageControlBar(self, imageSizeOnPage: page) {
+            expandAndScrollToItem(
+                at: indexPathForCurrentCenterItem,
+                referenceSizeForAspectRatio: imageSize,
+                animated: false
+            )
+            return
+        }
+        
         let thumbnailSource = dataSource.imageViewerPageControlBar(
             self,
-            thumbnailOnPage: indexPathForCurrentCenterItem.item,
+            thumbnailOnPage: page,
             filling: .init(width: 100, height: 100)
         )
         switch thumbnailSource {
