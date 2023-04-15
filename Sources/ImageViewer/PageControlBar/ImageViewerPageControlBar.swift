@@ -131,7 +131,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
-        let offset = (bounds.width - layout.compactItemWidth) / 2
+        let offset = (bounds.width - layout.collapsedItemWidth) / 2
         collectionView.contentInset = .init(top: 0,
                                             left: offset,
                                             bottom: 0,

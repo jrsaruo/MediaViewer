@@ -25,7 +25,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     let style: Style
     
-    let compactItemWidth: CGFloat = 21
+    let collapsedItemWidth: CGFloat = 21
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
@@ -58,7 +58,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         guard numberOfItems > 0 else { return }
         
         let expandedItemWidth = expandingItemWidth(in: collectionView)
-        let compactItemSpacing: CGFloat = 1
+        let collapsedItemSpacing: CGFloat = 1
         let expandedItemSpacing: CGFloat = 12
         
         // Calculate frames for each item
@@ -73,11 +73,11 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
                 width = expandedItemWidth
                 itemSpacing = expandedItemSpacing
             case previousIndexPath:
-                width = compactItemWidth
+                width = collapsedItemWidth
                 itemSpacing = expandedItemSpacing
             default:
-                width = compactItemWidth
-                itemSpacing = compactItemSpacing
+                width = collapsedItemWidth
+                itemSpacing = collapsedItemSpacing
             }
             let previousFrame = frames[previousIndexPath]
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
@@ -127,7 +127,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         }
         return max(
             collectionView.bounds.height * expandingImageWidthToHeight,
-            compactItemWidth
+            collapsedItemWidth
         )
     }
     
