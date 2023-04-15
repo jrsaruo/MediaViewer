@@ -151,7 +151,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     }
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageSizeOnPage page: Int) -> CGSize? {
+                     imageWidthToHeightOnPage page: Int) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let options = PHImageRequestOptions()
         options.deliveryMode = .fastFormat
@@ -165,7 +165,8 @@ extension AsyncImagesViewController: ImageViewerDataSource {
                           options: options) { image, _ in
                 size = image?.size
             }
-        return size
+        guard let size, size.height > 0 else { return nil }
+        return size.width / size.height
     }
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
