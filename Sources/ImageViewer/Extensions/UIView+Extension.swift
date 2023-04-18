@@ -16,4 +16,16 @@ extension UIView {
         frame.origin.y += (newAnchorPoint.y - anchorPoint.y) * frame.height
         anchorPoint = newAnchorPoint
     }
+    
+    func firstSubview<View>(ofType type: View.Type) -> View? where View: UIView {
+        for subview in subviews {
+            if let view = subview as? View {
+                return view
+            }
+            if let view = subview.firstSubview(ofType: View.self) {
+                return view
+            }
+        }
+        return nil
+    }
 }

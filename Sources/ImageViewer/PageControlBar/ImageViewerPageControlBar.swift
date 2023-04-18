@@ -31,20 +31,33 @@ final class ImageViewerPageControlBar: UIView {
         case expanding
         case expanded
         
+        /// The state of interactively transitioning between pages.
+        case transitioningInteractively(UICollectionViewTransitionLayout, forwards: Bool)
+        
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
             return indexPath
         }
     }
     
+    enum Layout {
+        /// A normal layout.
+        case normal(ImageViewerPageControlBarLayout)
+        
+        /// A layout during interactive paging transition.
+        case transition(UICollectionViewTransitionLayout)
+    }
+    
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     
-    private var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
+    private(set) var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
     
     private var indexPathForCurrentCenterItem: IndexPath? {
-        let offsetX = collectionView.contentOffset.x
-        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
-        return collectionView.indexPathForItem(at: center)
+        collectionView.indexPathForHorizontalCenterItem
+    }
+    
+    private var currentCenterPage: Int? {
+        indexPathForCurrentCenterItem?.item
     }
     
     // MARK: Publishers
@@ -57,8 +70,15 @@ final class ImageViewerPageControlBar: UIView {
     
     // MARK: UI components
     
-    private var layout: ImageViewerPageControlBarLayout {
-        collectionView.collectionViewLayout as! ImageViewerPageControlBarLayout
+    private var layout: Layout {
+        switch collectionView.collectionViewLayout {
+        case let barLayout as ImageViewerPageControlBarLayout:
+            return .normal(barLayout)
+        case let transitionLayout as UICollectionViewTransitionLayout:
+            return .transition(transitionLayout)
+        default:
+            preconditionFailure("Unknown layout: \(collectionView.collectionViewLayout)")
+        }
     }
     
     private lazy var collectionView: UICollectionView = {
@@ -135,7 +155,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
-        let offset = (bounds.width - layout.collapsedItemWidth) / 2
+        let offset = (bounds.width - ImageViewerPageControlBarLayout.collapsedItemWidth) / 2
         collectionView.contentInset = .init(top: 0,
                                             left: offset,
                                             bottom: 0,
@@ -186,6 +206,7 @@ final class ImageViewerPageControlBar: UIView {
             updateLayout(expandingItemAt: indexPath,
                          expandingImageWidthToHeight: imageWidthToHeight,
                          animated: false)
+            // NOTE: Without this, a thumbnail may shift out of the center after scrolling.
             collectionView.scrollToItem(at: indexPath,
                                         at: .centeredHorizontally,
                                         animated: false)
@@ -253,15 +274,78 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func collapseItem() {
-        guard let indexPath = layout.style.indexPathForExpandingItem else { return }
-        self.state = .collapsing
+        guard case .normal(let barLayout) = layout,
+              barLayout.style.indexPathForExpandingItem != nil else { return }
+        state = .collapsing
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: nil, animated: false)
-            self.collectionView.scrollToItem(at: indexPath,
-                                             at: .centeredHorizontally,
-                                             animated: false)
             self.state = .collapsed(indexPathForFinalDestinationItem: nil)
         }.startAnimation()
+    }
+}
+
+// MARK: - Interactive paging -
+
+extension ImageViewerPageControlBar {
+    
+    func startInteractivePaging(forwards: Bool) {
+        guard case .normal(let barLayout) = layout else {
+            assertionFailure()
+            return
+        }
+        
+        guard let currentCenterPage else { return }
+        let destinationPage = currentCenterPage + (forwards ? 1 : -1)
+        guard 0 <= destinationPage,
+              destinationPage < collectionView.numberOfItems(inSection: 0) else {
+            return
+        }
+        
+        let expandingImageWidthToHeight = dataSource?.imageViewerPageControlBar(
+            self,
+            imageWidthToHeightOnPage: destinationPage
+        )
+        let style: ImageViewerPageControlBarLayout.Style = .expanded(
+            IndexPath(item: destinationPage, section: 0),
+            expandingImageWidthToHeight: expandingImageWidthToHeight
+        )
+        let newLayout = ImageViewerPageControlBarLayout(style: style)
+        
+        /*
+         * NOTE:
+         * Using UICollectionView.startInteractiveTransition(to:completion:),
+         * there is a lag from the end of the transition
+         * until (completion is called and) the next transition can be started.
+         */
+        let transitionLayout = UICollectionViewTransitionLayout(
+            currentLayout: barLayout,
+            nextLayout: newLayout
+        )
+        collectionView.collectionViewLayout = transitionLayout
+        state = .transitioningInteractively(transitionLayout, forwards: forwards)
+    }
+    
+    func updatePagingProgress(_ progress: CGFloat) {
+        guard case .transitioningInteractively(let layout, _) = state else {
+            return
+        }
+        layout.transitionProgress = progress
+    }
+    
+    func finishInteractivePaging() {
+        guard case .transitioningInteractively(let layout, _) = state else {
+            return
+        }
+        collectionView.collectionViewLayout = layout.nextLayout
+        state = .expanded
+    }
+    
+    func cancelInteractivePaging() {
+        guard case .transitioningInteractively(let layout, _) = state else {
+            return
+        }
+        collectionView.collectionViewLayout = layout.currentLayout
+        state = .expanded
     }
 }
 
@@ -272,7 +356,8 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
-        if layout.style.indexPathForExpandingItem != indexPath {
+        if case .normal(let barLayout) = layout,
+           barLayout.style.indexPathForExpandingItem != indexPath {
             expandAndScrollToItem(at: indexPath, animated: true)
         }
     }
@@ -299,7 +384,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
                 expandAndScrollToCenterItem(animated: true)
             }
-        case .collapsing, .expanding, .expanded:
+        case .collapsing, .expanding, .expanded, .transitioningInteractively:
             break
         }
     }
@@ -344,7 +429,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         switch state {
         case .collapsing, .collapsed:
             expandAndScrollToCenterItem(animated: true)
-        case .expanding, .expanded:
+        case .expanding, .expanded, .transitioningInteractively:
             break // NOP
         }
     }

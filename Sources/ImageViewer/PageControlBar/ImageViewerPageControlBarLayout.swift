@@ -26,7 +26,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     let style: Style
     
     var expandedItemWidth: CGFloat?
-    let collapsedItemWidth: CGFloat = 21
+    static let collapsedItemWidth: CGFloat = 21
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
@@ -77,10 +77,10 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
                 width = expandedItemWidth
                 itemSpacing = expandedItemSpacing
             case previousIndexPath:
-                width = collapsedItemWidth
+                width = Self.collapsedItemWidth
                 itemSpacing = expandedItemSpacing
             default:
-                width = collapsedItemWidth
+                width = Self.collapsedItemWidth
                 itemSpacing = collapsedItemSpacing
             }
             let previousFrame = frames[previousIndexPath]
@@ -125,9 +125,14 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             expandingImageWidthToHeight = 0
         }
         
-        return max(
-            collectionView.bounds.height * expandingImageWidthToHeight,
-            collapsedItemWidth
+        let minimumWidth = Self.collapsedItemWidth
+        let maximumWidth: CGFloat = 84
+        return min(
+            max(
+                collectionView.bounds.height * expandingImageWidthToHeight,
+                minimumWidth
+            ),
+            maximumWidth
         )
     }
     
@@ -137,5 +142,34 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         attributesDictionary[indexPath]
+    }
+    
+    override func targetContentOffset(
+        forProposedContentOffset proposedContentOffset: CGPoint
+    ) -> CGPoint {
+        let offset = super.targetContentOffset(
+            forProposedContentOffset: proposedContentOffset
+        )
+        guard let collectionView else { return offset }
+        
+        // Center the target item.
+        let indexPathForCenterItem: IndexPath
+        switch style {
+        case .expanded(let indexPathForExpandingItem, _):
+            indexPathForCenterItem = indexPathForExpandingItem
+        case .collapsed:
+            guard let indexPath = collectionView.indexPathForHorizontalCenterItem else {
+                return offset
+            }
+            indexPathForCenterItem = indexPath
+        }
+        
+        guard let centerItemAttributes = layoutAttributesForItem(at: indexPathForCenterItem) else {
+            return offset
+        }
+        return CGPoint(
+            x: centerItemAttributes.center.x - collectionView.bounds.width / 2,
+            y: offset.y
+        )
     }
 }
