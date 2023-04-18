@@ -285,6 +285,11 @@ final class ImageViewerPageControlBar: UIView {
 extension ImageViewerPageControlBar {
     
     func startInteractivePaging(forwards: Bool) {
+        guard case .normal(let barLayout) = layout else {
+            assertionFailure()
+            return
+        }
+        
         guard let currentCenterPage else { return }
         let destinationPage = currentCenterPage + (forwards ? 1 : -1)
         guard 0 <= destinationPage,
@@ -309,7 +314,7 @@ extension ImageViewerPageControlBar {
          * until (completion is called and) the next transition can be started.
          */
         let transitionLayout = UICollectionViewTransitionLayout(
-            currentLayout: collectionView.collectionViewLayout,
+            currentLayout: barLayout,
             nextLayout: newLayout
         )
         collectionView.collectionViewLayout = transitionLayout
