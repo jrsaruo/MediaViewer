@@ -376,7 +376,8 @@ open class ImageViewerViewController: UIPageViewController {
         // Update layout of the page control bar interactively.
         let progress0To2 = scrollView.contentOffset.x / scrollView.bounds.width
         let isMovingToNextPage = progress0To2 > 1
-        let progress = isMovingToNextPage ? (progress0To2 - 1) : (1 - progress0To2)
+        let rawProgress = isMovingToNextPage ? (progress0To2 - 1) : (1 - progress0To2)
+        let progress = min(max(rawProgress, 0), 1)
         
         switch pageControlBar.state {
         case .transitioningInteractively(_, let forwards):
