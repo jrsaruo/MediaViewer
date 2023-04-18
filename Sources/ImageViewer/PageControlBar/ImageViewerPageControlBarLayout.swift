@@ -152,6 +152,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         )
         guard let collectionView else { return offset }
         
+        // Center the target item.
         let indexPathForCenterItem: IndexPath
         switch style {
         case .expanded(let indexPathForExpandingItem, _):
