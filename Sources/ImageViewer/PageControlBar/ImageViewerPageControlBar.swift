@@ -42,9 +42,7 @@ final class ImageViewerPageControlBar: UIView {
     private var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
     
     private var indexPathForCurrentCenterItem: IndexPath? {
-        let offsetX = collectionView.contentOffset.x
-        let center = CGPoint(x: offsetX + collectionView.bounds.width / 2, y: 0)
-        return collectionView.indexPathForItem(at: center)
+        collectionView.indexPathForHorizontalCenterItem
     }
     
     // MARK: Publishers
