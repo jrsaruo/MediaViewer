@@ -313,6 +313,8 @@ open class ImageViewerViewController: UIPageViewController {
             .store(in: &cancellables)
         
         scrollView.publisher(for: \.contentOffset)
+            .removeDuplicates()
+            .dropFirst(2) // Useless changes
             .sink { [weak self] _ in
                 self?.handleContentOffsetChange()
             }
