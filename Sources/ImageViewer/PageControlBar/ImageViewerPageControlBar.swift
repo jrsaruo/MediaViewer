@@ -40,6 +40,14 @@ final class ImageViewerPageControlBar: UIView {
         }
     }
     
+    enum Layout {
+        /// A normal layout.
+        case normal(ImageViewerPageControlBarLayout)
+        
+        /// A layout during interactive paging transition.
+        case transition(UICollectionViewTransitionLayout)
+    }
+    
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     
     private var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
