@@ -31,6 +31,9 @@ final class ImageViewerPageControlBar: UIView {
         case expanding
         case expanded
         
+        /// The state of interactively transitioning between pages.
+        case transitioningInteractively(UICollectionViewTransitionLayout)
+        
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
             return indexPath
@@ -291,7 +294,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
                 expandAndScrollToCenterItem(animated: true)
             }
-        case .collapsing, .expanding, .expanded:
+        case .collapsing, .expanding, .expanded, .transitioningInteractively:
             break
         }
     }
@@ -336,7 +339,7 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         switch state {
         case .collapsing, .collapsed:
             expandAndScrollToCenterItem(animated: true)
-        case .expanding, .expanded:
+        case .expanding, .expanded, .transitioningInteractively:
             break // NOP
         }
     }
