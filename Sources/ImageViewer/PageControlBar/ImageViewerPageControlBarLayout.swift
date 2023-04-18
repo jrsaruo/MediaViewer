@@ -138,4 +138,32 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         attributesDictionary[indexPath]
     }
+    
+    override func targetContentOffset(
+        forProposedContentOffset proposedContentOffset: CGPoint
+    ) -> CGPoint {
+        let offset = super.targetContentOffset(
+            forProposedContentOffset: proposedContentOffset
+        )
+        guard let collectionView else { return offset }
+        
+        let indexPathForCenterItem: IndexPath
+        switch style {
+        case .expanded(let indexPathForExpandingItem, _):
+            indexPathForCenterItem = indexPathForExpandingItem
+        case .collapsed:
+            guard let indexPath = collectionView.indexPathForHorizontalCenterItem else {
+                return offset
+            }
+            indexPathForCenterItem = indexPath
+        }
+        
+        guard let centerItemAttributes = layoutAttributesForItem(at: indexPathForCenterItem) else {
+            return offset
+        }
+        return CGPoint(
+            x: centerItemAttributes.center.x - collectionView.bounds.width / 2,
+            y: offset.y
+        )
+    }
 }

@@ -184,9 +184,6 @@ final class ImageViewerPageControlBar: UIView {
             updateLayout(expandingItemAt: indexPath,
                          expandingImageWidthToHeight: imageWidthToHeight,
                          animated: false)
-            collectionView.scrollToItem(at: indexPath,
-                                        at: .centeredHorizontally,
-                                        animated: false)
             state = .expanded
             
             if imageWidthToHeight == nil {
@@ -251,13 +248,10 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func collapseItem() {
-        guard let indexPath = layout.style.indexPathForExpandingItem else { return }
+        guard layout.style.indexPathForExpandingItem != nil else { return }
         self.state = .collapsing
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: nil, animated: false)
-            self.collectionView.scrollToItem(at: indexPath,
-                                             at: .centeredHorizontally,
-                                             animated: false)
             self.state = .collapsed(indexPathForFinalDestinationItem: nil)
         }.startAnimation()
     }
