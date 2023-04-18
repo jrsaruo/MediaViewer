@@ -70,8 +70,15 @@ final class ImageViewerPageControlBar: UIView {
     
     // MARK: UI components
     
-    private var layout: ImageViewerPageControlBarLayout {
-        collectionView.collectionViewLayout as! ImageViewerPageControlBarLayout
+    private var layout: Layout {
+        switch collectionView.collectionViewLayout {
+        case let barLayout as ImageViewerPageControlBarLayout:
+            return .normal(barLayout)
+        case let transitionLayout as UICollectionViewTransitionLayout:
+            return .transition(transitionLayout)
+        default:
+            preconditionFailure("Unknown layout: \(collectionView.collectionViewLayout)")
+        }
     }
     
     private lazy var collectionView: UICollectionView = {
@@ -148,7 +155,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
-        let offset = (bounds.width - layout.collapsedItemWidth) / 2
+        let offset = (bounds.width - ImageViewerPageControlBarLayout.collapsedItemWidth) / 2
         collectionView.contentInset = .init(top: 0,
                                             left: offset,
                                             bottom: 0,
@@ -263,7 +270,8 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private func collapseItem() {
-        guard layout.style.indexPathForExpandingItem != nil else { return }
+        guard case .normal(let barLayout) = layout,
+              barLayout.style.indexPathForExpandingItem != nil else { return }
         state = .collapsing
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: nil, animated: false)
@@ -301,7 +309,7 @@ extension ImageViewerPageControlBar {
          * until (completion is called and) the next transition can be started.
          */
         let transitionLayout = UICollectionViewTransitionLayout(
-            currentLayout: layout,
+            currentLayout: collectionView.collectionViewLayout,
             nextLayout: newLayout
         )
         collectionView.collectionViewLayout = transitionLayout
@@ -339,7 +347,8 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
-        if layout.style.indexPathForExpandingItem != indexPath {
+        if case .normal(let barLayout) = layout,
+           barLayout.style.indexPathForExpandingItem != indexPath {
             expandAndScrollToItem(at: indexPath, animated: true)
         }
     }
