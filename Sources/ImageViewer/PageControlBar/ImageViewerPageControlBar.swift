@@ -264,6 +264,66 @@ final class ImageViewerPageControlBar: UIView {
     }
 }
 
+// MARK: - Interactive paging -
+
+extension ImageViewerPageControlBar {
+    
+    func startInteractivePaging(forwards: Bool) {
+        guard let currentCenterPage else { return }
+        let destinationPage = currentCenterPage + (forwards ? 1 : -1)
+        guard 0 <= destinationPage,
+              destinationPage < collectionView.numberOfItems(inSection: 0) else {
+            return
+        }
+        
+        let expandingImageWidthToHeight = dataSource?.imageViewerPageControlBar(
+            self,
+            imageWidthToHeightOnPage: destinationPage
+        )
+        let style: ImageViewerPageControlBarLayout.Style = .expanded(
+            IndexPath(item: destinationPage, section: 0),
+            expandingImageWidthToHeight: expandingImageWidthToHeight
+        )
+        let newLayout = ImageViewerPageControlBarLayout(style: style)
+        
+        /*
+         * NOTE:
+         * Using UICollectionView.startInteractiveTransition(to:completion:),
+         * there is a lag from the end of the transition
+         * until (completion is called and) the next transition can be started.
+         */
+        let transitionLayout = UICollectionViewTransitionLayout(
+            currentLayout: layout,
+            nextLayout: newLayout
+        )
+        collectionView.collectionViewLayout = transitionLayout
+        state = .transitioningInteractively(transitionLayout)
+    }
+    
+    func updatePagingProgress(_ progress: CGFloat) {
+        guard case .transitioningInteractively(let layout) = state else {
+            return
+        }
+        layout.transitionProgress = progress
+    }
+    
+    func finishInteractivePaging() {
+        guard case .transitioningInteractively(let layout) = state else {
+            return
+        }
+        collectionView.collectionViewLayout = layout.nextLayout
+        state = .expanded
+    }
+    
+    func cancelInteractivePaging() {
+        guard case .transitioningInteractively(let layout) = state else {
+            return
+        }
+        collectionView.collectionViewLayout = layout.currentLayout
+        state = .expanded
+    }
+}
+
 // MARK: - UICollectionViewDelegate -
 
 extension ImageViewerPageControlBar: UICollectionViewDelegate {
