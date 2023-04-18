@@ -28,7 +28,7 @@ public enum ImageSource {
     ///
     /// The viewer will use `provider` to acquire an image and display it using `transition`.
     case async(transition: ImageTransition = .fade(duration: 0.2),
-               provider: () async -> UIImage?)
+               provider: @Sendable () async -> UIImage?)
     
     /// An image source that represents the lack of an image.
     ///

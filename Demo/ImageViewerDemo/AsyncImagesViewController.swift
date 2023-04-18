@@ -131,10 +131,9 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceOnPage page: Int) -> ImageSource {
-        .async { [weak self] in
-            guard let self else { return nil }
+        let asset = self.dataSource.snapshot().itemIdentifiers[page]
+        return .async {
             return await withCheckedContinuation { continuation in
-                let asset = self.dataSource.snapshot().itemIdentifiers[page]
                 let options = PHImageRequestOptions()
                 options.deliveryMode = .highQualityFormat
                 options.resizeMode = .none
@@ -172,10 +171,9 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      pageThumbnailOnPage page: Int,
                      filling preferredThumbnailSize: CGSize) -> ImageSource {
-        .async(transition: .fade(duration: 0.1)) { [weak self] in
-            guard let self else { return nil }
+        let asset = self.dataSource.snapshot().itemIdentifiers[page]
+        return .async(transition: .fade(duration: 0.1)) {
             return await withCheckedContinuation { continuation in
-                let asset = self.dataSource.snapshot().itemIdentifiers[page]
                 let options = PHImageRequestOptions()
                 options.deliveryMode = .highQualityFormat
                 options.isNetworkAccessAllowed = true
