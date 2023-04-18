@@ -125,9 +125,14 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             expandingImageWidthToHeight = 0
         }
         
-        return max(
-            collectionView.bounds.height * expandingImageWidthToHeight,
-            Self.collapsedItemWidth
+        let minimumWidth = Self.collapsedItemWidth
+        let maximumWidth: CGFloat = 84
+        return min(
+            max(
+                collectionView.bounds.height * expandingImageWidthToHeight,
+                minimumWidth
+            ),
+            maximumWidth
         )
     }
     
