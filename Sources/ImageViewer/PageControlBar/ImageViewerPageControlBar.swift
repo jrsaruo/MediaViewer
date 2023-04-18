@@ -50,7 +50,7 @@ final class ImageViewerPageControlBar: UIView {
     
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     
-    private var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
+    private(set) var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
     
     private var indexPathForCurrentCenterItem: IndexPath? {
         collectionView.indexPathForHorizontalCenterItem

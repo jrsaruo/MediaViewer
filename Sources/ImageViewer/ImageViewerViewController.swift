@@ -170,6 +170,8 @@ open class ImageViewerViewController: UIPageViewController {
     
     private let imageViewerVM = ImageViewerViewModel()
     
+    private lazy var scrollView = view.firstSubview(ofType: UIScrollView.self)!
+    
     private let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
     
@@ -309,6 +311,12 @@ open class ImageViewerViewController: UIPageViewController {
                 self?.move(toPage: page, animated: false)
             }
             .store(in: &cancellables)
+        
+        scrollView.publisher(for: \.contentOffset)
+            .sink { [weak self] _ in
+                self?.handleContentOffsetChange()
+            }
+            .store(in: &cancellables)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -360,6 +368,29 @@ open class ImageViewerViewController: UIPageViewController {
     
     private func pageDidChange() {
         imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
+    }
+    
+    private func handleContentOffsetChange() {
+        // Update layout of the page control bar interactively.
+        let progress0To2 = scrollView.contentOffset.x / scrollView.bounds.width
+        let isMovingToNextPage = progress0To2 > 1
+        let progress = isMovingToNextPage ? (progress0To2 - 1) : (1 - progress0To2)
+        
+        switch pageControlBar.state {
+        case .transitioningInteractively(_, let forwards):
+            if progress == 1 {
+                pageControlBar.finishInteractivePaging()
+            } else if forwards == isMovingToNextPage {
+                pageControlBar.updatePagingProgress(progress)
+            } else {
+                pageControlBar.cancelInteractivePaging()
+            }
+        case .collapsing, .collapsed, .expanding, .expanded:
+            // Prevent start when paging is finished and progress is reset to 0.
+            if progress != 0 {
+                pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
+            }
+        }
     }
     
     // MARK: - Actions
