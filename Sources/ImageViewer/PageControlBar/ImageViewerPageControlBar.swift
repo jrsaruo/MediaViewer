@@ -249,7 +249,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func collapseItem() {
         guard layout.style.indexPathForExpandingItem != nil else { return }
-        self.state = .collapsing
+        state = .collapsing
         UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1) {
             self.updateLayout(expandingItemAt: nil, animated: false)
             self.state = .collapsed(indexPathForFinalDestinationItem: nil)
