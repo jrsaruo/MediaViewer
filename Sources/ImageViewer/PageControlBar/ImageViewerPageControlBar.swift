@@ -206,6 +206,10 @@ final class ImageViewerPageControlBar: UIView {
             updateLayout(expandingItemAt: indexPath,
                          expandingImageWidthToHeight: imageWidthToHeight,
                          animated: false)
+            // NOTE: Without this, a thumbnail may shift out of the center after scrolling.
+            collectionView.scrollToItem(at: indexPath,
+                                        at: .centeredHorizontally,
+                                        animated: false)
             state = .expanded
             
             if imageWidthToHeight == nil {
