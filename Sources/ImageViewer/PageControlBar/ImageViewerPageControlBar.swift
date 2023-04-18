@@ -32,7 +32,7 @@ final class ImageViewerPageControlBar: UIView {
         case expanded
         
         /// The state of interactively transitioning between pages.
-        case transitioningInteractively(UICollectionViewTransitionLayout)
+        case transitioningInteractively(UICollectionViewTransitionLayout, forwards: Bool)
         
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
@@ -313,18 +313,18 @@ extension ImageViewerPageControlBar {
             nextLayout: newLayout
         )
         collectionView.collectionViewLayout = transitionLayout
-        state = .transitioningInteractively(transitionLayout)
+        state = .transitioningInteractively(transitionLayout, forwards: forwards)
     }
     
     func updatePagingProgress(_ progress: CGFloat) {
-        guard case .transitioningInteractively(let layout) = state else {
+        guard case .transitioningInteractively(let layout, _) = state else {
             return
         }
         layout.transitionProgress = progress
     }
     
     func finishInteractivePaging() {
-        guard case .transitioningInteractively(let layout) = state else {
+        guard case .transitioningInteractively(let layout, _) = state else {
             return
         }
         collectionView.collectionViewLayout = layout.nextLayout
@@ -332,7 +332,7 @@ extension ImageViewerPageControlBar {
     }
     
     func cancelInteractivePaging() {
-        guard case .transitioningInteractively(let layout) = state else {
+        guard case .transitioningInteractively(let layout, _) = state else {
             return
         }
         collectionView.collectionViewLayout = layout.currentLayout
