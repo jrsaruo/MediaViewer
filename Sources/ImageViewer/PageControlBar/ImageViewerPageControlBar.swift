@@ -48,6 +48,10 @@ final class ImageViewerPageControlBar: UIView {
         collectionView.indexPathForHorizontalCenterItem
     }
     
+    private var currentCenterPage: Int? {
+        indexPathForCurrentCenterItem?.item
+    }
+    
     // MARK: Publishers
     
     var pageDidChange: some Publisher<Int, Never> {
