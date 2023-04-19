@@ -135,9 +135,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Customize the tab bar animation
         if imageViewer.hidesBottomBarWhenPushed,
            let tabBar,
-           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
-            assert(defaultTabBarAnimationKey == "position")
-            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
+           let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
+            for animationKey in defaultTabBarAnimationKeys {
+                assert(animationKey.starts(with: "position"))
+                tabBar.layer.removeAnimation(forKey: animationKey)
+            }
             animator.addAnimations {
                 tabBar.alpha = 0
             }
@@ -205,9 +207,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Customize the tab bar animation
         if let tabBar = toVC.tabBarController?.tabBar,
-           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
-            assert(defaultTabBarAnimationKey == "position")
-            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
+           let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
+            for animationKey in defaultTabBarAnimationKeys {
+                assert(animationKey.starts(with: "position"))
+                tabBar.layer.removeAnimation(forKey: animationKey)
+            }
             if toVC.hidesBottomBarWhenPushed {
                 animator.addAnimations {
                     tabBar.alpha = 0
