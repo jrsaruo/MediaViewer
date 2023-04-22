@@ -55,11 +55,15 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.rightBarButtonItem = toggleContentModeButton
     }
     
-    private func loadPhotos() async {
+    private nonisolated func fetchAssets() async -> [PHAsset] {
         await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         
         let result = PHAsset.fetchAssets(with: .image, options: nil)
-        let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+        return result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+    }
+    
+    private func loadPhotos() async {
+        let assets = await fetchAssets()
         
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
@@ -77,7 +81,7 @@ final class AsyncImagesViewController: UIViewController {
         await dataSource.apply(snapshot, animatingDifferences: false)
         
         // Scroll to the bottom if needed
-        if let lastAsset = result.lastObject {
+        if let lastAsset = assets.last {
             imageGridView.collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
                                                       at: .bottom,
                                                       animated: false)
