@@ -135,7 +135,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceOnPage page: Int) -> ImageSource {
-        let asset = self.dataSource.snapshot().itemIdentifiers[page]
+        let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async {
             return await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
@@ -175,7 +175,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      pageThumbnailOnPage page: Int,
                      filling preferredThumbnailSize: CGSize) -> ImageSource {
-        let asset = self.dataSource.snapshot().itemIdentifiers[page]
+        let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
             return await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
