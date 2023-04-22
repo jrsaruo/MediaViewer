@@ -55,11 +55,15 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.rightBarButtonItem = toggleContentModeButton
     }
     
-    private func loadPhotos() async {
+    private nonisolated func fetchAssets() async -> [PHAsset] {
         await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         
         let result = PHAsset.fetchAssets(with: .image, options: nil)
-        let assets = result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+        return result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+    }
+    
+    private func loadPhotos() async {
+        let assets = await fetchAssets()
         
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
@@ -77,7 +81,7 @@ final class AsyncImagesViewController: UIViewController {
         await dataSource.apply(snapshot, animatingDifferences: false)
         
         // Scroll to the bottom if needed
-        if let lastAsset = result.lastObject {
+        if let lastAsset = assets.last {
             imageGridView.collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
                                                       at: .bottom,
                                                       animated: false)
@@ -131,7 +135,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      imageSourceOnPage page: Int) -> ImageSource {
-        let asset = self.dataSource.snapshot().itemIdentifiers[page]
+        let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async {
             return await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
@@ -171,7 +175,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     func imageViewer(_ imageViewer: ImageViewerViewController,
                      pageThumbnailOnPage page: Int,
                      filling preferredThumbnailSize: CGSize) -> ImageSource {
-        let asset = self.dataSource.snapshot().itemIdentifiers[page]
+        let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
             return await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
