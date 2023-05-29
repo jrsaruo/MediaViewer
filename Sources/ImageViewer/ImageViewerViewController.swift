@@ -582,7 +582,7 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
                     pagingRecognizer.state = .failed
                     return true
                 }
-            case is ImageViewerPageControlBar:
+            case is ImageViewerOnePageView, is ImageViewerPageControlBar:
                 return false
             default:
                 assertionFailure("Unknown pan gesture recognizer: \(otherGestureRecognizer)")
