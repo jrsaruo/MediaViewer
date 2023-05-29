@@ -315,8 +315,14 @@ open class ImageViewerViewController: UIPageViewController {
             .store(in: &cancellables)
         
         pageControlBar.pageDidChange
-            .sink { [weak self] page in
-                self?.move(toPage: page, animated: false)
+            .sink { [weak self] page, reason in
+                switch reason {
+                case .tapOnPageThumbnail, .scrollingBar:
+                    self?.move(toPage: page, animated: false)
+                case .configuration, .interactivePaging:
+                    // Do nothing because it has already been moved to the page.
+                    break
+                }
             }
             .store(in: &cancellables)
         
