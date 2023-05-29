@@ -358,6 +358,11 @@ extension ImageViewerPageControlBar {
         }
         collectionView.collectionViewLayout = layout.nextLayout
         state = .expanded
+        
+        if let currentCenterPage {
+            _pageDidChange.send((page: currentCenterPage,
+                                 reason: .interactivePaging))
+        }
     }
     
     func cancelInteractivePaging() {
