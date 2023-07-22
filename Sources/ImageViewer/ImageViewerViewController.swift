@@ -410,6 +410,12 @@ open class ImageViewerViewController: UIPageViewController {
         }
     }
     
+    /// Insert an animated image view for the transition.
+    /// - Parameter animatedImageView: An animated image view during the transition.
+    func insertImageViewForTransition(_ animatedImageView: UIImageView) {
+        view.insertSubview(animatedImageView, belowSubview: toolbar)
+    }
+    
     // MARK: - Actions
     
     @objc

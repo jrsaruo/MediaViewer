@@ -78,20 +78,20 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
-        let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                                     from: currentPageImageView)
+        let currentPageImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
+                                                                    from: currentPageImageView)
         if let sourceImageView {
-            let sourceImageFrameInContainer = containerView.convert(sourceImageView.frame,
-                                                                    from: sourceImageView)
+            let sourceImageFrameInViewer = imageViewerView.convert(sourceImageView.frame,
+                                                                   from: sourceImageView)
             currentPageView.destroyLayoutConfigurationBeforeTransition()
             currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
-            currentPageImageView.frame = sourceImageFrameInContainer
+            currentPageImageView.frame = sourceImageFrameInViewer
         } else {
             currentPageView.destroyLayoutConfigurationBeforeTransition()
-            currentPageImageView.frame = currentPageImageFrameInContainer
+            currentPageImageView.frame = currentPageImageFrameInViewer
         }
         currentPageImageView.layer.masksToBounds = true
-        containerView.addSubview(currentPageImageView)
+        imageViewer.insertImageViewForTransition(currentPageImageView)
         sourceImageView?.isHidden = true
         
         if let tabBar {
@@ -102,7 +102,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             imageViewerView.alpha = 1
-            currentPageImageView.frame = currentPageImageFrameInContainer
+            currentPageImageView.frame = currentPageImageFrameInViewer
             currentPageImageView.transitioningConfiguration = configurationBackup
             
             // NOTE: Keep following properties during transition for smooth animation
