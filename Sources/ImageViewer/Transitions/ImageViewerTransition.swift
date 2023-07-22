@@ -68,7 +68,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Prepare for transition
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
-        imageViewerView.alpha = 0
+        for subview in imageViewerView.subviews {
+            /*
+             * NOTE:
+             * Make only subviews transparent because changing imageViewerView.alpha
+             * also unexpectedly makes the animated imageView transparent.
+             */
+            subview.alpha = 0
+        }
         imageViewerView.layoutIfNeeded()
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
@@ -101,7 +108,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
-            imageViewerView.alpha = 1
+            for subview in imageViewerView.subviews {
+                subview.alpha = 1
+            }
             currentPageImageView.frame = currentPageImageFrameInViewer
             currentPageImageView.transitioningConfiguration = configurationBackup
             

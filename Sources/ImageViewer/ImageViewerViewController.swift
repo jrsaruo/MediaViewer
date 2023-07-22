@@ -172,6 +172,9 @@ open class ImageViewerViewController: UIPageViewController {
     
     private lazy var scrollView = view.firstSubview(ofType: UIScrollView.self)!
     
+    // NOTE: This is required for transition.
+    private let backgroundView = UIView()
+    
     public let toolbar = UIToolbar()
     private let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
@@ -253,6 +256,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     private func setUpViews() {
         // Subviews
+        view.insertSubview(backgroundView, at: 0)
         view.addSubview(toolbar)
         view.addSubview(pageControlToolbar)
         
@@ -263,10 +267,16 @@ open class ImageViewerViewController: UIPageViewController {
         pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
         toolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlBar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
+            backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
             toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -297,7 +307,7 @@ open class ImageViewerViewController: UIPageViewController {
                 let animator = UIViewPropertyAnimator(duration: UINavigationController.hideShowBarDuration,
                                                       dampingRatio: 1) {
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
-                    self.view.backgroundColor = showsImageOnly ? .black : .systemBackground
+                    self.backgroundView.backgroundColor = showsImageOnly ? .black : .systemBackground
                     self.toolbar.isHidden = showsImageOnly
                     self.pageControlToolbar.isHidden = showsImageOnly
                 }
