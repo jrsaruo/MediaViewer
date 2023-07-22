@@ -173,6 +173,7 @@ final class ImageViewerOnePageView: UIView {
         let imageWidthToHeight = imageSize.width / imageSize.height
         let viewWidthToHeight = bounds.width / bounds.height
         
+        assert(constraintsBasedOnImageSize.allSatisfy { !$0.isActive })
         constraintsBasedOnImageSize = [
             imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
