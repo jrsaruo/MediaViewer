@@ -156,7 +156,6 @@ final class ImageViewerOnePageView: UIView {
     
     func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
-        removeConstraints(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.removeFromSuperview()
         layoutState = .destroyedForTransition
