@@ -68,7 +68,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Prepare for transition
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
-        imageViewerView.alpha = 0
+        for subview in imageViewerView.subviews {
+            /*
+             * NOTE:
+             * Make only subviews transparent because changing imageViewerView.alpha
+             * also unexpectedly makes the animated imageView transparent.
+             */
+            subview.alpha = 0
+        }
         imageViewerView.layoutIfNeeded()
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
@@ -78,20 +85,20 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
-        let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                                     from: currentPageImageView)
+        let currentPageImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
+                                                                    from: currentPageImageView)
         if let sourceImageView {
-            let sourceImageFrameInContainer = containerView.convert(sourceImageView.frame,
-                                                                    from: sourceImageView)
+            let sourceImageFrameInViewer = imageViewerView.convert(sourceImageView.frame,
+                                                                   from: sourceImageView)
             currentPageView.destroyLayoutConfigurationBeforeTransition()
             currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
-            currentPageImageView.frame = sourceImageFrameInContainer
+            currentPageImageView.frame = sourceImageFrameInViewer
         } else {
             currentPageView.destroyLayoutConfigurationBeforeTransition()
-            currentPageImageView.frame = currentPageImageFrameInContainer
+            currentPageImageView.frame = currentPageImageFrameInViewer
         }
         currentPageImageView.layer.masksToBounds = true
-        containerView.addSubview(currentPageImageView)
+        imageViewer.insertImageViewForTransition(currentPageImageView)
         sourceImageView?.isHidden = true
         
         if let tabBar {
@@ -101,8 +108,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
-            imageViewerView.alpha = 1
-            currentPageImageView.frame = currentPageImageFrameInContainer
+            for subview in imageViewerView.subviews {
+                subview.alpha = 1
+            }
+            currentPageImageView.frame = currentPageImageFrameInViewer
             currentPageImageView.transitioningConfiguration = configurationBackup
             
             // NOTE: Keep following properties during transition for smooth animation
@@ -148,6 +157,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     
     private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
+              let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to)
         else {
@@ -157,33 +167,35 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         let containerView = transitionContext.containerView
         containerView.addSubview(toView)
+        containerView.addSubview(imageViewerView)
         
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         
         // Prepare for transition
         toView.frame = transitionContext.finalFrame(for: toVC)
-        toView.alpha = 0
         toVC.view.layoutIfNeeded()
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
-        let currentPageImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                                     from: currentPageView.scrollView)
-        let sourceImageFrameInContainer = sourceImageView.map { sourceView in
-            containerView.convert(sourceView.frame, from: sourceView)
+        let currentPageImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
+                                                                    from: currentPageView.scrollView)
+        let sourceImageFrameInViewer = sourceImageView.map { sourceView in
+            imageViewerView.convert(sourceView.frame, from: sourceView)
         }
         currentPageView.destroyLayoutConfigurationBeforeTransition()
-        currentPageImageView.frame = currentPageImageFrameInContainer
-        containerView.addSubview(currentPageImageView)
+        currentPageImageView.frame = currentPageImageFrameInViewer
+        imageViewer.insertImageViewForTransition(currentPageImageView)
         sourceImageView?.isHidden = true
         
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            toView.alpha = 1
-            if let sourceImageFrameInContainer {
-                currentPageImageView.frame = sourceImageFrameInContainer
+            for subview in imageViewerView.subviews where subview != currentPageImageView {
+                subview.alpha = 0
+            }
+            if let sourceImageFrameInViewer {
+                currentPageImageView.frame = sourceImageFrameInViewer
                 currentPageImageView.transitioningConfiguration = self.sourceImageView!.transitioningConfiguration
             } else {
                 currentPageImageView.alpha = 0
