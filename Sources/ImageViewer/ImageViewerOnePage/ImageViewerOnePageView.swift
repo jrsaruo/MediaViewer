@@ -156,7 +156,6 @@ final class ImageViewerOnePageView: UIView {
     
     func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
-        removeConstraints(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
         imageView.removeFromSuperview()
         layoutState = .destroyedForTransition
@@ -174,6 +173,7 @@ final class ImageViewerOnePageView: UIView {
         let imageWidthToHeight = imageSize.width / imageSize.height
         let viewWidthToHeight = bounds.width / bounds.height
         
+        assert(constraintsBasedOnImageSize.allSatisfy { !$0.isActive })
         constraintsBasedOnImageSize = [
             imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
@@ -182,19 +182,17 @@ final class ImageViewerOnePageView: UIView {
             imageView.widthAnchor.constraint(equalTo: imageView.heightAnchor, multiplier: imageWidthToHeight)
         ]
         
-        let scrollViewContentConstraints: [NSLayoutConstraint]
+        let scrollViewContentConstraint: NSLayoutConstraint
         if imageWidthToHeight > viewWidthToHeight {
-            scrollViewContentConstraints = [
-                scrollView.contentLayoutGuide.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor),
-                scrollView.contentLayoutGuide.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor)
-            ]
+            scrollViewContentConstraint = scrollView.contentLayoutGuide.widthAnchor.constraint(
+                equalTo: scrollView.frameLayoutGuide.widthAnchor
+            )
         } else {
-            scrollViewContentConstraints = [
-                scrollView.contentLayoutGuide.topAnchor.constraint(equalTo: scrollView.frameLayoutGuide.topAnchor),
-                scrollView.contentLayoutGuide.bottomAnchor.constraint(equalTo: scrollView.frameLayoutGuide.bottomAnchor)
-            ]
+            scrollViewContentConstraint = scrollView.contentLayoutGuide.heightAnchor.constraint(
+                equalTo: scrollView.frameLayoutGuide.heightAnchor
+            )
         }
-        constraintsBasedOnImageSize.append(contentsOf: scrollViewContentConstraints)
+        constraintsBasedOnImageSize.append(scrollViewContentConstraint)
         
         NSLayoutConstraint.activate(constraintsBasedOnImageSize)
         
