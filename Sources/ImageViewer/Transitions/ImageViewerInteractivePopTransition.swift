@@ -27,7 +27,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     private var tabBarAlphaBackup: CGFloat?
     private var initialZoomScale: CGFloat = 1
     private var initialImageTransform = CGAffineTransform.identity
-    private var initialImageFrameInContainer = CGRect.null
+    private var initialImageFrameInViewer = CGRect.null
     
     // MARK: - Initializers
     
@@ -40,7 +40,8 @@ final class ImageViewerInteractivePopTransition: NSObject {
 extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
-        guard let fromView = transitionContext.view(forKey: .from),
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
+              let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to)
         else {
@@ -56,8 +57,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         tabBarAlphaBackup = tabBar?.alpha
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
-        initialImageFrameInContainer = containerView.convert(currentPageImageView.frame,
-                                                             from: currentPageView.scrollView)
+        initialImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
+                                                            from: currentPageView.scrollView)
         
         // Prepare for transition
         if tabBar?.alpha == 0 && !toVC.hidesBottomBarWhenPushed {
@@ -65,18 +66,20 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         
         currentPageView.destroyLayoutConfigurationBeforeTransition()
-        currentPageImageView.frame = initialImageFrameInContainer
+        currentPageImageView.frame = initialImageFrameInViewer
         
         toView.frame = transitionContext.finalFrame(for: toVC)
         containerView.addSubview(toView)
-        containerView.addSubview(fromView)
-        containerView.addSubview(currentPageImageView)
+        containerView.addSubview(imageViewerView)
+        imageViewer.insertImageViewForTransition(currentPageImageView)
         
         sourceImageView?.isHidden = true
         
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            fromView.alpha = 0
+            for subview in imageViewerView.subviews where subview != currentPageImageView {
+                subview.alpha = 0
+            }
         }
     }
     
@@ -87,15 +90,15 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let duration = 0.35
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
-        let containerView = transitionContext.containerView
+        let imageViewerView = transitionContext.view(forKey: .from)!
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         
         let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             if let sourceImageView = self.sourceImageView {
-                let sourceImageFrameInContainer = containerView.convert(sourceImageView.frame,
-                                                                        from: sourceImageView)
-                currentPageImageView.frame = sourceImageFrameInContainer
+                let sourceImageFrameInViewer = imageViewerView.convert(sourceImageView.frame,
+                                                                       from: sourceImageView)
+                currentPageImageView.frame = sourceImageFrameInViewer
                 currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
                 currentPageImageView.layer.masksToBounds = true // TODO: Change according to the source configuration
             } else {
@@ -127,7 +130,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            currentPageImageView.frame = self.initialImageFrameInContainer
+            currentPageImageView.frame = self.initialImageFrameInViewer
             
             if let tabBarAlphaBackup = self.tabBarAlphaBackup {
                 self.tabBar?.alpha = tabBarAlphaBackup
