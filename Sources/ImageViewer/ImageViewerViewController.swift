@@ -175,7 +175,9 @@ open class ImageViewerViewController: UIPageViewController {
     // NOTE: This is required for transition.
     private let backgroundView = UIView()
     
-    public let toolbar = UIToolbar()
+    // NOTE: Specify a dummy frame as a workaround to avoid AutoLayout warnings.
+    public let toolbar = UIToolbar(frame: .init(x: 0, y: 0, width: 300, height: 44))
+    
     private let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
     
