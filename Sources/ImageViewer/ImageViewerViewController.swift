@@ -432,11 +432,9 @@ open class ImageViewerViewController: UIPageViewController {
     
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
-        // Check whether to transition interactively
-        let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self)
-        
         if recognizer.state == .began {
             // Start the interactive pop transition
+            let sourceImageView = imageViewerDataSource?.transitionSourceView(forCurrentPageOf: self)
             interactivePopTransition = .init(sourceImageView: sourceImageView)
             navigationController?.popViewController(animated: true)
         }
