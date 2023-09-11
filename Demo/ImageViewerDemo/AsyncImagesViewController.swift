@@ -204,6 +204,10 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+        
+        // NOTE: Without this, later cellForItem(at:) sometimes returns nil.
+        imageGridView.collectionView.layoutIfNeeded()
+        
         guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(at: indexPathForCurrentImage) as? ImageCell else {
             return nil
         }
