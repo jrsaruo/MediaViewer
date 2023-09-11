@@ -19,7 +19,7 @@ final class AsyncImagesViewController: UIViewController {
         let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
         cell.configure(with: asset,
                        contentMode: self.preferredContentMode,
-                       screenScale: self.view.window!.screen.scale)
+                       screenScale: self.view.window?.screen.scale ?? 3)
         return cell
     }
     
