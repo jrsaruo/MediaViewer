@@ -17,6 +17,9 @@ changelog:
       labels:
         - documentation
         - maintenance
+    - title: ⬆️ Dependencies
+      labels:
+        - dependencies
     - title: Other Changes
       labels:
         - "*"
