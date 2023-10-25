@@ -7,7 +7,6 @@
 
 import UIKit
 import Combine
-import os
 
 /// The way to animate the image transition.
 public enum ImageTransition: Hashable, Sendable {
@@ -198,7 +197,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: Backups
     
-    private var navigationBarAlphaBackup = 1.0
+    private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     
     // MARK: - Initializers
@@ -364,28 +363,9 @@ open class ImageViewerViewController: UIPageViewController {
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        guard let navigationController else {
-            preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
-        }
-        
-        navigationController.navigationBar.alpha = navigationBarAlphaBackup
-        
-        let animatesBarHidden: Bool
-        if #available(iOS 17, *) {
-            if #available(iOS 17.0.4, *) {
-                Logger.ui.warning("Check if the navigation bar reappears even if animation is enabled.")
-            }
-            // FIXME: The navigation bar doesn't reappear when animated on iOS 17
-            let turnsOnNavigationBar = navigationController.isNavigationBarHidden && !navigationBarHiddenBackup
-            if turnsOnNavigationBar {
-                Logger.ui.info("[Workaround] The navigation bar doesn't reappear when animated on iOS 17.0, so animation is disabled.")
-            }
-            animatesBarHidden = turnsOnNavigationBar ? false : animated
-        } else {
-            animatesBarHidden = animated
-        }
-        navigationController.setNavigationBarHidden(navigationBarHiddenBackup,
-                                                    animated: animatesBarHidden)
+        navigationController?.navigationBar.alpha = navigationBarAlphaBackup
+        navigationController?.setNavigationBarHidden(navigationBarHiddenBackup,
+                                                     animated: animated)
     }
     
     // MARK: - Override
