@@ -351,6 +351,13 @@ open class ImageViewerViewController: UIPageViewController {
             .store(in: &cancellables)
     }
     
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        navigationController?.setNavigationBarHidden(imageViewerVM.showsImageOnly,
+                                                     animated: animated)
+    }
+    
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
