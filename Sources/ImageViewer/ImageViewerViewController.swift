@@ -198,6 +198,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: Backups
     
+    private var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     
     // MARK: - Initializers
@@ -240,6 +241,7 @@ open class ImageViewerViewController: UIPageViewController {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
         }
         
+        navigationBarAlphaBackup = navigationController.navigationBar.alpha
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpViews()
@@ -354,6 +356,7 @@ open class ImageViewerViewController: UIPageViewController {
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        navigationController?.navigationBar.alpha = imageViewerVM.showsImageOnly ? 0 : 1
         navigationController?.setNavigationBarHidden(imageViewerVM.showsImageOnly,
                                                      animated: animated)
     }
@@ -364,6 +367,8 @@ open class ImageViewerViewController: UIPageViewController {
         guard let navigationController else {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
         }
+        
+        navigationController.navigationBar.alpha = navigationBarAlphaBackup
         
         let animatesBarHidden: Bool
         if #available(iOS 17, *) {
