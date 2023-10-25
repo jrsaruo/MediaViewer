@@ -168,6 +168,10 @@ open class ImageViewerViewController: UIPageViewController {
         return imageViewerOnePage
     }
     
+    public var isShowingImageOnly: Bool {
+        imageViewerVM.showsImageOnly
+    }
+    
     private let imageViewerVM = ImageViewerViewModel()
     
     private lazy var scrollView = view.firstSubview(ofType: UIScrollView.self)!
