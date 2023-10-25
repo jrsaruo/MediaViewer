@@ -92,7 +92,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             })
             navigationBar.layer.removeAllAnimations()
         }
-        navigationBar.alpha = 0.0001 // NOTE: .leastNormalMagnitude didn't work
+        navigationBar.alpha = imageViewer.isShowingImageOnly 
+        ? 0.0001 // NOTE: .leastNormalMagnitude didn't work
+        : 1
         
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
