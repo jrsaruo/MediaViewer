@@ -197,7 +197,6 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: Backups
     
-    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
     private var navigationBarHiddenBackup = false
     
     // MARK: - Initializers
@@ -240,7 +239,6 @@ open class ImageViewerViewController: UIPageViewController {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
         }
         
-        navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpViews()
@@ -257,6 +255,11 @@ open class ImageViewerViewController: UIPageViewController {
     }
     
     private func setUpViews() {
+        // Navigation
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithDefaultBackground()
+        navigationItem.scrollEdgeAppearance = appearance
+        
         // Subviews
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(toolbar)
@@ -347,18 +350,9 @@ open class ImageViewerViewController: UIPageViewController {
             .store(in: &cancellables)
     }
     
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithDefaultBackground()
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
-    }
-    
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
         navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
     }
     
