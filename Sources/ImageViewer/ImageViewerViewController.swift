@@ -356,20 +356,26 @@ open class ImageViewerViewController: UIPageViewController {
             .store(in: &cancellables)
     }
     
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        navigationController?.navigationBar.alpha = imageViewerVM.showsImageOnly ? 0 : 1
-        navigationController?.setNavigationBarHidden(imageViewerVM.showsImageOnly,
-                                                     animated: animated)
-    }
-    
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        navigationController?.navigationBar.alpha = navigationBarAlphaBackup
-        navigationController?.setNavigationBarHidden(navigationBarHiddenBackup,
-                                                     animated: animated)
+        guard let navigationController else {
+            preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
+        }
+        
+        // Restore the appearance
+        // NOTE: Animating in the transitionCoordinator.animate(...) didn't work.
+        navigationController.navigationBar.alpha = navigationBarAlphaBackup
+        navigationController.setNavigationBarHidden(navigationBarHiddenBackup,
+                                                    animated: animated)
+        
+        transitionCoordinator?.animate(alongsideTransition: { _ in }) { context in
+            if context.isCancelled {
+                // Cancel the appearance restoration
+                navigationController.navigationBar.alpha = self.isShowingImageOnly ? 0 : 1
+                navigationController.isNavigationBarHidden = self.isShowingImageOnly
+            }
+        }
     }
     
     // MARK: - Override
