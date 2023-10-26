@@ -150,6 +150,11 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 tabBar.layer.removeAnimation(forKey: animationKey)
             }
             animator.addAnimations {
+                /*
+                 * NOTE:
+                 * tabBar.alpha will be forced to be reset to 1 by system
+                 * after the transition, so no need to restore it.
+                 */
                 tabBar.alpha = 0
             }
         }

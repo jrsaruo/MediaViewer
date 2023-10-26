@@ -153,10 +153,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             currentPageImageView.frame = self.initialImageFrameInViewer
-            
-            if let tabBarAlphaBackup = self.tabBarAlphaBackup {
-                self.tabBar?.alpha = tabBarAlphaBackup
-            }
+            self.tabBar?.alpha = 0
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
@@ -164,6 +161,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
             currentPageImageView.transform = self.initialImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
+            
+            if let tabBarAlphaBackup = self.tabBarAlphaBackup {
+                self.tabBar?.alpha = tabBarAlphaBackup
+            }
             
             transitionContext.completeTransition(false)
         }
