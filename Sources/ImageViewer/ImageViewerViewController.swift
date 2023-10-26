@@ -168,6 +168,10 @@ open class ImageViewerViewController: UIPageViewController {
         return imageViewerOnePage
     }
     
+    public var isShowingImageOnly: Bool {
+        imageViewerVM.showsImageOnly
+    }
+    
     private let imageViewerVM = ImageViewerViewModel()
     
     private lazy var scrollView = view.firstSubview(ofType: UIScrollView.self)!
@@ -197,7 +201,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: Backups
     
-    private var navigationBarScrollEdgeAppearanceBackup: UINavigationBarAppearance?
+    private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     
     // MARK: - Initializers
@@ -240,7 +244,7 @@ open class ImageViewerViewController: UIPageViewController {
             preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
         }
         
-        navigationBarScrollEdgeAppearanceBackup = navigationController.navigationBar.scrollEdgeAppearance
+        navigationBarAlphaBackup = navigationController.navigationBar.alpha
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         
         setUpViews()
@@ -257,6 +261,11 @@ open class ImageViewerViewController: UIPageViewController {
     }
     
     private func setUpViews() {
+        // Navigation
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithDefaultBackground()
+        navigationItem.scrollEdgeAppearance = appearance
+        
         // Subviews
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(toolbar)
@@ -347,19 +356,26 @@ open class ImageViewerViewController: UIPageViewController {
             .store(in: &cancellables)
     }
     
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithDefaultBackground()
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
-    }
-    
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        navigationController?.navigationBar.scrollEdgeAppearance = navigationBarScrollEdgeAppearanceBackup
-        navigationController?.setNavigationBarHidden(navigationBarHiddenBackup, animated: animated)
+        guard let navigationController else {
+            preconditionFailure("\(Self.self) must be embedded in UINavigationController.")
+        }
+        
+        // Restore the appearance
+        // NOTE: Animating in the transitionCoordinator.animate(...) didn't work.
+        navigationController.navigationBar.alpha = navigationBarAlphaBackup
+        navigationController.setNavigationBarHidden(navigationBarHiddenBackup,
+                                                    animated: animated)
+        
+        transitionCoordinator?.animate(alongsideTransition: { _ in }) { context in
+            if context.isCancelled {
+                // Cancel the appearance restoration
+                navigationController.navigationBar.alpha = self.isShowingImageOnly ? 0 : 1
+                navigationController.isNavigationBarHidden = self.isShowingImageOnly
+            }
+        }
     }
     
     // MARK: - Override

@@ -47,6 +47,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         else {
             preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
         }
+        guard let navigationController = imageViewer.navigationController else {
+            preconditionFailure("\(ImageViewerViewController.self) must be embedded in UINavigationController.")
+        }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
@@ -75,8 +78,27 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         sourceImageView?.isHidden = true
         
+        /*
+         * NOTE:
+         * If the navigation bar is hidden on transition start, some animations
+         * are applied by system and the bar remains hidden after the transition.
+         * Removed those animations to avoid this problem.
+         */
+        let navigationBar = navigationController.navigationBar
+        if let animationKeys = navigationBar.layer.animationKeys() {
+            assert(animationKeys.allSatisfy {
+                $0.starts(with: "opacity")
+                || $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+            })
+            navigationBar.layer.removeAllAnimations()
+        }
+        navigationBar.alpha = imageViewer.isShowingImageOnly 
+        ? 0.0001 // NOTE: .leastNormalMagnitude didn't work
+        : 1
+        
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+            navigationBar.alpha = imageViewer.navigationBarAlphaBackup
             for subview in imageViewerView.subviews where subview != currentPageImageView {
                 subview.alpha = 0
             }
