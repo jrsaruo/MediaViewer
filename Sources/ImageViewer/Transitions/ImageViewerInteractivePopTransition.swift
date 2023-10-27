@@ -43,12 +43,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
-              let toVC = transitionContext.viewController(forKey: .to)
+              let toVC = transitionContext.viewController(forKey: .to),
+              let navigationController = imageViewer.navigationController
         else {
             preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
-        }
-        guard let navigationController = imageViewer.navigationController else {
-            preconditionFailure("\(ImageViewerViewController.self) must be embedded in UINavigationController.")
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
