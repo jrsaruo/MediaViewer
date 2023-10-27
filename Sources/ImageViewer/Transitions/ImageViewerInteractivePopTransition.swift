@@ -99,6 +99,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             navigationBar.alpha = imageViewer.navigationBarAlphaBackup
+            navigationController.toolbar.alpha = 0
             for subview in imageViewerView.subviews where subview != currentPageImageView {
                 subview.alpha = 0
             }
@@ -131,10 +132,25 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 self.tabBar?.alpha = 1
             }
         }
+        
+        let imageViewer = transitionContext.viewController(forKey: .from) as! ImageViewerViewController
+        let toVC = transitionContext.viewController(forKey: .to)!
+        let navigationController = toVC.navigationController!
+        let toolbar = navigationController.toolbar!
+        
         finishAnimator.addCompletion { _ in
             self.sourceImageView?.isHidden = self.sourceImageHiddenBackup
             currentPageView.removeFromSuperview()
             currentPageImageView.removeFromSuperview()
+            toolbar.alpha = 1
+            navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
+            
+            // Disable the default animation applied to the toolbar
+            if let animationKeys = toolbar.layer.animationKeys() {
+                assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                toolbar.layer.removeAllAnimations()
+            }
+            
             transitionContext.completeTransition(true)
         }
         finishAnimator.startAnimation()
