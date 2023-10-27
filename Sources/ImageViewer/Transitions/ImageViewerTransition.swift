@@ -51,7 +51,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     
     private func animatePushTransition(using transitionContext: any UIViewControllerContextTransitioning) {
         guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
-              let imageViewerView = transitionContext.view(forKey: .to)
+              let imageViewerView = transitionContext.view(forKey: .to),
+              let navigationController = imageViewer.navigationController
         else {
             assertionFailure("\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self).")
             transitionContext.completeTransition(false)
@@ -105,9 +106,19 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             containerView.addSubview(tabBar)
         }
         
+        // Disable the default animation applied to the toolbar
+        let toolbar = navigationController.toolbar!
+        if let animationKeys = toolbar.layer.animationKeys() {
+            assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+            toolbar.layer.removeAllAnimations()
+        }
+        
+        toolbar.alpha = 0
+        
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
+            toolbar.alpha = 1
             for subview in imageViewerView.subviews {
                 subview.alpha = 1
             }
@@ -164,7 +175,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
-              let toVC = transitionContext.viewController(forKey: .to)
+              let toVC = transitionContext.viewController(forKey: .to),
+              let navigationController = imageViewer.navigationController
         else {
             assertionFailure("\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self).")
             transitionContext.completeTransition(false)
@@ -193,9 +205,13 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         imageViewer.insertImageViewForTransition(currentPageImageView)
         sourceImageView?.isHidden = true
         
+        let toolbar = navigationController.toolbar!
+        assert(toolbar.layer.animationKeys() == nil)
+        
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
+            toolbar.alpha = 0
             for subview in imageViewerView.subviews where subview != currentPageImageView {
                 subview.alpha = 0
             }
@@ -212,6 +228,15 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             case .end:
                 currentPageImageView.removeFromSuperview()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
+                toolbar.alpha = 1
+                navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
+                
+                // Disable the default animation applied to the toolbar
+                if let animationKeys = toolbar.layer.animationKeys() {
+                    assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                    toolbar.layer.removeAllAnimations()
+                }
+                
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure()

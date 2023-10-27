@@ -179,9 +179,6 @@ open class ImageViewerViewController: UIPageViewController {
     // NOTE: This is required for transition.
     private let backgroundView = UIView()
     
-    // NOTE: Specify a dummy frame as a workaround to avoid AutoLayout warnings.
-    public let toolbar = UIToolbar(frame: .init(x: 0, y: 0, width: 300, height: 44))
-    
     private let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
     
@@ -203,6 +200,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
+    private(set) var toolbarHiddenBackup = true
     
     // MARK: - Initializers
     
@@ -246,6 +244,7 @@ open class ImageViewerViewController: UIPageViewController {
         
         navigationBarAlphaBackup = navigationController.navigationBar.alpha
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
+        toolbarHiddenBackup = navigationController.isToolbarHidden
         
         setUpViews()
         setUpGestureRecognizers()
@@ -268,7 +267,6 @@ open class ImageViewerViewController: UIPageViewController {
         
         // Subviews
         view.insertSubview(backgroundView, at: 0)
-        view.addSubview(toolbar)
         view.addSubview(pageControlToolbar)
         
         if let imageViewerDataSource {
@@ -279,7 +277,6 @@ open class ImageViewerViewController: UIPageViewController {
         
         // Layout
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
-        toolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlBar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -288,13 +285,9 @@ open class ImageViewerViewController: UIPageViewController {
             backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
             pageControlToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageControlToolbar.bottomAnchor.constraint(equalTo: toolbar.topAnchor),
+            pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
             pageControlBar.topAnchor.constraint(equalTo: pageControlToolbar.topAnchor, constant: 1),
             pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
@@ -319,7 +312,7 @@ open class ImageViewerViewController: UIPageViewController {
                                                       dampingRatio: 1) {
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
                     self.backgroundView.backgroundColor = showsImageOnly ? .black : .systemBackground
-                    self.toolbar.isHidden = showsImageOnly
+                    self.navigationController?.toolbar.isHidden = showsImageOnly
                     self.pageControlToolbar.isHidden = showsImageOnly
                 }
                 if showsImageOnly {
@@ -375,6 +368,15 @@ open class ImageViewerViewController: UIPageViewController {
                 navigationController.navigationBar.alpha = self.isShowingImageOnly ? 0 : 1
                 navigationController.isNavigationBarHidden = self.isShowingImageOnly
             }
+        }
+    }
+    
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // NOTE: navigationController is nil on pop.
+        if let navigationController, navigationController.isToolbarHidden {
+            navigationController.setToolbarHidden(false, animated: true)
         }
     }
     
@@ -441,7 +443,7 @@ open class ImageViewerViewController: UIPageViewController {
     /// Insert an animated image view for the transition.
     /// - Parameter animatedImageView: An animated image view during the transition.
     func insertImageViewForTransition(_ animatedImageView: UIImageView) {
-        view.insertSubview(animatedImageView, belowSubview: toolbar)
+        view.insertSubview(animatedImageView, belowSubview: pageControlToolbar)
     }
     
     // MARK: - Actions

@@ -120,7 +120,7 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
         imageViewer.imageViewerDelegate = self
-        imageViewer.toolbar.items = [
+        imageViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),
             .flexibleSpace(),
             .init(image: .init(systemName: "heart")),
