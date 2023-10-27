@@ -166,6 +166,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
+            // FIXME: toolbar items go away during animation
             currentPageImageView.frame = self.initialImageFrameInViewer
             self.tabBar?.alpha = 0
         }
