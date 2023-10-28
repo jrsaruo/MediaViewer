@@ -441,12 +441,6 @@ open class ImageViewerViewController: UIPageViewController {
         }
     }
     
-    /// Insert an animated image view for the transition.
-    /// - Parameter animatedImageView: An animated image view during the transition.
-    func insertImageViewForTransition(_ animatedImageView: UIImageView) {
-        view.insertSubview(animatedImageView, belowSubview: pageControlToolbar)
-    }
-    
     // MARK: - Actions
     
     @objc
@@ -638,6 +632,12 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
 // MARK: - Transition helpers -
 
 extension ImageViewerViewController {
+    
+    /// Insert an animated image view for the transition.
+    /// - Parameter animatedImageView: An animated image view during the transition.
+    func insertImageViewForTransition(_ animatedImageView: UIImageView) {
+        view.insertSubview(animatedImageView, belowSubview: pageControlToolbar)
+    }
     
     func willStartPushTransition() {
         pageControlToolbar.clipsToBounds = true
