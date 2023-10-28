@@ -644,13 +644,22 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
 
 extension ImageViewerViewController {
     
+    private var collapsedConstraints: [NSLayoutConstraint] {
+        [pageControlToolbarHeightToZero]
+    }
+    
+    private var expandedConstraints: [NSLayoutConstraint] {
+        [pageControlBarTopFitToPageControlToolbarTop]
+    }
+    
     /// Insert an animated image view for the transition.
     /// - Parameter animatedImageView: An animated image view during the transition.
     func insertImageViewForTransition(_ animatedImageView: UIImageView) {
         view.insertSubview(animatedImageView, belowSubview: pageControlToolbar)
     }
     
-    func willStartPushTransition() {
+    private func prepareToolbarsForTransition() {
+        // Clip pageControlBar
         pageControlToolbar.clipsToBounds = true
         
         /*
@@ -663,9 +672,13 @@ extension ImageViewerViewController {
         let appearance = UIToolbarAppearance()
         appearance.configureWithDefaultBackground()
         toolbar.scrollEdgeAppearance = appearance
+    }
+    
+    // MARK: Push transition
+    
+    func willStartPushTransition() {
+        prepareToolbarsForTransition()
         
-        let collapsedConstraints = [pageControlToolbarHeightToZero]
-        let expandedConstraints = [pageControlBarTopFitToPageControlToolbarTop]
         NSLayoutConstraint.deactivate(expandedConstraints)
         NSLayoutConstraint.activate(collapsedConstraints)
         view.layoutIfNeeded()
@@ -676,5 +689,14 @@ extension ImageViewerViewController {
     func didFinishPushTransition() {
         pageControlToolbar.clipsToBounds = false
         navigationController?.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+    }
+    
+    // MARK: Pop transition
+    
+    func willStartPopTransition() {
+        prepareToolbarsForTransition()
+        
+        NSLayoutConstraint.deactivate(expandedConstraints)
+        NSLayoutConstraint.activate(collapsedConstraints)
     }
 }
