@@ -24,6 +24,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     // MARK: Backups
     
     private var sourceImageHiddenBackup = false
+    private var tabBarScrollEdgeAppearanceBackup: UITabBarAppearance?
     private var tabBarAlphaBackup: CGFloat?
     private var initialZoomScale: CGFloat = 1
     private var initialImageTransform = CGAffineTransform.identity
@@ -55,6 +56,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // Back up
         sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
+        tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         tabBarAlphaBackup = tabBar?.alpha
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
@@ -75,6 +77,13 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         imageViewer.insertImageViewForTransition(currentPageImageView)
         
         sourceImageView?.isHidden = true
+        
+        if let tabBar {
+            // Make tabBar opaque during the transition
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            tabBar.scrollEdgeAppearance = appearance
+        }
         
         /*
          * NOTE:
@@ -114,6 +123,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let imageViewerView = transitionContext.view(forKey: .from)!
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
+        
+        tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
         
         let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             if let sourceImageView = self.sourceImageView {
@@ -177,6 +188,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageImageView.transform = self.initialImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
             
+            self.tabBar?.scrollEdgeAppearance = self.tabBarScrollEdgeAppearanceBackup
             if let tabBarAlphaBackup = self.tabBarAlphaBackup {
                 self.tabBar?.alpha = tabBarAlphaBackup
             }
