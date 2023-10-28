@@ -214,11 +214,16 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let toolbar = navigationController.toolbar!
         assert(toolbar.layer.animationKeys() == nil)
         
+        imageViewer.willStartPopTransition()
+        
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
+            // Animate pageControlToolbar
+            imageViewerView.layoutIfNeeded()
+            
             toolbar.alpha = 0
-            for subview in imageViewerView.subviews where subview != currentPageImageView {
+            for subview in imageViewer.subviewsToFadeOutDuringPopTransition {
                 subview.alpha = 0
             }
             if let sourceImageFrameInViewer {
@@ -239,7 +244,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 
                 // Disable the default animation applied to the toolbar
                 if let animationKeys = toolbar.layer.animationKeys() {
-                    assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                    assert(animationKeys.allSatisfy {
+                        $0.starts(with: "position")
+                        || $0.starts(with: "bounds.size")
+                    })
                     toolbar.layer.removeAllAnimations()
                 }
                 

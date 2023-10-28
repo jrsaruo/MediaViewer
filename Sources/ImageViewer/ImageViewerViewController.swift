@@ -644,6 +644,14 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
 
 extension ImageViewerViewController {
     
+    var subviewsToFadeOutDuringPopTransition: [UIView] {
+        view.subviews
+            .filter {
+                $0 != pageControlToolbar
+                && $0 != currentPageViewController.imageViewerOnePageView.imageView
+            }
+    }
+    
     private var collapsedConstraints: [NSLayoutConstraint] {
         [pageControlToolbarHeightToZero]
     }
