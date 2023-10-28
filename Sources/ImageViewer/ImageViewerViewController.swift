@@ -201,6 +201,7 @@ open class ImageViewerViewController: UIPageViewController {
     private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     private(set) var toolbarHiddenBackup = true
+    private var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
     
     // MARK: - Initializers
     
@@ -631,5 +632,30 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
             break
         }
         return false
+    }
+}
+
+// MARK: - Transition helpers -
+
+extension ImageViewerViewController {
+    
+    func willStartPushTransition() {
+        pageControlToolbar.clipsToBounds = true
+        
+        /*
+         * NOTE:
+         * When pageControlToolbar.clipsToBounds is true,
+         * toolbar becomes transparent so prevent it.
+         */
+        let toolbar = navigationController!.toolbar!
+        toolbarScrollEdgeAppearanceBackup = toolbar.scrollEdgeAppearance
+        let appearance = UIToolbarAppearance()
+        appearance.configureWithDefaultBackground()
+        toolbar.scrollEdgeAppearance = appearance
+    }
+    
+    func didFinishPushTransition() {
+        pageControlToolbar.clipsToBounds = false
+        navigationController?.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
     }
 }
