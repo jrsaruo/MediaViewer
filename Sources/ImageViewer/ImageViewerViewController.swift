@@ -196,6 +196,17 @@ open class ImageViewerViewController: UIPageViewController {
         }
     }
     
+    // MARK: Layout constraints
+    
+    private lazy var pageControlBarTopFitToPageControlToolbarTop = pageControlBar.topAnchor.constraint(
+        equalTo: pageControlToolbar.topAnchor,
+        constant: 1
+    )
+    
+    private lazy var pageControlToolbarHeightToZero = pageControlToolbar.heightAnchor.constraint(
+        equalToConstant: 0
+    )
+    
     // MARK: Backups
     
     private(set) var navigationBarAlphaBackup = 1.0
@@ -290,7 +301,7 @@ open class ImageViewerViewController: UIPageViewController {
             pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            pageControlBar.topAnchor.constraint(equalTo: pageControlToolbar.topAnchor, constant: 1),
+            pageControlBarTopFitToPageControlToolbarTop,
             pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
             pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),
             pageControlBar.bottomAnchor.constraint(equalTo: pageControlToolbar.bottomAnchor, constant: -1),
@@ -652,6 +663,14 @@ extension ImageViewerViewController {
         let appearance = UIToolbarAppearance()
         appearance.configureWithDefaultBackground()
         toolbar.scrollEdgeAppearance = appearance
+        
+        let collapsedConstraints = [pageControlToolbarHeightToZero]
+        let expandedConstraints = [pageControlBarTopFitToPageControlToolbarTop]
+        NSLayoutConstraint.deactivate(expandedConstraints)
+        NSLayoutConstraint.activate(collapsedConstraints)
+        view.layoutIfNeeded()
+        NSLayoutConstraint.deactivate(collapsedConstraints)
+        NSLayoutConstraint.activate(expandedConstraints)
     }
     
     func didFinishPushTransition() {
