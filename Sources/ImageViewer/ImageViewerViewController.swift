@@ -179,7 +179,7 @@ open class ImageViewerViewController: UIPageViewController {
     // NOTE: This is required for transition.
     private let backgroundView = UIView()
     
-    private let pageControlToolbar = UIToolbar()
+    let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
     
     private let panRecognizer: UIPanGestureRecognizer = {
@@ -713,5 +713,12 @@ extension ImageViewerViewController {
     func willStartInteractivePopTransition() {
         prepareToolbarsForTransition()
         NSLayoutConstraint.deactivate(expandedConstraints)
+    }
+    
+    func didCancelInteractivePopTransition() {
+        pageControlToolbar.clipsToBounds = false
+        navigationController?.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+        
+        NSLayoutConstraint.activate(expandedConstraints)
     }
 }

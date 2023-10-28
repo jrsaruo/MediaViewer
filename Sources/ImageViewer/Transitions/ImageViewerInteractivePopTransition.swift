@@ -103,11 +103,25 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work
         : 1
         
+        let pageControlToolbar = imageViewer.pageControlToolbar
+        let pageControlToolbarFrame = pageControlToolbar.frame
+        // Disable AutoLayout
+        pageControlToolbar.translatesAutoresizingMaskIntoConstraints = true
+        
+        imageViewer.willStartInteractivePopTransition()
+        
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             navigationBar.alpha = imageViewer.navigationBarAlphaBackup
-            navigationController.toolbar.alpha = 0
-            for subview in imageViewerView.subviews where subview != currentPageImageView {
+            
+            /*
+             * NOTE:
+             * AutoLayout didn't work. If changed layout constraints before animation,
+             * they are applied at a moment because animator doesn't start immediately.
+             */
+            pageControlToolbar.frame.origin.y = pageControlToolbarFrame.maxY
+            pageControlToolbar.frame.size.height = 0
+            for subview in imageViewer.subviewsToFadeOutDuringPopTransition {
                 subview.alpha = 0
             }
         }
@@ -151,7 +165,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             self.sourceImageView?.isHidden = self.sourceImageHiddenBackup
             currentPageView.removeFromSuperview()
             currentPageImageView.removeFromSuperview()
-            toolbar.alpha = 1
+            
             navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
             
             // Disable the default animation applied to the toolbar
@@ -173,6 +187,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.isReversed = true
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
+        let imageViewer = transitionContext.viewController(forKey: .from) as! ImageViewerViewController
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         
@@ -192,6 +207,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             if let tabBarAlphaBackup = self.tabBarAlphaBackup {
                 self.tabBar?.alpha = tabBarAlphaBackup
             }
+            
+            let pageControlToolbar = imageViewer.pageControlToolbar
+            pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
+            imageViewer.didCancelInteractivePopTransition()
             
             transitionContext.completeTransition(false)
         }
