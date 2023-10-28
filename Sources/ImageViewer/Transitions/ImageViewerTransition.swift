@@ -115,9 +115,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         toolbar.alpha = 0
         
+        imageViewer.willStartPushTransition()
+        
         // Animation
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
+            // Animate pageControlToolbar
+            imageViewerView.layoutIfNeeded()
+            
             toolbar.alpha = 1
             for subview in imageViewerView.subviews {
                 subview.alpha = 1
@@ -134,6 +139,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         animator.addCompletion { position in
             switch position {
             case .end:
+                imageViewer.didFinishPushTransition()
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
