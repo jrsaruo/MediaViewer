@@ -707,4 +707,11 @@ extension ImageViewerViewController {
         NSLayoutConstraint.deactivate(expandedConstraints)
         NSLayoutConstraint.activate(collapsedConstraints)
     }
+    
+    // MARK: Interactive pop transition
+    
+    func willStartInteractivePopTransition() {
+        prepareToolbarsForTransition()
+        NSLayoutConstraint.deactivate(expandedConstraints)
+    }
 }
