@@ -650,6 +650,7 @@ extension ImageViewerViewController {
                 $0 != pageControlToolbar
                 && $0 != currentPageViewController.imageViewerOnePageView.imageView
             }
+        + [pageControlBar]
     }
     
     private var collapsedConstraints: [NSLayoutConstraint] {
