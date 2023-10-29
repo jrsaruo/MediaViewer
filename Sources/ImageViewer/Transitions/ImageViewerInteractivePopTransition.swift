@@ -26,6 +26,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     private var sourceImageHiddenBackup = false
     private var tabBarScrollEdgeAppearanceBackup: UITabBarAppearance?
     private var tabBarAlphaBackup: CGFloat?
+    private var toVCToolbarItemsBackup: [UIBarButtonItem]?
     private var initialZoomScale: CGFloat = 1
     private var initialImageTransform = CGAffineTransform.identity
     private var initialImageFrameInViewer = CGRect.null
@@ -58,6 +59,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         tabBarAlphaBackup = tabBar?.alpha
+        toVCToolbarItemsBackup = toVC.toolbarItems
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
         initialImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
@@ -102,6 +104,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         navigationBar.alpha = imageViewer.isShowingImageOnly 
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work
         : 1
+        
+        // NOTE: Prevent toVC.toolbarItems from showing up during transition.
+        toVC.toolbarItems = nil
         
         let pageControlToolbar = imageViewer.pageControlToolbar
         let pageControlToolbarFrame = pageControlToolbar.frame
@@ -166,6 +171,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageView.removeFromSuperview()
             currentPageImageView.removeFromSuperview()
             
+            toVC.toolbarItems = self.toVCToolbarItemsBackup
             navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
             
             // Disable the default animation applied to the toolbar
@@ -190,6 +196,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let imageViewer = transitionContext.viewController(forKey: .from) as! ImageViewerViewController
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
+        let toVC = transitionContext.viewController(forKey: .to)!
         
         let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             // FIXME: toolbar items go away during animation
@@ -207,6 +214,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             if let tabBarAlphaBackup = self.tabBarAlphaBackup {
                 self.tabBar?.alpha = tabBarAlphaBackup
             }
+            
+            toVC.toolbarItems = self.toVCToolbarItemsBackup
             
             let pageControlToolbar = imageViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
