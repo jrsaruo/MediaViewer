@@ -198,14 +198,21 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: Layout constraints
     
-    private lazy var pageControlBarTopFitToPageControlToolbarTop = pageControlBar.topAnchor.constraint(
-        equalTo: pageControlToolbar.topAnchor,
-        constant: 1
-    )
+    private lazy var expandedPageControlToolbarConstraints = [
+        pageControlBar.topAnchor.constraint(
+            equalTo: pageControlToolbar.topAnchor,
+            constant: 1
+        ),
+        pageControlToolbar.heightAnchor.constraint(
+            equalToConstant: pageControlToolbar.systemLayoutSizeFitting(
+                UIView.layoutFittingCompressedSize
+            ).height
+        )
+    ]
     
-    private lazy var pageControlToolbarHeightToZero = pageControlToolbar.heightAnchor.constraint(
-        equalToConstant: 0
-    )
+    private lazy var collapsedPageControlToolbarConstraints = [
+        pageControlToolbar.heightAnchor.constraint(equalToConstant: 0)
+    ]
     
     // MARK: Backups
     
@@ -301,11 +308,10 @@ open class ImageViewerViewController: UIPageViewController {
             pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            pageControlBarTopFitToPageControlToolbarTop,
             pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
             pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),
             pageControlBar.bottomAnchor.constraint(equalTo: pageControlToolbar.bottomAnchor, constant: -1),
-        ])
+        ] + expandedPageControlToolbarConstraints)
     }
     
     private func setUpGestureRecognizers() {
@@ -653,14 +659,6 @@ extension ImageViewerViewController {
         + [pageControlBar]
     }
     
-    private var collapsedConstraints: [NSLayoutConstraint] {
-        [pageControlToolbarHeightToZero]
-    }
-    
-    private var expandedConstraints: [NSLayoutConstraint] {
-        [pageControlBarTopFitToPageControlToolbarTop]
-    }
-    
     /// Insert an animated image view for the transition.
     /// - Parameter animatedImageView: An animated image view during the transition.
     func insertImageViewForTransition(_ animatedImageView: UIImageView) {
@@ -688,11 +686,11 @@ extension ImageViewerViewController {
     func willStartPushTransition() {
         prepareToolbarsForTransition()
         
-        NSLayoutConstraint.deactivate(expandedConstraints)
-        NSLayoutConstraint.activate(collapsedConstraints)
+        NSLayoutConstraint.deactivate(expandedPageControlToolbarConstraints)
+        NSLayoutConstraint.activate(collapsedPageControlToolbarConstraints)
         view.layoutIfNeeded()
-        NSLayoutConstraint.deactivate(collapsedConstraints)
-        NSLayoutConstraint.activate(expandedConstraints)
+        NSLayoutConstraint.deactivate(collapsedPageControlToolbarConstraints)
+        NSLayoutConstraint.activate(expandedPageControlToolbarConstraints)
     }
     
     func didFinishPushTransition() {
@@ -705,15 +703,15 @@ extension ImageViewerViewController {
     func willStartPopTransition() {
         prepareToolbarsForTransition()
         
-        NSLayoutConstraint.deactivate(expandedConstraints)
-        NSLayoutConstraint.activate(collapsedConstraints)
+        NSLayoutConstraint.deactivate(expandedPageControlToolbarConstraints)
+        NSLayoutConstraint.activate(collapsedPageControlToolbarConstraints)
     }
     
     // MARK: Interactive pop transition
     
     func willStartInteractivePopTransition() {
         prepareToolbarsForTransition()
-        NSLayoutConstraint.deactivate(expandedConstraints)
+        NSLayoutConstraint.deactivate(expandedPageControlToolbarConstraints)
     }
     
     func didCancelInteractivePopTransition() {
@@ -724,6 +722,6 @@ extension ImageViewerViewController {
          * because navigationController has become nil.
          */
         
-        NSLayoutConstraint.activate(expandedConstraints)
+        NSLayoutConstraint.activate(expandedPageControlToolbarConstraints)
     }
 }
