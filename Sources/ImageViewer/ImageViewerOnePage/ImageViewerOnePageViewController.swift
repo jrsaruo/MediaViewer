@@ -11,8 +11,10 @@ import UIKit
 protocol ImageViewerOnePageViewControllerDelegate: AnyObject {
     func imageViewerPageTapped(_ imageViewerPage: ImageViewerOnePageViewController)
     
-    func imageViewerPage(_ imageViewerPage: ImageViewerOnePageViewController,
-                         didDoubleTap imageView: UIImageView)
+    func imageViewerPage(
+        _ imageViewerPage: ImageViewerOnePageViewController,
+        didDoubleTap imageView: UIImageView
+    )
 }
 
 final class ImageViewerOnePageViewController: UIViewController {
@@ -66,8 +68,10 @@ final class ImageViewerOnePageViewController: UIViewController {
         singleTapRecognizer.require(toFail: imageDoubleTapRecognizer)
     }
     
-    override func viewWillTransition(to size: CGSize,
-                                     with coordinator: UIViewControllerTransitionCoordinator) {
+    override func viewWillTransition(
+        to size: CGSize,
+        with coordinator: UIViewControllerTransitionCoordinator
+    ) {
         super.viewWillTransition(to: size, with: coordinator)
         
         // Update layout when screen is rotated

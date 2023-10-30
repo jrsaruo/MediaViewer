@@ -85,16 +85,20 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             }
             let previousFrame = frames[previousIndexPath]
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
-            frames[indexPath] = CGRect(x: x,
-                                       y: 0,
-                                       width: width,
-                                       height: collectionView.bounds.height)
+            frames[indexPath] = CGRect(
+                x: x,
+                y: 0,
+                width: width,
+                height: collectionView.bounds.height
+            )
         }
         
         // Calculate the content size
         let lastItemFrame = frames[IndexPath(item: numberOfItems - 1, section: 0)]!
-        contentSize = CGSize(width: lastItemFrame.maxX,
-                             height: collectionView.bounds.height)
+        contentSize = CGSize(
+            width: lastItemFrame.maxX,
+            height: collectionView.bounds.height
+        )
         
         // Set up layout attributes
         for (indexPath, frame) in frames {

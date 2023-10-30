@@ -12,7 +12,8 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "ImageViewer",
-            targets: ["ImageViewer"]),
+            targets: ["ImageViewer"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -23,9 +24,11 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "ImageViewer",
-            dependencies: []),
+            dependencies: []
+        ),
         .testTarget(
             name: "ImageViewerTests",
-            dependencies: ["ImageViewer"]),
+            dependencies: ["ImageViewer"]
+        ),
     ]
 )

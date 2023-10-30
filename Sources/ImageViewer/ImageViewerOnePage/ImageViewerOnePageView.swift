@@ -94,9 +94,11 @@ final class ImageViewerOnePageView: UIView {
     func setImage(_ image: UIImage?, with transition: ImageTransition) {
         switch transition {
         case .fade(let duration):
-            UIView.transition(with: imageView,
-                              duration: duration,
-                              options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
+            UIView.transition(
+                with: imageView,
+                duration: duration,
+                options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]
+            ) {
                 self.setImage(image)
             }
         case .none:
@@ -135,10 +137,12 @@ final class ImageViewerOnePageView: UIView {
             } else {
                 zoomAreaHeight = imageView.bounds.height * 2 / 3
             }
-            zoomArea = CGRect(x: point.x,
-                              y: point.y - zoomAreaHeight / 2,
-                              width: 0,
-                              height: zoomAreaHeight)
+            zoomArea = CGRect(
+                x: point.x,
+                y: point.y - zoomAreaHeight / 2,
+                width: 0,
+                height: zoomAreaHeight
+            )
         } else {
             let zoomAreaWidth: CGFloat
             if imageView.bounds.width < imageView.bounds.height {
@@ -146,10 +150,12 @@ final class ImageViewerOnePageView: UIView {
             } else {
                 zoomAreaWidth = imageView.bounds.width * 2 / 3
             }
-            zoomArea = CGRect(x: point.x - zoomAreaWidth / 2,
-                              y: point.y,
-                              width: zoomAreaWidth,
-                              height: 0)
+            zoomArea = CGRect(
+                x: point.x - zoomAreaWidth / 2,
+                y: point.y,
+                width: zoomAreaWidth,
+                height: 0
+            )
         }
         scrollView.zoom(to: zoomArea, animated: animated)
     }
@@ -179,7 +185,10 @@ final class ImageViewerOnePageView: UIView {
             imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            imageView.widthAnchor.constraint(equalTo: imageView.heightAnchor, multiplier: imageWidthToHeight)
+            imageView.widthAnchor.constraint(
+                equalTo: imageView.heightAnchor,
+                multiplier: imageWidthToHeight
+            )
         ]
         
         let scrollViewContentConstraint: NSLayoutConstraint
@@ -210,10 +219,12 @@ final class ImageViewerOnePageView: UIView {
     private func adjustContentInset() {
         let verticalMargin = max((scrollView.bounds.height - imageView.frame.height) / 2, 0)
         let horizontalMargin = max((scrollView.bounds.width - imageView.frame.width) / 2, 0)
-        scrollView.contentInset = UIEdgeInsets(top: verticalMargin,
-                                               left: horizontalMargin,
-                                               bottom: verticalMargin,
-                                               right: horizontalMargin)
+        scrollView.contentInset = UIEdgeInsets(
+            top: verticalMargin,
+            left: horizontalMargin,
+            bottom: verticalMargin,
+            right: horizontalMargin
+        )
     }
 }
 

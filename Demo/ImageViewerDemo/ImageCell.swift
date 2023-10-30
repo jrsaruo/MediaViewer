@@ -63,16 +63,19 @@ final class ImageCell: UICollectionViewCell {
                    contentMode: UIView.ContentMode,
                    screenScale: CGFloat) {
         imageView.contentMode = contentMode
-        imageRequestID = PHImageManager.default()
-            .requestImage(for: asset,
-                          targetSize: .init(width: bounds.size.width * screenScale,
-                                            height: bounds.size.height * screenScale),
-                          contentMode: contentMode == .scaleAspectFit ? .aspectFit : .aspectFill,
-                          options: nil) { [weak self] image, info in
-                if let info, let isCancelled = info[PHImageCancelledKey] as? Bool, isCancelled {
-                    return
-                }
-                self?.imageView.image = image
+        imageRequestID = PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: .init(
+                width: bounds.size.width * screenScale,
+                height: bounds.size.height * screenScale
+            ),
+            contentMode: contentMode == .scaleAspectFit ? .aspectFit : .aspectFill,
+            options: nil
+        ) { [weak self] image, info in
+            if let info, let isCancelled = info[PHImageCancelledKey] as? Bool, isCancelled {
+                return
             }
+            self?.imageView.image = image
+        }
     }
 }

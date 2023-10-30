@@ -15,15 +15,19 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     
     // MARK: - Initializers
     
-    init(operation: UINavigationController.Operation,
-         sourceImageView: UIImageView?) {
+    init(
+        operation: UINavigationController.Operation,
+        sourceImageView: UIImageView?
+    ) {
         self.operation = operation
         self.sourceImageView = sourceImageView
     }
     
     // MARK: - Methods
     
-    func transitionDuration(using transitionContext: (any UIViewControllerContextTransitioning)?) -> TimeInterval {
+    func transitionDuration(
+        using transitionContext: (any UIViewControllerContextTransitioning)?
+    ) -> TimeInterval {
         switch operation {
         case .push:
             return 0.5
@@ -36,7 +40,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
     }
     
-    func animateTransition(using transitionContext: any UIViewControllerContextTransitioning) {
+    func animateTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
         switch operation {
         case .push:
             animatePushTransition(using: transitionContext)
@@ -49,12 +55,16 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
     }
     
-    private func animatePushTransition(using transitionContext: any UIViewControllerContextTransitioning) {
+    private func animatePushTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
         guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
-            assertionFailure("\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self).")
+            assertionFailure(
+                "\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self)."
+            )
             transitionContext.completeTransition(false)
             return
         }
@@ -88,11 +98,15 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
-        let currentPageImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
-                                                                    from: currentPageImageView)
+        let currentPageImageFrameInViewer = imageViewerView.convert(
+            currentPageImageView.frame,
+            from: currentPageImageView
+        )
         if let sourceImageView {
-            let sourceImageFrameInViewer = imageViewerView.convert(sourceImageView.frame,
-                                                                   from: sourceImageView)
+            let sourceImageFrameInViewer = imageViewerView.convert(
+                sourceImageView.frame,
+                from: sourceImageView
+            )
             currentPageView.destroyLayoutConfigurationBeforeTransition()
             currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
             currentPageImageView.frame = sourceImageFrameInViewer
@@ -178,14 +192,18 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         animator.startAnimation()
     }
     
-    private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
+    private func animatePopTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
-            assertionFailure("\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self).")
+            assertionFailure(
+                "\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self)."
+            )
             transitionContext.completeTransition(false)
             return
         }
@@ -202,8 +220,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
-        let currentPageImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
-                                                                    from: currentPageView.scrollView)
+        let currentPageImageFrameInViewer = imageViewerView.convert(
+            currentPageImageView.frame,
+            from: currentPageView.scrollView
+        )
         let sourceImageFrameInViewer = sourceImageView.map { sourceView in
             imageViewerView.convert(sourceView.frame, from: sourceView)
         }
