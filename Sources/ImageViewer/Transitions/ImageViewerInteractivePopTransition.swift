@@ -137,6 +137,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         transitionContext.finishInteractiveTransition()
         
         let duration = 0.35
+        // FIXME: When the finger is released, the position of pageControlToolbar slips
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let imageViewerView = transitionContext.view(forKey: .from)!

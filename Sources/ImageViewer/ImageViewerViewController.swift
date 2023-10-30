@@ -210,6 +210,7 @@ open class ImageViewerViewController: UIPageViewController {
         )
     ]
     
+    // NOTE: Activated during the screen transition.
     private lazy var collapsedPageControlToolbarConstraints = [
         pageControlToolbar.heightAnchor.constraint(equalToConstant: 0)
     ]
