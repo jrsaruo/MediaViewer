@@ -10,12 +10,16 @@ import Combine
 
 @MainActor
 protocol ImageViewerPageControlBarDataSource: AnyObject {
-    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
-                                   thumbnailOnPage page: Int,
-                                   filling preferredThumbnailSize: CGSize) -> ImageSource
+    func imageViewerPageControlBar(
+        _ pageControlBar: ImageViewerPageControlBar,
+        thumbnailOnPage page: Int,
+        filling preferredThumbnailSize: CGSize
+    ) -> ImageSource
     
-    func imageViewerPageControlBar(_ pageControlBar: ImageViewerPageControlBar,
-                                   imageWidthToHeightOnPage page: Int) -> CGFloat?
+    func imageViewerPageControlBar(
+        _ pageControlBar: ImageViewerPageControlBar,
+        imageWidthToHeightOnPage page: Int
+    ) -> CGFloat?
 }
 
 final class ImageViewerPageControlBar: UIView {
@@ -100,16 +104,20 @@ final class ImageViewerPageControlBar: UIView {
     
     lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, page in
         guard let self else { return nil }
-        return collectionView.dequeueConfiguredReusableCell(using: self.cellRegistration,
-                                                            for: indexPath,
-                                                            item: page)
+        return collectionView.dequeueConfiguredReusableCell(
+            using: self.cellRegistration,
+            for: indexPath,
+            item: page
+        )
     }
     
     private lazy var cellRegistration = UICollectionView.CellRegistration<PageControlBarThumbnailCell, Int> { [weak self] cell, indexPath, page in
         guard let self, let dataSource = self.dataSource else { return }
         let scale = self.window?.screen.scale ?? 3
-        let preferredSize = CGSize(width: cell.bounds.width * scale,
-                                   height: cell.bounds.height * scale)
+        let preferredSize = CGSize(
+            width: cell.bounds.width * scale,
+            height: cell.bounds.height * scale
+        )
         let thumbnailSource = dataSource.imageViewerPageControlBar(
             self,
             thumbnailOnPage: page,
@@ -151,8 +159,7 @@ final class ImageViewerPageControlBar: UIView {
     // MARK: - Override
     
     override var intrinsicContentSize: CGSize {
-        CGSize(width: super.intrinsicContentSize.width,
-               height: 42)
+        CGSize(width: super.intrinsicContentSize.width, height: 42)
     }
     
     // MARK: - Lifecycle
@@ -165,10 +172,12 @@ final class ImageViewerPageControlBar: UIView {
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
         let offset = (bounds.width - ImageViewerPageControlBarLayout.collapsedItemWidth) / 2
-        collectionView.contentInset = .init(top: 0,
-                                            left: offset,
-                                            bottom: 0,
-                                            right: offset)
+        collectionView.contentInset = .init(
+            top: 0,
+            left: offset,
+            bottom: 0,
+            right: offset
+        )
     }
     
     // MARK: - Methods
@@ -176,23 +185,29 @@ final class ImageViewerPageControlBar: UIView {
     func configure(numberOfPages: Int, currentPage: Int) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
         snapshot.appendSections([0])
-        snapshot.appendItems(Array(0 ..< numberOfPages))
+        snapshot.appendItems(Array(0..<numberOfPages))
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
-            self.expandAndScrollToItem(at: indexPath,
-                                       causingBy: .configuration,
-                                       animated: false)
+            self.expandAndScrollToItem(
+                at: indexPath,
+                causingBy: .configuration,
+                animated: false
+            )
         }
     }
     
-    private func updateLayout(expandingItemAt indexPath: IndexPath?,
-                              expandingImageWidthToHeight: CGFloat? = nil,
-                              animated: Bool) {
+    private func updateLayout(
+        expandingItemAt indexPath: IndexPath?,
+        expandingImageWidthToHeight: CGFloat? = nil,
+        animated: Bool
+    ) {
         let style: ImageViewerPageControlBarLayout.Style
         if let indexPath {
-            style = .expanded(indexPath,
-                              expandingImageWidthToHeight: expandingImageWidthToHeight)
+            style = .expanded(
+                indexPath,
+                expandingImageWidthToHeight: expandingImageWidthToHeight
+            )
         } else {
             style = .collapsed
         }
@@ -207,24 +222,30 @@ final class ImageViewerPageControlBar: UIView {
     ///   - imageWidthToHeight: An aspect ratio of the expanding image to calculate the size of expanding item.
     ///   - duration: The total duration of the animation.
     ///   - animated: Whether to animate expanding and scrolling.
-    private func expandAndScrollToItem(at indexPath: IndexPath,
-                                       causingBy reason: PageChangeReason?,
-                                       imageWidthToHeight: CGFloat? = nil,
-                                       duration: CGFloat = 0.5,
-                                       animated: Bool) {
+    private func expandAndScrollToItem(
+        at indexPath: IndexPath,
+        causingBy reason: PageChangeReason?,
+        imageWidthToHeight: CGFloat? = nil,
+        duration: CGFloat = 0.5,
+        animated: Bool
+    ) {
         state = .expanding
         if let reason {
             _pageDidChange.send((page: indexPath.item, reason: reason))
         }
         
         func expandAndScroll() {
-            updateLayout(expandingItemAt: indexPath,
-                         expandingImageWidthToHeight: imageWidthToHeight,
-                         animated: false)
+            updateLayout(
+                expandingItemAt: indexPath,
+                expandingImageWidthToHeight: imageWidthToHeight,
+                animated: false
+            )
             // NOTE: Without this, a thumbnail may shift out of the center after scrolling.
-            collectionView.scrollToItem(at: indexPath,
-                                        at: .centeredHorizontally,
-                                        animated: false)
+            collectionView.scrollToItem(
+                at: indexPath,
+                at: .centeredHorizontally,
+                animated: false
+            )
             state = .expanded
             
             if imageWidthToHeight == nil {
@@ -285,12 +306,16 @@ final class ImageViewerPageControlBar: UIView {
         }
     }
     
-    private func expandAndScrollToCenterItem(animated: Bool,
-                                             causingBy reason: PageChangeReason) {
+    private func expandAndScrollToCenterItem(
+        animated: Bool,
+        causingBy reason: PageChangeReason
+    ) {
         guard let indexPathForCurrentCenterItem else { return }
-        expandAndScrollToItem(at: indexPathForCurrentCenterItem,
-                              causingBy: reason,
-                              animated: animated)
+        expandAndScrollToItem(
+            at: indexPathForCurrentCenterItem,
+            causingBy: reason,
+            animated: animated
+        )
     }
     
     private func collapseItem() {
@@ -360,8 +385,7 @@ extension ImageViewerPageControlBar {
         state = .expanded
         
         if let currentCenterPage {
-            _pageDidChange.send((page: currentCenterPage,
-                                 reason: .interactivePaging))
+            _pageDidChange.send((page: currentCenterPage, reason: .interactivePaging))
         }
     }
     
@@ -383,9 +407,11 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         
         if case .normal(let barLayout) = layout,
            barLayout.style.indexPathForExpandingItem != indexPath {
-            expandAndScrollToItem(at: indexPath,
-                                  causingBy: .tapOnPageThumbnail,
-                                  animated: true)
+            expandAndScrollToItem(
+                at: indexPath,
+                causingBy: .tapOnPageThumbnail,
+                animated: true
+            )
         }
     }
     
@@ -398,8 +424,9 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         case .collapsed(let indexPathForFinalDestinationItem):
             guard let indexPathForCurrentCenterItem,
                   scrollView.isDragging else { return }
-            _pageDidChange.send((page: indexPathForCurrentCenterItem.item,
-                                 reason: .scrollingBar))
+            _pageDidChange.send(
+                (page: indexPathForCurrentCenterItem.item, reason: .scrollingBar)
+            )
             
             /*
              * NOTE:
@@ -426,9 +453,11 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
         }
     }
     
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView,
-                                   withVelocity velocity: CGPoint,
-                                   targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+    func scrollViewWillEndDragging(
+        _ scrollView: UIScrollView,
+        withVelocity velocity: CGPoint,
+        targetContentOffset: UnsafeMutablePointer<CGPoint>
+    ) {
         let targetPoint = CGPoint(
             x: targetContentOffset.pointee.x + collectionView.adjustedContentInset.left,
             y: 0
@@ -449,9 +478,11 @@ extension ImageViewerPageControlBar: UICollectionViewDelegate {
             guard let indexPath = indexPathForCurrentCenterItem ?? state.indexPathForFinalDestinationItem else {
                 return
             }
-            expandAndScrollToItem(at: indexPath,
-                                  causingBy: .scrollingBar,
-                                  animated: true)
+            expandAndScrollToItem(
+                at: indexPath,
+                causingBy: .scrollingBar,
+                animated: true
+            )
         }
     }
     

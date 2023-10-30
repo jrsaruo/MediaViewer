@@ -14,12 +14,16 @@ final class AsyncImagesViewController: UIViewController {
     
     private let imageGridView = ImageGridView()
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(collectionView: imageGridView.collectionView) { [weak self] collectionView, indexPath, asset in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(
+        collectionView: imageGridView.collectionView
+    ) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
-        cell.configure(with: asset,
-                       contentMode: self.preferredContentMode,
-                       screenScale: self.view.window?.screen.scale ?? 3)
+        cell.configure(
+            with: asset,
+            contentMode: self.preferredContentMode,
+            screenScale: self.view.window?.screen.scale ?? 3
+        )
         return cell
     }
     
@@ -49,7 +53,9 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.title = "Async Sample"
         navigationItem.backButtonDisplayMode = .minimal
         
-        toggleContentModeButton.primaryAction = UIAction(image: .init(systemName: "rectangle.arrowtriangle.2.inward")) { [weak self] _ in
+        toggleContentModeButton.primaryAction = UIAction(
+            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
+        ) { [weak self] _ in
             self?.toggleContentMode()
         }
         navigationItem.rightBarButtonItem = toggleContentModeButton
@@ -59,7 +65,7 @@ final class AsyncImagesViewController: UIViewController {
         await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         
         let result = PHAsset.fetchAssets(with: .image, options: nil)
-        return result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+        return result.objects(at: IndexSet(integersIn: 0..<result.count))
     }
     
     private func loadPhotos() async {
@@ -68,9 +74,11 @@ final class AsyncImagesViewController: UIViewController {
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
         defer {
-            UIView.transition(with: imageGridView.collectionView,
-                              duration: 0.2,
-                              options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
+            UIView.transition(
+                with: imageGridView.collectionView,
+                duration: 0.2,
+                options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]
+            ) {
                 self.imageGridView.collectionView.isHidden = false
             }
         }
@@ -82,9 +90,11 @@ final class AsyncImagesViewController: UIViewController {
         
         // Scroll to the bottom if needed
         if let lastAsset = assets.last {
-            imageGridView.collectionView.scrollToItem(at: dataSource.indexPath(for: lastAsset)!,
-                                                      at: .bottom,
-                                                      animated: false)
+            imageGridView.collectionView.scrollToItem(
+                at: dataSource.indexPath(for: lastAsset)!,
+                at: .bottom,
+                animated: false
+            )
         }
     }
     
@@ -142,8 +152,10 @@ extension AsyncImagesViewController: ImageViewerDataSource {
         dataSource.snapshot().numberOfItems
     }
     
-    func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageSourceOnPage page: Int) -> ImageSource {
+    func imageViewer(
+        _ imageViewer: ImageViewerViewController,
+        imageSourceOnPage page: Int
+    ) -> ImageSource {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async {
             return await withCheckedContinuation { continuation in
@@ -151,52 +163,59 @@ extension AsyncImagesViewController: ImageViewerDataSource {
                 options.deliveryMode = .highQualityFormat
                 options.resizeMode = .none
                 options.isNetworkAccessAllowed = true
-                PHImageManager.default()
-                    .requestImage(for: asset,
-                                  targetSize: .zero,
-                                  contentMode: .aspectFit,
-                                  options: options) { image, _ in
-                        continuation.resume(returning: image)
-                    }
+                PHImageManager.default().requestImage(
+                    for: asset,
+                    targetSize: .zero,
+                    contentMode: .aspectFit,
+                    options: options
+                ) { image, _ in
+                    continuation.resume(returning: image)
+                }
             }
         }
     }
     
-    func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageWidthToHeightOnPage page: Int) -> CGFloat? {
+    func imageViewer(
+        _ imageViewer: ImageViewerViewController,
+        imageWidthToHeightOnPage page: Int
+    ) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let options = PHImageRequestOptions()
         options.deliveryMode = .fastFormat
         options.resizeMode = .fast
         options.isSynchronous = true
         var size: CGSize?
-        PHImageManager.default()
-            .requestImage(for: asset,
-                          targetSize: CGSize(width: 100, height: 100),
-                          contentMode: .aspectFit,
-                          options: options) { image, _ in
-                size = image?.size
-            }
+        PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: CGSize(width: 100, height: 100),
+            contentMode: .aspectFit,
+            options: options
+        ) { image, _ in
+            size = image?.size
+        }
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }
     
-    func imageViewer(_ imageViewer: ImageViewerViewController,
-                     pageThumbnailOnPage page: Int,
-                     filling preferredThumbnailSize: CGSize) -> ImageSource {
+    func imageViewer(
+        _ imageViewer: ImageViewerViewController,
+        pageThumbnailOnPage page: Int,
+        filling preferredThumbnailSize: CGSize
+    ) -> ImageSource {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
             return await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
                 options.deliveryMode = .highQualityFormat
                 options.isNetworkAccessAllowed = true
-                PHImageManager.default()
-                    .requestImage(for: asset,
-                                  targetSize: preferredThumbnailSize,
-                                  contentMode: .aspectFill,
-                                  options: options) { image, _ in
-                        continuation.resume(returning: image)
-                    }
+                PHImageManager.default().requestImage(
+                    for: asset,
+                    targetSize: preferredThumbnailSize,
+                    contentMode: .aspectFill,
+                    options: options
+                ) { image, _ in
+                    continuation.resume(returning: image)
+                }
             }
         }
     }
@@ -208,7 +227,9 @@ extension AsyncImagesViewController: ImageViewerDataSource {
         // NOTE: Without this, later cellForItem(at:) sometimes returns nil.
         imageGridView.collectionView.layoutIfNeeded()
         
-        guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(at: indexPathForCurrentImage) as? ImageCell else {
+        guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(
+            at: indexPathForCurrentImage
+        ) as? ImageCell else {
             return nil
         }
         return cellForCurrentImage.imageView

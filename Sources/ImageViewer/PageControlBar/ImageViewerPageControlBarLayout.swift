@@ -62,12 +62,12 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
         self.expandedItemWidth = expandedItemWidth
         
-        let collapsedItemSpacing: CGFloat = 1
-        let expandedItemSpacing: CGFloat = 12
+        let collapsedItemSpacing = 1.0
+        let expandedItemSpacing = 12.0
         
         // Calculate frames for each item
         var frames: [IndexPath: CGRect] = [:]
-        for item in 0 ..< numberOfItems {
+        for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
             let width: CGFloat
@@ -85,16 +85,20 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
             }
             let previousFrame = frames[previousIndexPath]
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
-            frames[indexPath] = CGRect(x: x,
-                                       y: 0,
-                                       width: width,
-                                       height: collectionView.bounds.height)
+            frames[indexPath] = CGRect(
+                x: x,
+                y: 0,
+                width: width,
+                height: collectionView.bounds.height
+            )
         }
         
         // Calculate the content size
         let lastItemFrame = frames[IndexPath(item: numberOfItems - 1, section: 0)]!
-        contentSize = CGSize(width: lastItemFrame.maxX,
-                             height: collectionView.bounds.height)
+        contentSize = CGSize(
+            width: lastItemFrame.maxX,
+            height: collectionView.bounds.height
+        )
         
         // Set up layout attributes
         for (indexPath, frame) in frames {
@@ -126,7 +130,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         }
         
         let minimumWidth = Self.collapsedItemWidth
-        let maximumWidth: CGFloat = 84
+        let maximumWidth = 84.0
         return min(
             max(
                 collectionView.bounds.height * expandingImageWidthToHeight,

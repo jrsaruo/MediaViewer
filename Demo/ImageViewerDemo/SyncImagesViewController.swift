@@ -13,7 +13,9 @@ final class SyncImagesViewController: UIViewController {
     
     private let imageGridView = ImageGridView()
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(collectionView: imageGridView.collectionView) { [weak self] collectionView, indexPath, image in
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(
+        collectionView: imageGridView.collectionView
+    ) { [weak self] collectionView, indexPath, image in
         guard let self else { return nil }
         let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
         cell.configure(with: image, contentMode: .scaleAspectFill)
@@ -64,12 +66,16 @@ extension SyncImagesViewController: ImageViewerDataSource {
         dataSource.snapshot().numberOfItems
     }
     
-    func imageViewer(_ imageViewer: ImageViewerViewController,
-                     imageSourceOnPage page: Int) -> ImageSource {
+    func imageViewer(
+        _ imageViewer: ImageViewerViewController,
+        imageSourceOnPage page: Int
+    ) -> ImageSource {
         .sync(dataSource.snapshot().itemIdentifiers[page])
     }
     
-    func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
+    func transitionSourceView(
+        forCurrentPageOf imageViewer: ImageViewerViewController
+    ) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         

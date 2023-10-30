@@ -23,14 +23,16 @@ extension UIImageView {
     
     var transitioningConfiguration: UIImageViewTransitioningConfiguration {
         get {
-            .init(alpha: alpha,
-                  backgroundColor: backgroundColor,
-                  tintColor: tintColor,
-                  contentMode: contentMode,
-                  cornerRadius: layer.cornerRadius,
-                  borderColor: layer.borderColor,
-                  borderWidth: layer.borderWidth,
-                  masksToBounds: layer.masksToBounds)
+            .init(
+                alpha: alpha,
+                backgroundColor: backgroundColor,
+                tintColor: tintColor,
+                contentMode: contentMode,
+                cornerRadius: layer.cornerRadius,
+                borderColor: layer.borderColor,
+                borderWidth: layer.borderWidth,
+                masksToBounds: layer.masksToBounds
+            )
         }
         set {
             alpha = newValue.alpha

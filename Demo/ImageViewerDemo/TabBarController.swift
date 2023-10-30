@@ -14,12 +14,16 @@ final class TabBarController: UITabBarController {
         
         let syncImagesVC = SyncImagesViewController()
         let asyncImagesVC = AsyncImagesViewController()
-        syncImagesVC.tabBarItem = .init(title: "Sync",
-                                        image: .init(systemName: "0.circle"),
-                                        tag: 0)
-        asyncImagesVC.tabBarItem = .init(title: "Async",
-                                         image: .init(systemName: "rectangle.stack.fill"),
-                                         tag: 1)
+        syncImagesVC.tabBarItem = .init(
+            title: "Sync",
+            image: .init(systemName: "0.circle"),
+            tag: 0
+        )
+        asyncImagesVC.tabBarItem = .init(
+            title: "Async",
+            image: .init(systemName: "rectangle.stack.fill"),
+            tag: 1
+        )
         setViewControllers(
             [
                 UINavigationController(rootViewController: syncImagesVC),

@@ -21,9 +21,11 @@ extension UIImageView {
                 Task { @MainActor in
                     switch transition {
                     case .fade(let duration):
-                        UIView.transition(with: self,
-                                          duration: duration,
-                                          options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]) {
+                        UIView.transition(
+                            with: self,
+                            duration: duration,
+                            options: [.transitionCrossDissolve, .curveEaseInOut, .allowUserInteraction]
+                        ) {
                             self.image = image
                         }
                     case .none:

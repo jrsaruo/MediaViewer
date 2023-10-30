@@ -41,14 +41,18 @@ final class ImageViewerInteractivePopTransition: NSObject {
 
 extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
-    func startInteractiveTransition(_ transitionContext: any UIViewControllerContextTransitioning) {
+    func startInteractiveTransition(
+        _ transitionContext: any UIViewControllerContextTransitioning
+    ) {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
-            preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
+            preconditionFailure(
+                "\(Self.self) works only with the pop animation for \(ImageViewerViewController.self)."
+            )
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
@@ -62,8 +66,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         toVCToolbarItemsBackup = toVC.toolbarItems
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
-        initialImageFrameInViewer = imageViewerView.convert(currentPageImageView.frame,
-                                                            from: currentPageView.scrollView)
+        initialImageFrameInViewer = imageViewerView.convert(
+            currentPageImageView.frame,
+            from: currentPageView.scrollView
+        )
         
         // Prepare for transition
         if tabBar?.alpha == 0 && !toVC.hidesBottomBarWhenPushed {
@@ -148,8 +154,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
             if let sourceImageView = self.sourceImageView {
-                let sourceImageFrameInViewer = imageViewerView.convert(sourceImageView.frame,
-                                                                       from: sourceImageView)
+                let sourceImageFrameInViewer = imageViewerView.convert(
+                    sourceImageView.frame,
+                    from: sourceImageView
+                )
                 currentPageImageView.frame = sourceImageFrameInViewer
                 currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
                 currentPageImageView.layer.masksToBounds = true // TODO: Change according to the source configuration
@@ -230,15 +238,21 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         cancelAnimator.startAnimation()
     }
     
-    private func imageViewerCurrentPageView(in transitionContext: any UIViewControllerContextTransitioning) -> ImageViewerOnePageView {
+    private func imageViewerCurrentPageView(
+        in transitionContext: any UIViewControllerContextTransitioning
+    ) -> ImageViewerOnePageView {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
-            preconditionFailure("\(Self.self) works only with the pop animation for \(ImageViewerViewController.self).")
+            preconditionFailure(
+                "\(Self.self) works only with the pop animation for \(ImageViewerViewController.self)."
+            )
         }
         return imageViewer.currentPageViewController.imageViewerOnePageView
     }
     
-    func panRecognized(by recognizer: UIPanGestureRecognizer,
-                       in imageViewer: ImageViewerViewController) {
+    func panRecognized(
+        by recognizer: UIPanGestureRecognizer,
+        in imageViewer: ImageViewerViewController
+    ) {
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView
         
@@ -252,8 +266,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         case .possible, .began:
             // Adjust the anchor point to scale the image around a finger
             let location = recognizer.location(in: currentPageView.scrollView)
-            let anchorPoint = CGPoint(x: location.x / panningImageView.frame.width,
-                                      y: location.y / panningImageView.frame.height)
+            let anchorPoint = CGPoint(
+                x: location.x / panningImageView.frame.width,
+                y: location.y / panningImageView.frame.height
+            )
             panningImageView.updateAnchorPointWithoutMoving(anchorPoint)
         case .changed:
             guard let animator, let transitionContext else {
@@ -271,8 +287,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 tabBar?.alpha = transitionProgress
             }
             
-            panningImageView.transform = panningImageTransform(translation: translation,
-                                                               panAreaSize: panAreaSize)
+            panningImageView.transform = panningImageTransform(
+                translation: translation,
+                panAreaSize: panAreaSize
+            )
         case .ended:
             let isMovingDown = recognizer.velocity(in: nil).y > 0
             if isMovingDown {
@@ -296,8 +314,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     ///   - translation: The total translation over time.
     ///   - panAreaSize: The size of the panning area.
     /// - Returns: An affine transformation matrix for the panning image.
-    private func panningImageTransform(translation: CGPoint,
-                                       panAreaSize: CGSize) -> CGAffineTransform {
+    private func panningImageTransform(
+        translation: CGPoint,
+        panAreaSize: CGSize
+    ) -> CGAffineTransform {
         // Translation x: ease-in-out from the left to the right
         let maxX = panAreaSize.width * 0.4
         let translationX = sin(translation.x / panAreaSize.width * .pi / 2) * maxX
@@ -322,8 +342,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             imageScale = 1
         }
         return initialImageTransform
-            .translatedBy(x: translationX / initialZoomScale,
-                          y: translationY / initialZoomScale)
+            .translatedBy(
+                x: translationX / initialZoomScale,
+                y: translationY / initialZoomScale
+            )
             .scaledBy(x: imageScale, y: imageScale)
     }
     
