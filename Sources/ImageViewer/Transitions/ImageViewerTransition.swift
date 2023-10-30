@@ -66,6 +66,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
+        let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         
         // Prepare for transition
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
@@ -104,6 +105,19 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         if let tabBar {
             containerView.addSubview(tabBar)
+            
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            tabBar.scrollEdgeAppearance = appearance
+            
+            // Disable the default animation applied to the tabBar
+            if imageViewer.hidesBottomBarWhenPushed,
+               let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
+                for animationKey in defaultTabBarAnimationKeys {
+                    assert(animationKey.starts(with: "position"))
+                    tabBar.layer.removeAnimation(forKey: animationKey)
+                }
+            }
         }
         
         // Disable the default animation applied to the toolbar
@@ -144,6 +158,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 currentPageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
                 
+                tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
                 if let tabBar {
                     tabBarSuperviewBackup?.addSubview(tabBar)
                 }
@@ -157,24 +172,6 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         animator.startAnimation()
-        
-        // Customize the tab bar animation
-        if imageViewer.hidesBottomBarWhenPushed,
-           let tabBar,
-           let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
-            for animationKey in defaultTabBarAnimationKeys {
-                assert(animationKey.starts(with: "position"))
-                tabBar.layer.removeAnimation(forKey: animationKey)
-            }
-            animator.addAnimations {
-                /*
-                 * NOTE:
-                 * tabBar.alpha will be forced to be reset to 1 by system
-                 * after the transition, so no need to restore it.
-                 */
-                tabBar.alpha = 0
-            }
-        }
     }
     
     private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
