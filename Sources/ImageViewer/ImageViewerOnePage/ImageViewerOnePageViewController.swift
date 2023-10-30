@@ -70,7 +70,7 @@ final class ImageViewerOnePageViewController: UIViewController {
     
     override func viewWillTransition(
         to size: CGSize,
-        with coordinator: UIViewControllerTransitionCoordinator
+        with coordinator: any UIViewControllerTransitionCoordinator
     ) {
         super.viewWillTransition(to: size, with: coordinator)
         
