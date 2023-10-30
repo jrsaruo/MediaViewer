@@ -90,7 +90,9 @@ final class ImageViewerPageControlBar: UIView {
         case let transitionLayout as UICollectionViewTransitionLayout:
             return .transition(transitionLayout)
         default:
-            preconditionFailure("Unknown layout: \(collectionView.collectionViewLayout)")
+            preconditionFailure(
+                "Unknown layout: \(collectionView.collectionViewLayout)"
+            )
         }
     }
     
@@ -102,7 +104,9 @@ final class ImageViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, page in
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(
+        collectionView: collectionView
+    ) { [weak self] collectionView, indexPath, page in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: self.cellRegistration,
