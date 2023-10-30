@@ -7,19 +7,29 @@
 
 import UIKit
 import ImageViewer
-import SwiftyTable
 
 final class SyncImagesViewController: UIViewController {
     
+    private typealias CellRegistration = UICollectionView.CellRegistration<
+        ImageCell,
+        (image: UIImage, contentMode: UIView.ContentMode)
+    >
+    
     private let imageGridView = ImageGridView()
+    
+    private let cellRegistration = CellRegistration { cell, _, item in
+        cell.configure(with: item.image, contentMode: item.contentMode)
+    }
     
     private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(
         collectionView: imageGridView.collectionView
     ) { [weak self] collectionView, indexPath, image in
         guard let self else { return nil }
-        let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
-        cell.configure(with: image, contentMode: .scaleAspectFill)
-        return cell
+        return collectionView.dequeueConfiguredReusableCell(
+            using: self.cellRegistration,
+            for: indexPath,
+            item: (image: image, contentMode: .scaleAspectFill)
+        )
     }
     
     // MARK: - Lifecycle
