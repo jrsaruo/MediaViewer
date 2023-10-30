@@ -212,7 +212,7 @@ open class ImageViewerViewController: UIPageViewController {
     private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     private(set) var toolbarHiddenBackup = true
-    private var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
+    private(set) var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
     
     // MARK: - Initializers
     
@@ -697,7 +697,7 @@ extension ImageViewerViewController {
     
     func didFinishPushTransition() {
         pageControlToolbar.clipsToBounds = false
-        navigationController?.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+        navigationController!.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
     }
     
     // MARK: Pop transition
@@ -718,7 +718,11 @@ extension ImageViewerViewController {
     
     func didCancelInteractivePopTransition() {
         pageControlToolbar.clipsToBounds = false
-        navigationController?.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+        /*
+         * NOTE:
+         * Restore toolbar.scrollEdgeAppearance in ImageViewerInteractivePopTransition
+         * because navigationController has become nil.
+         */
         
         NSLayoutConstraint.activate(expandedConstraints)
     }

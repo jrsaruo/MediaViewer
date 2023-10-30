@@ -220,6 +220,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             let pageControlToolbar = imageViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
             imageViewer.didCancelInteractivePopTransition()
+            let toolbar = toVC.navigationController!.toolbar!
+            toolbar.scrollEdgeAppearance = imageViewer.toolbarScrollEdgeAppearanceBackup
             
             transitionContext.completeTransition(false)
         }
