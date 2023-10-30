@@ -67,7 +67,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         
         // Calculate frames for each item
         var frames: [IndexPath: CGRect] = [:]
-        for item in 0 ..< numberOfItems {
+        for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
             let width: CGFloat

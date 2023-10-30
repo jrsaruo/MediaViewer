@@ -185,7 +185,7 @@ final class ImageViewerPageControlBar: UIView {
     func configure(numberOfPages: Int, currentPage: Int) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
         snapshot.appendSections([0])
-        snapshot.appendItems(Array(0 ..< numberOfPages))
+        snapshot.appendItems(Array(0..<numberOfPages))
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)

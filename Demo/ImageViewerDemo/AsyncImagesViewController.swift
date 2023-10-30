@@ -65,7 +65,7 @@ final class AsyncImagesViewController: UIViewController {
         await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         
         let result = PHAsset.fetchAssets(with: .image, options: nil)
-        return result.objects(at: IndexSet(integersIn: 0 ..< result.count))
+        return result.objects(at: IndexSet(integersIn: 0..<result.count))
     }
     
     private func loadPhotos() async {
