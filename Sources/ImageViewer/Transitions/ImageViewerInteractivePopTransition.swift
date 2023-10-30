@@ -173,6 +173,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
+            toolbar.scrollEdgeAppearance = imageViewer.toolbarScrollEdgeAppearanceBackup
             
             // Disable the default animation applied to the toolbar
             if let animationKeys = toolbar.layer.animationKeys() {
