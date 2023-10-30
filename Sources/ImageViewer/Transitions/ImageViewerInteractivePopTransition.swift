@@ -102,7 +102,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             navigationBar.layer.removeAllAnimations()
         }
         navigationBar.alpha = imageViewer.isShowingImageOnly 
-        ? 0.0001 // NOTE: .leastNormalMagnitude didn't work
+        ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
         : 1
         
         // NOTE: Prevent toVC.toolbarItems from showing up during transition.
