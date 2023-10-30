@@ -671,7 +671,7 @@ extension ImageViewerViewController {
         pageControlToolbar.clipsToBounds = true
         
         /*
-         * NOTE:
+         * [Workaround]
          * When pageControlToolbar.clipsToBounds is true,
          * toolbar becomes transparent so prevent it.
          */

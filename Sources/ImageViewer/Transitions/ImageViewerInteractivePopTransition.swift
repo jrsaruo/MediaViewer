@@ -105,7 +105,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
         : 1
         
-        // NOTE: Prevent toVC.toolbarItems from showing up during transition.
+        // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
         toVC.toolbarItems = nil
         
         let pageControlToolbar = imageViewer.pageControlToolbar
@@ -118,17 +118,17 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         // Animation
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             navigationBar.alpha = imageViewer.navigationBarAlphaBackup
+            for subview in imageViewer.subviewsToFadeDuringTransition {
+                subview.alpha = 0
+            }
             
             /*
-             * NOTE:
+             * [Workaround]
              * AutoLayout didn't work. If changed layout constraints before animation,
              * they are applied at a moment because animator doesn't start immediately.
              */
             pageControlToolbar.frame.origin.y = pageControlToolbarFrame.maxY
             pageControlToolbar.frame.size.height = 0
-            for subview in imageViewer.subviewsToFadeDuringTransition {
-                subview.alpha = 0
-            }
         }
     }
     
