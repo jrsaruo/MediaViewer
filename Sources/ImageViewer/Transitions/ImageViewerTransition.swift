@@ -121,6 +121,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         if let tabBar {
             containerView.addSubview(tabBar)
             
+            // Make tabBar opaque during the transition
             let appearance = UITabBarAppearance()
             appearance.configureWithDefaultBackground()
             tabBar.scrollEdgeAppearance = appearance
