@@ -219,7 +219,6 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             // Animate pageControlToolbar
             imageViewerView.layoutIfNeeded()
             
-            toolbar.alpha = 0
             for subview in imageViewer.subviewsToFadeOutDuringPopTransition {
                 subview.alpha = 0
             }
@@ -236,7 +235,6 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             case .end:
                 currentPageImageView.removeFromSuperview()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
-                toolbar.alpha = 1
                 navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
                 
                 // Disable the default animation applied to the toolbar
