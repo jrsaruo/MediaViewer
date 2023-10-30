@@ -7,24 +7,38 @@
 
 import UIKit
 import ImageViewer
-import SwiftyTable
 @preconcurrency import Photos
 
 final class AsyncImagesViewController: UIViewController {
     
+    private typealias CellRegistration = UICollectionView.CellRegistration<
+        ImageCell,
+        (asset: PHAsset, contentMode: UIView.ContentMode, screenScale: CGFloat)
+    >
+    
     private let imageGridView = ImageGridView()
+    
+    private let cellRegistration = CellRegistration { cell, _, item in
+        cell.configure(
+            with: item.asset,
+            contentMode: item.contentMode,
+            screenScale: item.screenScale
+        )
+    }
     
     private lazy var dataSource = UICollectionViewDiffableDataSource<Int, PHAsset>(
         collectionView: imageGridView.collectionView
     ) { [weak self] collectionView, indexPath, asset in
         guard let self else { return nil }
-        let cell = collectionView.dequeueReusableCell(of: ImageCell.self, for: indexPath)
-        cell.configure(
-            with: asset,
-            contentMode: self.preferredContentMode,
-            screenScale: self.view.window?.screen.scale ?? 3
+        return collectionView.dequeueConfiguredReusableCell(
+            using: self.cellRegistration,
+            for: indexPath,
+            item: (
+                asset: asset,
+                contentMode: self.preferredContentMode,
+                screenScale: self.view.window?.screen.scale ?? 3
+            )
         )
-        return cell
     }
     
     private let toggleContentModeButton = UIBarButtonItem()
