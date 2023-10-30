@@ -179,7 +179,7 @@ open class ImageViewerViewController: UIPageViewController {
     // NOTE: This is required for transition.
     private let backgroundView = UIView()
     
-    private let pageControlToolbar = UIToolbar()
+    let pageControlToolbar = UIToolbar()
     private let pageControlBar = ImageViewerPageControlBar()
     
     private let panRecognizer: UIPanGestureRecognizer = {
@@ -196,11 +196,31 @@ open class ImageViewerViewController: UIPageViewController {
         }
     }
     
+    // MARK: Layout constraints
+    
+    private lazy var expandedPageControlToolbarConstraints = [
+        pageControlBar.topAnchor.constraint(
+            equalTo: pageControlToolbar.topAnchor,
+            constant: 1
+        ),
+        pageControlToolbar.heightAnchor.constraint(
+            equalToConstant: pageControlToolbar.systemLayoutSizeFitting(
+                UIView.layoutFittingCompressedSize
+            ).height
+        )
+    ]
+    
+    // NOTE: Activated during the screen transition.
+    private lazy var collapsedPageControlToolbarConstraints = [
+        pageControlToolbar.heightAnchor.constraint(equalToConstant: 0)
+    ]
+    
     // MARK: Backups
     
     private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     private(set) var toolbarHiddenBackup = true
+    private(set) var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
     
     // MARK: - Initializers
     
@@ -289,11 +309,10 @@ open class ImageViewerViewController: UIPageViewController {
             pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            pageControlBar.topAnchor.constraint(equalTo: pageControlToolbar.topAnchor, constant: 1),
             pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
             pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),
             pageControlBar.bottomAnchor.constraint(equalTo: pageControlToolbar.bottomAnchor, constant: -1),
-        ])
+        ] + expandedPageControlToolbarConstraints)
     }
     
     private func setUpGestureRecognizers() {
@@ -438,12 +457,6 @@ open class ImageViewerViewController: UIPageViewController {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
             }
         }
-    }
-    
-    /// Insert an animated image view for the transition.
-    /// - Parameter animatedImageView: An animated image view during the transition.
-    func insertImageViewForTransition(_ animatedImageView: UIImageView) {
-        view.insertSubview(animatedImageView, belowSubview: pageControlToolbar)
     }
     
     // MARK: - Actions
@@ -631,5 +644,85 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
             break
         }
         return false
+    }
+}
+
+// MARK: - Transition helpers -
+
+extension ImageViewerViewController {
+    
+    var subviewsToFadeDuringTransition: [UIView] {
+        view.subviews
+            .filter {
+                $0 != pageControlToolbar
+                && $0 != currentPageViewController.imageViewerOnePageView.imageView
+            }
+        + [pageControlBar]
+    }
+    
+    /// Insert an animated image view for the transition.
+    /// - Parameter animatedImageView: An animated image view during the transition.
+    func insertImageViewForTransition(_ animatedImageView: UIImageView) {
+        view.insertSubview(animatedImageView, belowSubview: pageControlToolbar)
+    }
+    
+    private func prepareToolbarsForTransition() {
+        // Clip pageControlBar
+        pageControlToolbar.clipsToBounds = true
+        
+        /*
+         * [Workaround]
+         * When pageControlToolbar.clipsToBounds is true,
+         * toolbar becomes transparent so prevent it.
+         */
+        let toolbar = navigationController!.toolbar!
+        toolbarScrollEdgeAppearanceBackup = toolbar.scrollEdgeAppearance
+        let appearance = UIToolbarAppearance()
+        appearance.configureWithDefaultBackground()
+        toolbar.scrollEdgeAppearance = appearance
+    }
+    
+    // MARK: Push transition
+    
+    func willStartPushTransition() {
+        prepareToolbarsForTransition()
+        
+        NSLayoutConstraint.deactivate(expandedPageControlToolbarConstraints)
+        NSLayoutConstraint.activate(collapsedPageControlToolbarConstraints)
+        view.layoutIfNeeded()
+        NSLayoutConstraint.deactivate(collapsedPageControlToolbarConstraints)
+        NSLayoutConstraint.activate(expandedPageControlToolbarConstraints)
+    }
+    
+    func didFinishPushTransition() {
+        pageControlToolbar.clipsToBounds = false
+        navigationController!.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+    }
+    
+    // MARK: Pop transition
+    
+    func willStartPopTransition() {
+        prepareToolbarsForTransition()
+        
+        NSLayoutConstraint.deactivate(expandedPageControlToolbarConstraints)
+        NSLayoutConstraint.activate(collapsedPageControlToolbarConstraints)
+    }
+    
+    // MARK: Interactive pop transition
+    
+    func willStartInteractivePopTransition() {
+        prepareToolbarsForTransition()
+        NSLayoutConstraint.deactivate(expandedPageControlToolbarConstraints)
+    }
+    
+    func didCancelInteractivePopTransition() {
+        pageControlToolbar.clipsToBounds = false
+        /*
+         * NOTE:
+         * Restore toolbar.scrollEdgeAppearance in ImageViewerInteractivePopTransition
+         * because navigationController has become nil.
+         */
+        
+        NSLayoutConstraint.activate(expandedPageControlToolbarConstraints)
     }
 }

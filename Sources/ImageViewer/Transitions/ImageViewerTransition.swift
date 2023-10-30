@@ -66,10 +66,12 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
+        let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         
         // Prepare for transition
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
-        for subview in imageViewerView.subviews {
+        let subviewsToFadeDuringTransition = imageViewer.subviewsToFadeDuringTransition
+        for subview in subviewsToFadeDuringTransition {
             /*
              * NOTE:
              * Make only subviews transparent because changing imageViewerView.alpha
@@ -104,6 +106,19 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         if let tabBar {
             containerView.addSubview(tabBar)
+            
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            tabBar.scrollEdgeAppearance = appearance
+            
+            // Disable the default animation applied to the tabBar
+            if imageViewer.hidesBottomBarWhenPushed,
+               let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
+                for animationKey in defaultTabBarAnimationKeys {
+                    assert(animationKey.starts(with: "position"))
+                    tabBar.layer.removeAnimation(forKey: animationKey)
+                }
+            }
         }
         
         // Disable the default animation applied to the toolbar
@@ -115,11 +130,19 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         toolbar.alpha = 0
         
+        imageViewer.willStartPushTransition()
+        
         // Animation
+        
+        // NOTE: Animate only pageControlToolbar with easeInOut curve.
+        UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
+            imageViewerView.layoutIfNeeded()
+        }.startAnimation()
+        
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             toolbar.alpha = 1
-            for subview in imageViewerView.subviews {
+            for subview in subviewsToFadeDuringTransition {
                 subview.alpha = 1
             }
             currentPageImageView.frame = currentPageImageFrameInViewer
@@ -134,10 +157,12 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         animator.addCompletion { position in
             switch position {
             case .end:
+                imageViewer.didFinishPushTransition()
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
                 
+                tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
                 if let tabBar {
                     tabBarSuperviewBackup?.addSubview(tabBar)
                 }
@@ -151,24 +176,6 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         animator.startAnimation()
-        
-        // Customize the tab bar animation
-        if imageViewer.hidesBottomBarWhenPushed,
-           let tabBar,
-           let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
-            for animationKey in defaultTabBarAnimationKeys {
-                assert(animationKey.starts(with: "position"))
-                tabBar.layer.removeAnimation(forKey: animationKey)
-            }
-            animator.addAnimations {
-                /*
-                 * NOTE:
-                 * tabBar.alpha will be forced to be reset to 1 by system
-                 * after the transition, so no need to restore it.
-                 */
-                tabBar.alpha = 0
-            }
-        }
     }
     
     private func animatePopTransition(using transitionContext: any UIViewControllerContextTransitioning) {
@@ -208,11 +215,18 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let toolbar = navigationController.toolbar!
         assert(toolbar.layer.animationKeys() == nil)
         
+        imageViewer.willStartPopTransition()
+        
         // Animation
+        
+        // NOTE: Animate only pageControlToolbar with easeInOut curve.
+        UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
+            imageViewerView.layoutIfNeeded()
+        }.startAnimation()
+        
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            toolbar.alpha = 0
-            for subview in imageViewerView.subviews where subview != currentPageImageView {
+            for subview in imageViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
             if let sourceImageFrameInViewer {
@@ -228,12 +242,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             case .end:
                 currentPageImageView.removeFromSuperview()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
-                toolbar.alpha = 1
                 navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
                 
                 // Disable the default animation applied to the toolbar
                 if let animationKeys = toolbar.layer.animationKeys() {
-                    assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                    assert(animationKeys.allSatisfy {
+                        $0.starts(with: "position")
+                        || $0.starts(with: "bounds.size")
+                    })
                     toolbar.layer.removeAllAnimations()
                 }
                 
