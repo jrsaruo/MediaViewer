@@ -13,7 +13,7 @@ final class ImageGridView: UIView {
     let collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { _, layoutEnvironment in
             let columnCount = 3
-            let itemSpacing: CGFloat = 2
+            let itemSpacing = 2.0
             
             let effectiveFullWidth = layoutEnvironment.container.effectiveContentSize.width
             let totalSpacing = itemSpacing * CGFloat(columnCount - 1)

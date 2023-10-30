@@ -62,8 +62,8 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
         self.expandedItemWidth = expandedItemWidth
         
-        let collapsedItemSpacing: CGFloat = 1
-        let expandedItemSpacing: CGFloat = 12
+        let collapsedItemSpacing = 1.0
+        let expandedItemSpacing = 12.0
         
         // Calculate frames for each item
         var frames: [IndexPath: CGRect] = [:]
@@ -130,7 +130,7 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
         }
         
         let minimumWidth = Self.collapsedItemWidth
-        let maximumWidth: CGFloat = 84
+        let maximumWidth = 84.0
         return min(
             max(
                 collectionView.bounds.height * expandingImageWidthToHeight,
