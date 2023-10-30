@@ -132,11 +132,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         imageViewer.willStartPushTransition()
         
         // Animation
+        
+        // NOTE: Animate only pageControlToolbar with easeInOut curve.
+        UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
+            imageViewerView.layoutIfNeeded()
+        }.startAnimation()
+        
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
-            // Animate pageControlToolbar
-            imageViewerView.layoutIfNeeded()
-            
             toolbar.alpha = 1
             for subview in imageViewerView.subviews {
                 subview.alpha = 1
@@ -214,11 +217,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         imageViewer.willStartPopTransition()
         
         // Animation
+        
+        // NOTE: Animate only pageControlToolbar with easeInOut curve.
+        UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
+            imageViewerView.layoutIfNeeded()
+        }.startAnimation()
+        
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            // Animate pageControlToolbar
-            imageViewerView.layoutIfNeeded()
-            
             for subview in imageViewer.subviewsToFadeOutDuringPopTransition {
                 subview.alpha = 0
             }
