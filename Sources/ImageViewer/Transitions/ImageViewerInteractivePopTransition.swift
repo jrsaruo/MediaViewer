@@ -126,7 +126,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
              */
             pageControlToolbar.frame.origin.y = pageControlToolbarFrame.maxY
             pageControlToolbar.frame.size.height = 0
-            for subview in imageViewer.subviewsToFadeOutDuringPopTransition {
+            for subview in imageViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
         }

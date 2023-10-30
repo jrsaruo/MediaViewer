@@ -70,7 +70,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Prepare for transition
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
-        for subview in imageViewerView.subviews {
+        let subviewsToFadeDuringTransition = imageViewer.subviewsToFadeDuringTransition
+        for subview in subviewsToFadeDuringTransition {
             /*
              * NOTE:
              * Make only subviews transparent because changing imageViewerView.alpha
@@ -141,7 +142,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             toolbar.alpha = 1
-            for subview in imageViewerView.subviews {
+            for subview in subviewsToFadeDuringTransition {
                 subview.alpha = 1
             }
             currentPageImageView.frame = currentPageImageFrameInViewer
@@ -225,7 +226,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            for subview in imageViewer.subviewsToFadeOutDuringPopTransition {
+            for subview in imageViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
             if let sourceImageFrameInViewer {

@@ -651,7 +651,7 @@ extension ImageViewerViewController: UIGestureRecognizerDelegate {
 
 extension ImageViewerViewController {
     
-    var subviewsToFadeOutDuringPopTransition: [UIView] {
+    var subviewsToFadeDuringTransition: [UIView] {
         view.subviews
             .filter {
                 $0 != pageControlToolbar
