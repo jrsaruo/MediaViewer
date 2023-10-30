@@ -15,7 +15,6 @@
 		5A54613629A2594800F16456 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613429A2594800F16456 /* LaunchScreen.storyboard */; };
 		5A54614129A25A5600F16456 /* ImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614029A25A5600F16456 /* ImageViewer */; };
 		5A54614329A25A8900F16456 /* AsyncImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */; };
-		5A54614629A25B7800F16456 /* SwiftyTable in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614529A25B7800F16456 /* SwiftyTable */; };
 		5A54614929A25BCD00F16456 /* AceLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614829A25BCD00F16456 /* AceLayout */; };
 		5A54614B29A25CDF00F16456 /* ImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614A29A25CDF00F16456 /* ImageCell.swift */; };
 		5AE4F46E29D31E7A0048E8B4 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */; };
@@ -43,7 +42,6 @@
 			files = (
 				5A54614929A25BCD00F16456 /* AceLayout in Frameworks */,
 				5A54614129A25A5600F16456 /* ImageViewer in Frameworks */,
-				5A54614629A25B7800F16456 /* SwiftyTable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,7 +116,6 @@
 			name = ImageViewerDemo;
 			packageProductDependencies = (
 				5A54614029A25A5600F16456 /* ImageViewer */,
-				5A54614529A25B7800F16456 /* SwiftyTable */,
 				5A54614829A25BCD00F16456 /* AceLayout */,
 			);
 			productName = ImageViewerDemo;
@@ -150,7 +147,6 @@
 			);
 			mainGroup = 5A54611D29A2594700F16456;
 			packageReferences = (
-				5A54614429A25B7800F16456 /* XCRemoteSwiftPackageReference "SwiftyTable" */,
 				5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */,
 			);
 			productRefGroup = 5A54612729A2594700F16456 /* Products */;
@@ -395,14 +391,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5A54614429A25B7800F16456 /* XCRemoteSwiftPackageReference "SwiftyTable" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jrsaruo/SwiftyTable";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.1;
-			};
-		};
 		5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jrsaruo/AceLayout";
@@ -417,11 +405,6 @@
 		5A54614029A25A5600F16456 /* ImageViewer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ImageViewer;
-		};
-		5A54614529A25B7800F16456 /* SwiftyTable */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5A54614429A25B7800F16456 /* XCRemoteSwiftPackageReference "SwiftyTable" */;
-			productName = SwiftyTable;
 		};
 		5A54614829A25BCD00F16456 /* AceLayout */ = {
 			isa = XCSwiftPackageProductDependency;
