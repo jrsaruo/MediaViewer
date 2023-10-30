@@ -239,7 +239,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     }
     
     private func imageViewerCurrentPageView(
-        in transitionContext: any UIViewControllerContextTransitioning
+        in transitionContext: some UIViewControllerContextTransitioning
     ) -> ImageViewerOnePageView {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
             preconditionFailure(

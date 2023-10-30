@@ -56,7 +56,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     }
     
     private func animatePushTransition(
-        using transitionContext: any UIViewControllerContextTransitioning
+        using transitionContext: some UIViewControllerContextTransitioning
     ) {
         guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .to),
@@ -194,7 +194,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     }
     
     private func animatePopTransition(
-        using transitionContext: any UIViewControllerContextTransitioning
+        using transitionContext: some UIViewControllerContextTransitioning
     ) {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
