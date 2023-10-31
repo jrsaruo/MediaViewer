@@ -15,7 +15,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
     
-    private var shouldShowTabBarAfterTransition = false
+    private var shouldAnimateTabBar = false
     
     private var tabBar: UITabBar? {
         transitionContext?.viewController(forKey: .to)?.tabBarController?.tabBar
@@ -161,7 +161,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 currentPageImageView.alpha = 0
             }
             
-            if self.shouldShowTabBarAfterTransition {
+            if self.shouldAnimateTabBar {
                 self.tabBar?.alpha = 1
             }
         }
@@ -255,7 +255,13 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         if let tabBar, tabBar.layer.animationKeys() != nil {
             // Disable the default animation applied to the tabBar
             tabBar.layer.removeAllAnimations()
-            shouldShowTabBarAfterTransition = true
+            
+            /*
+             * NOTE:
+             * If the animation is applied to the tabBar by system,
+             * it should be animated.
+             */
+            shouldAnimateTabBar = true
         }
         
         switch recognizer.state {
@@ -279,7 +285,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)
             
-            if shouldShowTabBarAfterTransition {
+            if shouldAnimateTabBar {
                 tabBar?.alpha = transitionProgress
             }
             
