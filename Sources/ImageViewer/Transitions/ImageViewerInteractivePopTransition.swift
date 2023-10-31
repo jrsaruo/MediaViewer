@@ -252,9 +252,9 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView
         
-        if let tabBar,
-           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
-            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
+        if let tabBar, tabBar.layer.animationKeys() != nil {
+            // Disable the default animation applied to the tabBar
+            tabBar.layer.removeAllAnimations()
             shouldShowTabBarAfterTransition = true
         }
         
