@@ -490,7 +490,18 @@ open class ImageViewerViewController: UIPageViewController {
                 forCurrentPageOf: self
             )
             interactivePopTransition = .init(sourceImageView: sourceImageView)
-            navigationController?.popViewController(animated: true)
+            
+            /*
+             * [Workaround]
+             * If the recognizer detects a gesture while the main thread is blocked,
+             * the interactive transition will not work properly.
+             * By delaying popViewController with Task, recognizer.state becomes
+             * `.ended` first and interactivePopTransition becomes nil,
+             * so a normal transition runs and avoids that problem.
+             */
+            Task {
+                navigationController?.popViewController(animated: true)
+            }
         }
         
         interactivePopTransition?.panRecognized(by: recognizer, in: self)
