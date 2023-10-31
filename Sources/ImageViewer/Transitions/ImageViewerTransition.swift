@@ -220,7 +220,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // MARK: Prepare for the transition
         
         toView.frame = transitionContext.finalFrame(for: toVC)
-        toVC.view.layoutIfNeeded()
+        toView.layoutIfNeeded()
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
