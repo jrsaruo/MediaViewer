@@ -10,7 +10,7 @@ import UIKit
 extension UIImageView {
     
     @discardableResult
-    func load(from imageSource: ImageSource) -> Task<(), Never>? {
+    func load(_ imageSource: ImageSource) -> Task<(), Never>? {
         switch imageSource {
         case .sync(let image):
             self.image = image

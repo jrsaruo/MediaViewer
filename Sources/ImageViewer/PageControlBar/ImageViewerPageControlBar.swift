@@ -52,6 +52,11 @@ final class ImageViewerPageControlBar: UIView {
         case transition(UICollectionViewTransitionLayout)
     }
     
+    private typealias CellRegistration = UICollectionView.CellRegistration<
+        PageControlBarThumbnailCell,
+        Int // page
+    >
+    
     weak var dataSource: (any ImageViewerPageControlBarDataSource)?
     
     private(set) var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
@@ -90,7 +95,9 @@ final class ImageViewerPageControlBar: UIView {
         case let transitionLayout as UICollectionViewTransitionLayout:
             return .transition(transitionLayout)
         default:
-            preconditionFailure("Unknown layout: \(collectionView.collectionViewLayout)")
+            preconditionFailure(
+                "Unknown layout: \(collectionView.collectionViewLayout)"
+            )
         }
     }
     
@@ -102,7 +109,9 @@ final class ImageViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(collectionView: collectionView) { [weak self] collectionView, indexPath, page in
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(
+        collectionView: collectionView
+    ) { [weak self] collectionView, indexPath, page in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: self.cellRegistration,
@@ -111,7 +120,7 @@ final class ImageViewerPageControlBar: UIView {
         )
     }
     
-    private lazy var cellRegistration = UICollectionView.CellRegistration<PageControlBarThumbnailCell, Int> { [weak self] cell, indexPath, page in
+    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, page in
         guard let self, let dataSource = self.dataSource else { return }
         let scale = self.window?.screen.scale ?? 3
         let preferredSize = CGSize(

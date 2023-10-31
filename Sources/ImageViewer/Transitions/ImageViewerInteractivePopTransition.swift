@@ -15,7 +15,7 @@ final class ImageViewerInteractivePopTransition: NSObject {
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
     
-    private var shouldShowTabBarAfterTransition = false
+    private var shouldAnimateTabBar = false
     
     private var tabBar: UITabBar? {
         transitionContext?.viewController(forKey: .to)?.tabBarController?.tabBar
@@ -71,10 +71,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             from: currentPageView.scrollView
         )
         
-        // Prepare for transition
-        if tabBar?.alpha == 0 && !toVC.hidesBottomBarWhenPushed {
-            shouldShowTabBarAfterTransition = true
-        }
+        // MARK: Prepare for the transition
         
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = initialImageFrameInViewer
@@ -121,7 +118,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         imageViewer.willStartInteractivePopTransition()
         
-        // Animation
+        // MARK: Animation
+        
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             navigationBar.alpha = imageViewer.navigationBarAlphaBackup
             for subview in imageViewer.subviewsToFadeDuringTransition {
@@ -165,7 +163,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 currentPageImageView.alpha = 0
             }
             
-            if self.shouldShowTabBarAfterTransition {
+            if self.shouldAnimateTabBar {
                 self.tabBar?.alpha = 1
             }
         }
@@ -239,7 +237,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     }
     
     private func imageViewerCurrentPageView(
-        in transitionContext: any UIViewControllerContextTransitioning
+        in transitionContext: some UIViewControllerContextTransitioning
     ) -> ImageViewerOnePageView {
         guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
             preconditionFailure(
@@ -256,10 +254,16 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView
         
-        if let tabBar,
-           let defaultTabBarAnimationKey = tabBar.layer.animationKeys()?.first {
-            tabBar.layer.removeAnimation(forKey: defaultTabBarAnimationKey)
-            shouldShowTabBarAfterTransition = true
+        if let tabBar, tabBar.layer.animationKeys() != nil {
+            // Disable the default animation applied to the tabBar
+            tabBar.layer.removeAllAnimations()
+            
+            /*
+             * NOTE:
+             * If the animation is applied to the tabBar by system,
+             * it should be animated.
+             */
+            shouldAnimateTabBar = true
         }
         
         switch recognizer.state {
@@ -283,7 +287,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             animator.fractionComplete = transitionProgress
             transitionContext.updateInteractiveTransition(transitionProgress)
             
-            if shouldShowTabBarAfterTransition {
+            if shouldAnimateTabBar {
                 tabBar?.alpha = transitionProgress
             }
             
