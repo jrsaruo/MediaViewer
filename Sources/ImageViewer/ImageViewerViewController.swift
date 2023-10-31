@@ -376,6 +376,17 @@ open class ImageViewerViewController: UIPageViewController {
         // NOTE: Animating in the transitionCoordinator.animate(...) didn't work.
         let tabBar = tabBarController?.tabBar
         if let tabBar, let tabBarHiddenBackup {
+            let tabBarWillAppear = tabBar.isHidden && !tabBarHiddenBackup
+            if tabBarWillAppear {
+                /*
+                 * NOTE:
+                 * This animation will be managed by InteractivePopTransition.
+                 */
+                tabBar.alpha = 0
+                UIView.animate(withDuration: 0.2) {
+                    tabBar.alpha = 1
+                }
+            }
             tabBar.isHidden = tabBarHiddenBackup
         }
         navigationController.navigationBar.alpha = navigationBarAlphaBackup
