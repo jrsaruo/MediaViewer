@@ -172,6 +172,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.layer.masksToBounds = true
         }
         animator.addCompletion { position in
+            defer { transitionContext.completeTransition(position == .end) }
             switch position {
             case .end:
                 // Restore properties
@@ -184,14 +185,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                     tabBar.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
                     tabBarSuperviewBackup?.addSubview(tabBar)
                 }
-                
-                transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure("Unexpected position: \(position)")
-                transitionContext.completeTransition(false)
             @unknown default:
                 assertionFailure("Unknown position: \(position)")
-                transitionContext.completeTransition(false)
             }
         }
         animator.startAnimation()
@@ -288,6 +285,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         animator.addCompletion { position in
+            defer { transitionContext.completeTransition(position == .end) }
             switch position {
             case .end:
                 imageViewerView.removeFromSuperview()
@@ -304,14 +302,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                     })
                     toolbar.layer.removeAllAnimations()
                 }
-                
-                transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure("Unexpected position: \(position)")
-                transitionContext.completeTransition(false)
             @unknown default:
                 assertionFailure("Unknown position: \(position)")
-                transitionContext.completeTransition(false)
             }
         }
         animator.startAnimation()
