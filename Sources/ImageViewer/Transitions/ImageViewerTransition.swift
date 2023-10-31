@@ -62,11 +62,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
               let imageViewerView = transitionContext.view(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
-            assertionFailure(
+            preconditionFailure(
                 "\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self)."
             )
-            transitionContext.completeTransition(false)
-            return
         }
         let containerView = transitionContext.containerView
         containerView.addSubview(imageViewerView)
@@ -202,11 +200,9 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
               let toVC = transitionContext.viewController(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
-            assertionFailure(
+            preconditionFailure(
                 "\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self)."
             )
-            transitionContext.completeTransition(false)
-            return
         }
         let containerView = transitionContext.containerView
         containerView.addSubview(toView)
