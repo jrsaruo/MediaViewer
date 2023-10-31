@@ -190,7 +190,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure("Unexpected position: \(position)")
-                break
+                transitionContext.completeTransition(false)
             @unknown default:
                 assertionFailure("Unknown position: \(position)")
                 transitionContext.completeTransition(false)
@@ -284,7 +284,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 transitionContext.completeTransition(true)
             case .start, .current:
                 assertionFailure("Unexpected position: \(position)")
-                break
+                transitionContext.completeTransition(false)
             @unknown default:
                 assertionFailure("Unknown position: \(position)")
                 transitionContext.completeTransition(false)
