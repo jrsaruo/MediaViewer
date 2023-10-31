@@ -203,6 +203,7 @@ open class ImageViewerViewController: UIPageViewController {
     
     // MARK: Backups
     
+    private var tabBarHiddenBackup: Bool?
     private(set) var navigationBarAlphaBackup = 1.0
     private var navigationBarHiddenBackup = false
     private(set) var toolbarHiddenBackup = true
@@ -252,6 +253,7 @@ open class ImageViewerViewController: UIPageViewController {
             )
         }
         
+        tabBarHiddenBackup = tabBarController?.tabBar.isHidden
         navigationBarAlphaBackup = navigationController.navigationBar.alpha
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         toolbarHiddenBackup = navigationController.isToolbarHidden
@@ -321,6 +323,7 @@ open class ImageViewerViewController: UIPageViewController {
                     duration: UINavigationController.hideShowBarDuration,
                     dampingRatio: 1
                 ) {
+                    self.tabBarController?.tabBar.isHidden = showsImageOnly || self.hidesBottomBarWhenPushed
                     self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
                     self.backgroundView.backgroundColor = showsImageOnly ? .black : .systemBackground
                     self.navigationController?.toolbar.isHidden = showsImageOnly
@@ -371,6 +374,21 @@ open class ImageViewerViewController: UIPageViewController {
         
         // Restore the appearance
         // NOTE: Animating in the transitionCoordinator.animate(...) didn't work.
+        let tabBar = tabBarController?.tabBar
+        if let tabBar, let tabBarHiddenBackup {
+            let tabBarWillAppear = tabBar.isHidden && !tabBarHiddenBackup
+            if tabBarWillAppear {
+                /*
+                 * NOTE:
+                 * This animation will be managed by InteractivePopTransition.
+                 */
+                tabBar.alpha = 0
+                UIView.animate(withDuration: 0.2) {
+                    tabBar.alpha = 1
+                }
+            }
+            tabBar.isHidden = tabBarHiddenBackup
+        }
         navigationController.navigationBar.alpha = navigationBarAlphaBackup
         navigationController.setNavigationBarHidden(
             navigationBarHiddenBackup,
@@ -380,6 +398,7 @@ open class ImageViewerViewController: UIPageViewController {
         transitionCoordinator?.animate(alongsideTransition: { _ in }) { context in
             if context.isCancelled {
                 // Cancel the appearance restoration
+                tabBar?.isHidden = self.isShowingImageOnly || self.hidesBottomBarWhenPushed
                 navigationController.navigationBar.alpha = self.isShowingImageOnly ? 0 : 1
                 navigationController.isNavigationBarHidden = self.isShowingImageOnly
             }
