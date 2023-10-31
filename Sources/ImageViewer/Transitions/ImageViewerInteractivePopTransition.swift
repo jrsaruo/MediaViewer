@@ -72,10 +72,6 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         )
         
         // Prepare for transition
-        if tabBar?.alpha == 0 && !toVC.hidesBottomBarWhenPushed {
-            shouldShowTabBarAfterTransition = true
-        }
-        
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = initialImageFrameInViewer
         
