@@ -79,15 +79,6 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // MARK: Prepare for the transition
         
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
-        let subviewsToFadeDuringTransition = imageViewer.subviewsToFadeDuringTransition
-        for subview in subviewsToFadeDuringTransition {
-            /*
-             * NOTE:
-             * Make only subviews transparent because changing imageViewerView.alpha
-             * also unexpectedly makes the animated imageView transparent.
-             */
-            subview.alpha = 0
-        }
         
         // Determine the layout of the destination before the transition
         imageViewerView.layoutIfNeeded()
@@ -153,6 +144,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         toolbar.alpha = 0
+        let viewsToFadeDuringTransition = imageViewer.subviewsToFadeDuringTransition
+        for view in viewsToFadeDuringTransition {
+            view.alpha = 0
+        }
         
         imageViewer.willStartPushTransition()
         
@@ -166,8 +161,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             toolbar.alpha = 1
-            for subview in subviewsToFadeDuringTransition {
-                subview.alpha = 1
+            for view in viewsToFadeDuringTransition {
+                view.alpha = 1
             }
             currentPageImageView.frame = currentPageImageFrameInViewer
             currentPageImageView.transitioningConfiguration = configurationBackup
