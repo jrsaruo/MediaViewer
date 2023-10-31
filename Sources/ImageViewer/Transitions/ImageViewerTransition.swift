@@ -76,7 +76,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let tabBarSuperviewBackup = tabBar?.superview
         let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         
-        // Prepare for transition
+        // MARK: Prepare for the transition
+        
         imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
         let subviewsToFadeDuringTransition = imageViewer.subviewsToFadeDuringTransition
         for subview in subviewsToFadeDuringTransition {
@@ -87,10 +88,18 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
              */
             subview.alpha = 0
         }
+        
+        // Determine the layout of the destination before the transition
         imageViewerView.layoutIfNeeded()
         
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let currentPageImageView = currentPageView.imageView
+        
+        /*
+         * NOTE:
+         * If the image has not yet been fetched asynchronously,
+         * animate the source image instead.
+         */
         if currentPageImageView.image == nil, let sourceImageView {
             currentPageView.setImage(sourceImageView.image, with: .none)
         }
@@ -101,6 +110,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             from: currentPageImageView
         )
         if let sourceImageView {
+            // Match the appearance of the animating image view to the source
             let sourceImageFrameInViewer = imageViewerView.convert(
                 sourceImageView.frame,
                 from: sourceImageView
@@ -117,9 +127,10 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         sourceImageView?.isHidden = true
         
         if let tabBar {
+            // Show the tabBar during the transition
             containerView.addSubview(tabBar)
             
-            // Make tabBar opaque during the transition
+            // Make the tabBar opaque during the transition
             let appearance = UITabBarAppearance()
             appearance.configureWithDefaultBackground()
             tabBar.scrollEdgeAppearance = appearance
@@ -145,7 +156,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         imageViewer.willStartPushTransition()
         
-        // Animation
+        // MARK: Animation
         
         // NOTE: Animate only pageControlToolbar with easeInOut curve.
         UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
@@ -161,7 +172,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.frame = currentPageImageFrameInViewer
             currentPageImageView.transitioningConfiguration = configurationBackup
             
-            // NOTE: Keep following properties during transition for smooth animation
+            // NOTE: Keep following properties during transition for smooth animation.
             if let sourceImageView = self.sourceImageView {
                 currentPageImageView.contentMode = sourceImageView.contentMode
             }
@@ -170,6 +181,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         animator.addCompletion { position in
             switch position {
             case .end:
+                // Restore properties
                 imageViewer.didFinishPushTransition()
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
@@ -211,7 +223,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         
-        // Prepare for transition
+        // MARK: Prepare for the transition
+        
         toView.frame = transitionContext.finalFrame(for: toVC)
         toVC.view.layoutIfNeeded()
         
@@ -234,7 +247,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         imageViewer.willStartPopTransition()
         
-        // Animation
+        // MARK: Animation
         
         // NOTE: Animate only pageControlToolbar with easeInOut curve.
         UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
@@ -258,6 +271,8 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             switch position {
             case .end:
                 currentPageImageView.removeFromSuperview()
+                
+                // Restore properties
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
                 navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
                 
@@ -280,7 +295,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         animator.startAnimation()
         
-        // Customize the tab bar animation
+        // Customize the tabBar animation
         if let tabBar = toVC.tabBarController?.tabBar,
            let defaultTabBarAnimationKeys = tabBar.layer.animationKeys() {
             for animationKey in defaultTabBarAnimationKeys {
@@ -288,15 +303,17 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 tabBar.layer.removeAnimation(forKey: animationKey)
             }
             if toVC.hidesBottomBarWhenPushed {
+                // Fade out the tabBar
                 animator.addAnimations {
                     tabBar.alpha = 0
                 }
                 animator.addCompletion { position in
                     if position == .end {
-                        tabBar.alpha = 1
+                        tabBar.alpha = 1 // Reset
                     }
                 }
             } else {
+                // Fade in the tabBar
                 tabBar.alpha = 0
                 animator.addAnimations {
                     tabBar.alpha = 1

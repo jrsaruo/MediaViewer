@@ -71,7 +71,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             from: currentPageView.scrollView
         )
         
-        // Prepare for transition
+        // MARK: Prepare for the transition
+        
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = initialImageFrameInViewer
         
@@ -117,7 +118,8 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         imageViewer.willStartInteractivePopTransition()
         
-        // Animation
+        // MARK: Animation
+        
         animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             navigationBar.alpha = imageViewer.navigationBarAlphaBackup
             for subview in imageViewer.subviewsToFadeDuringTransition {
