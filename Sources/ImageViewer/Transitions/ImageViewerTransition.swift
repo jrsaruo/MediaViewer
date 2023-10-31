@@ -290,7 +290,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         animator.addCompletion { position in
             switch position {
             case .end:
-                currentPageImageView.removeFromSuperview()
+                imageViewerView.removeFromSuperview()
                 
                 // Restore properties
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
