@@ -130,9 +130,17 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
              * [Workaround]
              * AutoLayout didn't work. If changed layout constraints before animation,
              * they are applied at a moment because animator doesn't start immediately.
+             *
+             * NOTE:
+             * Changing frame.origin.y and frame.size.height separately causes
+             * animation bug so frame should be updated at once.
              */
-            pageControlToolbar.frame.origin.y = pageControlToolbarFrame.maxY
-            pageControlToolbar.frame.size.height = 0
+            pageControlToolbar.frame = CGRect(
+                x: pageControlToolbarFrame.minX,
+                y: pageControlToolbarFrame.maxY,
+                width: pageControlToolbarFrame.width,
+                height: 0
+            )
         }
     }
     
@@ -141,7 +149,6 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         transitionContext.finishInteractiveTransition()
         
         let duration = 0.35
-        // FIXME: When the finger is released, the position of pageControlToolbar slips
         animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
         
         let imageViewerView = transitionContext.view(forKey: .from)!
