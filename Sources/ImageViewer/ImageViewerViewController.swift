@@ -338,6 +338,14 @@ open class ImageViewerViewController: UIPageViewController {
                 } else {
                     self.navigationController?.isNavigationBarHidden = false
                 }
+                
+                // Ignore single tap during animation
+                let singleTap = self.currentPageViewController.singleTapRecognizer
+                singleTap.isEnabled = false
+                animator.addCompletion { _ in
+                    singleTap.isEnabled = true
+                }
+                
                 animator.startAnimation()
             }
             .store(in: &cancellables)
