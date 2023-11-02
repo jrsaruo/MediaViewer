@@ -120,7 +120,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // MARK: Animation
         
-        animator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+        animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
             navigationBar.alpha = imageViewer.navigationBarAlphaBackup
             for subview in imageViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
@@ -148,8 +148,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         guard let animator, let transitionContext else { return }
         transitionContext.finishInteractiveTransition()
         
-        let duration = 0.35
-        animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
+        animator.continueAnimation(withTimingParameters: nil, durationFactor: 1)
         
         let imageViewerView = transitionContext.view(forKey: .from)!
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
@@ -157,7 +156,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
         
-        let finishAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
+        let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
             if let sourceImageView = self.sourceImageView {
                 let sourceImageFrameInViewer = imageViewerView.convert(
                     sourceImageView.frame,
@@ -204,16 +203,15 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         guard let animator, let transitionContext else { return }
         transitionContext.cancelInteractiveTransition()
         
-        let duration = 0.3
         animator.isReversed = true
-        animator.continueAnimation(withTimingParameters: nil, durationFactor: duration)
+        animator.continueAnimation(withTimingParameters: nil, durationFactor: 1)
         
         let imageViewer = transitionContext.viewController(forKey: .from) as! ImageViewerViewController
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         let toVC = transitionContext.viewController(forKey: .to)!
         
-        let cancelAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
+        let cancelAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             // FIXME: toolbar items go away during animation
             currentPageImageView.frame = self.initialImageFrameInViewer
             
