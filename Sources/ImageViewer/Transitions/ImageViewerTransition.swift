@@ -74,6 +74,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
+        let tabBarHiddenBackup = tabBar?.isHidden
         let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         
         // MARK: Prepare for the transition
@@ -120,6 +121,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         if let tabBar {
             // Show the tabBar during the transition
             containerView.addSubview(tabBar)
+            tabBar.isHidden = false
             
             // Make the tabBar opaque during the transition
             let appearance = UITabBarAppearance()
@@ -182,6 +184,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
                 
                 if let tabBar {
+                    tabBar.isHidden = tabBarHiddenBackup!
                     tabBar.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
                     tabBarSuperviewBackup?.addSubview(tabBar)
                 }
