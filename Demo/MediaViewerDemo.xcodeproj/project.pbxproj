@@ -52,7 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				5A54613D29A25A2C00F16456 /* Packages */,
-				5A54612829A2594700F16456 /* ImageViewerDemo */,
+				5A54612829A2594700F16456 /* MediaViewerDemo */,
 				5A54612729A2594700F16456 /* Products */,
 				5A54613F29A25A5600F16456 /* Frameworks */,
 			);
@@ -66,7 +66,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		5A54612829A2594700F16456 /* ImageViewerDemo */ = {
+		5A54612829A2594700F16456 /* MediaViewerDemo */ = {
 			isa = PBXGroup;
 			children = (
 				5A54612929A2594700F16456 /* AppDelegate.swift */,
@@ -80,7 +80,7 @@
 				5A54613429A2594800F16456 /* LaunchScreen.storyboard */,
 				5A54613729A2594800F16456 /* Info.plist */,
 			);
-			path = ImageViewerDemo;
+			path = MediaViewerDemo;
 			sourceTree = "<group>";
 		};
 		5A54613D29A25A2C00F16456 /* Packages */ = {
@@ -327,7 +327,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ImageViewerDemo/Info.plist;
+				INFOPLIST_FILE = MediaViewerDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -337,7 +337,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.ImageViewerDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.MediaViewerDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -353,7 +353,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ImageViewerDemo/Info.plist;
+				INFOPLIST_FILE = MediaViewerDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -363,7 +363,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.ImageViewerDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.MediaViewerDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
