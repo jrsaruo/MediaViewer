@@ -53,7 +53,7 @@ public protocol MediaViewerDataSource: AnyObject {
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
-    ) -> ImageSource
+    ) -> Source<UIImage?>
     
     /// Asks the data source to return the transition source image view for the current page of the media viewer.
     ///
@@ -88,7 +88,7 @@ extension MediaViewerDataSource {
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
-    ) -> ImageSource {
+    ) -> Source<UIImage?> {
         let media = self.mediaViewer(mediaViewer, mediaOnPage: page)
         switch media {
         case .image(.sync(let image)):
@@ -621,7 +621,7 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         _ pageControlBar: MediaViewerPageControlBar,
         thumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
-    ) -> ImageSource {
+    ) -> Source<UIImage?> {
         guard let mediaViewerDataSource else { return .none }
         return mediaViewerDataSource.mediaViewer(
             self,

@@ -42,14 +42,11 @@ extension Source where Resource: ExpressibleByNilLiteral {
     static var none: Self { .sync(nil) }
 }
 
-/// The image source for the media viewer.
-public typealias ImageSource = Source<UIImage?>
-
 // MARK: - Media -
 
 /// The media source for the media viewer.
 public enum Media: Sendable {
-    case image(ImageSource)
+    case image(Source<UIImage?>)
 }
 
 // MARK: - Convenience methods to create Media

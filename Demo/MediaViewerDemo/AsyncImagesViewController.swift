@@ -215,7 +215,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
-    ) -> ImageSource {
+    ) -> Source<UIImage?> {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
             return await withCheckedContinuation { continuation in
