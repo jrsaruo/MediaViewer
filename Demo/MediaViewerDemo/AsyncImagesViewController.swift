@@ -168,8 +168,8 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageSourceOnPage page: Int
-    ) -> ImageSource {
+        mediaOnPage page: Int
+    ) -> Media {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async {
             return await withCheckedContinuation { continuation in

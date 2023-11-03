@@ -19,15 +19,15 @@ public protocol MediaViewerDataSource: AnyObject {
     /// - Returns: The number of media in `mediaViewer`.
     func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int
     
-    /// Asks the data source to return a source of media to view at the particular page in the media viewer.
+    /// Asks the data source to return media to view at the particular page in the media viewer.
     /// - Parameters:
     ///   - mediaViewer: An object representing the media viewer requesting this information.
     ///   - page: A page in the media viewer.
-    /// - Returns: A source of media to view on `page` in `mediaViewer`.
+    /// - Returns: Media to view on `page` in `mediaViewer`.
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageSourceOnPage page: Int
-    ) -> ImageSource
+        mediaOnPage page: Int
+    ) -> Media
     
     /// Asks the data source to return an aspect ratio of media.
     ///
@@ -75,11 +75,11 @@ extension MediaViewerDataSource {
         _ mediaViewer: MediaViewerViewController,
         mediaWidthToHeightOnPage page: Int
     ) -> CGFloat? {
-        let imageSource = self.mediaViewer(mediaViewer, imageSourceOnPage: page)
-        switch imageSource {
-        case .sync(let image?) where image.size.height > 0:
+        let media = self.mediaViewer(mediaViewer, mediaOnPage: page)
+        switch media {
+        case .image(.sync(let image?)) where image.size.height > 0:
             return image.size.width / image.size.height
-        case .sync, .async:
+        case .image(.sync), .image(.async):
             return nil
         }
     }
@@ -89,10 +89,11 @@ extension MediaViewerDataSource {
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource {
-        switch self.mediaViewer(mediaViewer, imageSourceOnPage: page) {
-        case .sync(let image):
+        let media = self.mediaViewer(mediaViewer, mediaOnPage: page)
+        switch media {
+        case .image(.sync(let image)):
             return .sync(image?.preparingThumbnail(of: preferredThumbnailSize) ?? image)
-        case .async(let transition, let imageProvider):
+        case .image(.async(let transition, let imageProvider)):
             return .async(transition: transition) {
                 let image = await imageProvider()
                 return await image?.byPreparingThumbnail(ofSize: preferredThumbnailSize) ?? image
@@ -595,14 +596,14 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
         guard let mediaViewerDataSource,
               0 <= page,
               page < mediaViewerDataSource.numberOfMedia(in: self) else { return nil }
-        let imageSource = mediaViewerDataSource.mediaViewer(self, imageSourceOnPage: page)
+        let media = mediaViewerDataSource.mediaViewer(self, mediaOnPage: page)
         
         let mediaViewerPage = MediaViewerOnePageViewController(page: page)
         mediaViewerPage.delegate = self
-        switch imageSource {
-        case .sync(let image):
+        switch media {
+        case .image(.sync(let image)):
             mediaViewerPage.mediaViewerOnePageView.setImage(image, with: .none)
-        case .async(let transition, let imageProvider):
+        case .image(.async(let transition, let imageProvider)):
             Task(priority: .high) {
                 let image = await imageProvider()
                 mediaViewerPage.mediaViewerOnePageView.setImage(image, with: transition)
