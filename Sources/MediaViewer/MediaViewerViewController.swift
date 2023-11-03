@@ -111,11 +111,11 @@ public protocol MediaViewerDelegate: AnyObject {
     /// - Parameters:
     ///   - mediaViewer: An media viewer informing the delegate about the page move.
     ///   - page: A destination page.
-    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int)
+    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int)
 }
 
 extension MediaViewerDelegate {
-    public func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {}
+    public func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int) {}
 }
 
 // MARK: - MediaViewerViewController -
@@ -278,7 +278,7 @@ open class MediaViewerViewController: UIPageViewController {
          * but since the delegate has not yet been set by the caller,
          * it needs to be told to the caller again at this time.
          */
-        mediaViewerDelegate?.mediaViewer(self, didMoveTo: currentPage)
+        mediaViewerDelegate?.mediaViewer(self, didMoveToPage: currentPage)
     }
     
     private func setUpViews() {
@@ -471,7 +471,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func pageDidChange() {
-        mediaViewerDelegate?.mediaViewer(self, didMoveTo: currentPage)
+        mediaViewerDelegate?.mediaViewer(self, didMoveToPage: currentPage)
     }
     
     private func handleContentOffsetChange() {
