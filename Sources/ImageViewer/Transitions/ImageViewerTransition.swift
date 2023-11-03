@@ -174,7 +174,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.layer.masksToBounds = true
         }
         animator.addCompletion { position in
-            defer { transitionContext.completeTransition(position == .end) }
+            defer { transitionContext.completeTransition() }
             switch position {
             case .end:
                 // Restore properties
@@ -288,7 +288,7 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         animator.addCompletion { position in
-            defer { transitionContext.completeTransition(position == .end) }
+            defer { transitionContext.completeTransition() }
             switch position {
             case .end:
                 imageViewerView.removeFromSuperview()
