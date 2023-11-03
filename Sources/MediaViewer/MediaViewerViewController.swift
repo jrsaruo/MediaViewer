@@ -621,7 +621,7 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        imageWidthToHeightOnPage page: Int
+        thumbnailWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         mediaViewerDataSource?.mediaViewer(self, imageWidthToHeightOnPage: page)
     }

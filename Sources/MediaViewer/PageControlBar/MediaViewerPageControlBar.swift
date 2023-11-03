@@ -18,7 +18,7 @@ protocol MediaViewerPageControlBarDataSource: AnyObject {
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        imageWidthToHeightOnPage page: Int
+        thumbnailWidthToHeightOnPage page: Int
     ) -> CGFloat?
 }
 
@@ -208,14 +208,14 @@ final class MediaViewerPageControlBar: UIView {
     
     private func updateLayout(
         expandingItemAt indexPath: IndexPath?,
-        expandingImageWidthToHeight: CGFloat? = nil,
+        expandingThumbnailWidthToHeight: CGFloat? = nil,
         animated: Bool
     ) {
         let style: MediaViewerPageControlBarLayout.Style
         if let indexPath {
             style = .expanded(
                 indexPath,
-                expandingImageWidthToHeight: expandingImageWidthToHeight
+                expandingThumbnailWidthToHeight: expandingThumbnailWidthToHeight
             )
         } else {
             style = .collapsed
@@ -228,13 +228,13 @@ final class MediaViewerPageControlBar: UIView {
     /// - Parameters:
     ///   - indexPath: An index path for the expanding item.
     ///   - reason: What causes the page change. If non-nil, the page change will be notified with it.
-    ///   - imageWidthToHeight: An aspect ratio of the expanding image to calculate the size of expanding item.
+    ///   - thumbnailWidthToHeight: An aspect ratio of the expanding thumbnail to calculate the size of expanding item.
     ///   - duration: The total duration of the animation.
     ///   - animated: Whether to animate expanding and scrolling.
     private func expandAndScrollToItem(
         at indexPath: IndexPath,
         causingBy reason: PageChangeReason?,
-        imageWidthToHeight: CGFloat? = nil,
+        thumbnailWidthToHeight: CGFloat? = nil,
         duration: CGFloat = 0.5,
         animated: Bool
     ) {
@@ -246,7 +246,7 @@ final class MediaViewerPageControlBar: UIView {
         func expandAndScroll() {
             updateLayout(
                 expandingItemAt: indexPath,
-                expandingImageWidthToHeight: imageWidthToHeight,
+                expandingThumbnailWidthToHeight: thumbnailWidthToHeight,
                 animated: false
             )
             // NOTE: Without this, a thumbnail may shift out of the center after scrolling.
@@ -257,7 +257,7 @@ final class MediaViewerPageControlBar: UIView {
             )
             state = .expanded
             
-            if imageWidthToHeight == nil {
+            if thumbnailWidthToHeight == nil {
                 correctExpandingItemAspectRatioIfNeeded()
             }
         }
@@ -274,11 +274,11 @@ final class MediaViewerPageControlBar: UIView {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
         let page = indexPathForCurrentCenterItem.item
         
-        if let imageWidthToHeight = dataSource.mediaViewerPageControlBar(self, imageWidthToHeightOnPage: page) {
+        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, thumbnailWidthToHeightOnPage: page) {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
-                imageWidthToHeight: imageWidthToHeight,
+                thumbnailWidthToHeight: thumbnailWidthToHeight,
                 animated: false
             )
             return
@@ -295,7 +295,7 @@ final class MediaViewerPageControlBar: UIView {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
-                imageWidthToHeight: thumbnail.size.width / thumbnail.size.height,
+                thumbnailWidthToHeight: thumbnail.size.width / thumbnail.size.height,
                 animated: false
             )
         case .async(_, let thumbnailProvider):
@@ -307,7 +307,7 @@ final class MediaViewerPageControlBar: UIView {
                 expandAndScrollToItem(
                     at: indexPathForCurrentCenterItem,
                     causingBy: nil,
-                    imageWidthToHeight: thumbnail.size.width / thumbnail.size.height,
+                    thumbnailWidthToHeight: thumbnail.size.width / thumbnail.size.height,
                     duration: 0.2,
                     animated: true
                 )
@@ -355,13 +355,13 @@ extension MediaViewerPageControlBar {
             return
         }
         
-        let expandingImageWidthToHeight = dataSource?.mediaViewerPageControlBar(
+        let expandingThumbnailWidthToHeight = dataSource?.mediaViewerPageControlBar(
             self,
-            imageWidthToHeightOnPage: destinationPage
+            thumbnailWidthToHeightOnPage: destinationPage
         )
         let style: MediaViewerPageControlBarLayout.Style = .expanded(
             IndexPath(item: destinationPage, section: 0),
-            expandingImageWidthToHeight: expandingImageWidthToHeight
+            expandingThumbnailWidthToHeight: expandingThumbnailWidthToHeight
         )
         let newLayout = MediaViewerPageControlBarLayout(style: style)
         
