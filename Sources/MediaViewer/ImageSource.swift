@@ -37,16 +37,16 @@ public enum Source<Resource> {
 
 extension Source: Sendable where Resource: Sendable {}
 
-/// The image source for the media viewer.
-public typealias ImageSource = Source<UIImage?>
-
-extension ImageSource {
+extension Source where Resource: ExpressibleByNilLiteral {
     
-    /// An image source that represents the lack of an image.
+    /// A source that represents the lack of a resource.
     ///
     /// This is equivalent to `.sync(nil)`.
     static var none: Self { .sync(nil) }
 }
+
+/// The image source for the media viewer.
+public typealias ImageSource = Source<UIImage?>
 
 /// The media source for the media viewer.
 public enum Media: Sendable {
