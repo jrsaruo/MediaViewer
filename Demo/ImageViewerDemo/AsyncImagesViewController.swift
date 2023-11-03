@@ -142,7 +142,7 @@ final class AsyncImagesViewController: UIViewController {
 extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
+        let imageViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
         imageViewer.imageViewerDelegate = self
         imageViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),
@@ -158,16 +158,16 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
     }
 }
 
-// MARK: - ImageViewerDataSource -
+// MARK: - MediaViewerDataSource -
 
-extension AsyncImagesViewController: ImageViewerDataSource {
+extension AsyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
+    func numberOfImages(in imageViewer: MediaViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
     }
     
     func imageViewer(
-        _ imageViewer: ImageViewerViewController,
+        _ imageViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
     ) -> ImageSource {
         let asset = dataSource.snapshot().itemIdentifiers[page]
@@ -190,7 +190,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     }
     
     func imageViewer(
-        _ imageViewer: ImageViewerViewController,
+        _ imageViewer: MediaViewerViewController,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
@@ -212,7 +212,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     }
     
     func imageViewer(
-        _ imageViewer: ImageViewerViewController,
+        _ imageViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource {
@@ -234,7 +234,7 @@ extension AsyncImagesViewController: ImageViewerDataSource {
         }
     }
     
-    func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
+    func transitionSourceView(forCurrentPageOf imageViewer: MediaViewerViewController) -> UIImageView? {
         let currentPage = imageViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         
@@ -250,11 +250,11 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     }
 }
 
-// MARK: - ImageViewerDelegate -
+// MARK: - MediaViewerDelegate -
 
-extension AsyncImagesViewController: ImageViewerDelegate {
+extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int) {
+    func imageViewer(_ imageViewer: MediaViewerViewController, didMoveTo page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let dateDescription = asset.creationDate?.formatted()
         imageViewer.title = dateDescription

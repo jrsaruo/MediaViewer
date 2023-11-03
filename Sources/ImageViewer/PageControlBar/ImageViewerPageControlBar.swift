@@ -1,5 +1,5 @@
 //
-//  ImageViewerPageControlBar.swift
+//  MediaViewerPageControlBar.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/03/18.
@@ -9,20 +9,20 @@ import UIKit
 import Combine
 
 @MainActor
-protocol ImageViewerPageControlBarDataSource: AnyObject {
+protocol MediaViewerPageControlBarDataSource: AnyObject {
     func imageViewerPageControlBar(
-        _ pageControlBar: ImageViewerPageControlBar,
+        _ pageControlBar: MediaViewerPageControlBar,
         thumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource
     
     func imageViewerPageControlBar(
-        _ pageControlBar: ImageViewerPageControlBar,
+        _ pageControlBar: MediaViewerPageControlBar,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat?
 }
 
-final class ImageViewerPageControlBar: UIView {
+final class MediaViewerPageControlBar: UIView {
     
     enum State: Hashable, Sendable {
         case collapsing
@@ -46,7 +46,7 @@ final class ImageViewerPageControlBar: UIView {
     
     enum Layout {
         /// A normal layout.
-        case normal(ImageViewerPageControlBarLayout)
+        case normal(MediaViewerPageControlBarLayout)
         
         /// A layout during interactive paging transition.
         case transition(UICollectionViewTransitionLayout)
@@ -57,7 +57,7 @@ final class ImageViewerPageControlBar: UIView {
         Int // page
     >
     
-    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
+    weak var dataSource: (any MediaViewerPageControlBarDataSource)?
     
     private(set) var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
     
@@ -90,7 +90,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private var layout: Layout {
         switch collectionView.collectionViewLayout {
-        case let barLayout as ImageViewerPageControlBarLayout:
+        case let barLayout as MediaViewerPageControlBarLayout:
             return .normal(barLayout)
         case let transitionLayout as UICollectionViewTransitionLayout:
             return .transition(transitionLayout)
@@ -102,7 +102,7 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private lazy var collectionView: UICollectionView = {
-        let layout = ImageViewerPageControlBarLayout(style: .collapsed)
+        let layout = MediaViewerPageControlBarLayout(style: .collapsed)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
@@ -180,7 +180,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
-        let offset = (bounds.width - ImageViewerPageControlBarLayout.collapsedItemWidth) / 2
+        let offset = (bounds.width - MediaViewerPageControlBarLayout.collapsedItemWidth) / 2
         collectionView.contentInset = .init(
             top: 0,
             left: offset,
@@ -211,7 +211,7 @@ final class ImageViewerPageControlBar: UIView {
         expandingImageWidthToHeight: CGFloat? = nil,
         animated: Bool
     ) {
-        let style: ImageViewerPageControlBarLayout.Style
+        let style: MediaViewerPageControlBarLayout.Style
         if let indexPath {
             style = .expanded(
                 indexPath,
@@ -220,7 +220,7 @@ final class ImageViewerPageControlBar: UIView {
         } else {
             style = .collapsed
         }
-        let layout = ImageViewerPageControlBarLayout(style: style)
+        let layout = MediaViewerPageControlBarLayout(style: style)
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
@@ -340,7 +340,7 @@ final class ImageViewerPageControlBar: UIView {
 
 // MARK: - Interactive paging -
 
-extension ImageViewerPageControlBar {
+extension MediaViewerPageControlBar {
     
     func startInteractivePaging(forwards: Bool) {
         guard case .normal(let barLayout) = layout else {
@@ -359,11 +359,11 @@ extension ImageViewerPageControlBar {
             self,
             imageWidthToHeightOnPage: destinationPage
         )
-        let style: ImageViewerPageControlBarLayout.Style = .expanded(
+        let style: MediaViewerPageControlBarLayout.Style = .expanded(
             IndexPath(item: destinationPage, section: 0),
             expandingImageWidthToHeight: expandingImageWidthToHeight
         )
-        let newLayout = ImageViewerPageControlBarLayout(style: style)
+        let newLayout = MediaViewerPageControlBarLayout(style: style)
         
         /*
          * NOTE:
@@ -409,7 +409,7 @@ extension ImageViewerPageControlBar {
 
 // MARK: - UICollectionViewDelegate -
 
-extension ImageViewerPageControlBar: UICollectionViewDelegate {
+extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)

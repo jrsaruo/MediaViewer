@@ -1,5 +1,5 @@
 //
-//  ImageViewerInteractivePopTransition.swift
+//  MediaViewerInteractivePopTransition.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/23.
@@ -8,7 +8,7 @@
 import UIKit
 
 @MainActor
-final class ImageViewerInteractivePopTransition: NSObject {
+final class MediaViewerInteractivePopTransition: NSObject {
     
     private let sourceImageView: UIImageView?
     
@@ -39,19 +39,19 @@ final class ImageViewerInteractivePopTransition: NSObject {
     }
 }
 
-extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
+extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
     func startInteractiveTransition(
         _ transitionContext: any UIViewControllerContextTransitioning
     ) {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
             preconditionFailure(
-                "\(Self.self) works only with the pop animation for \(ImageViewerViewController.self)."
+                "\(Self.self) works only with the pop animation for \(MediaViewerViewController.self)."
             )
         }
         self.transitionContext = transitionContext
@@ -174,7 +174,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             }
         }
         
-        let imageViewer = transitionContext.viewController(forKey: .from) as! ImageViewerViewController
+        let imageViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
         let toVC = transitionContext.viewController(forKey: .to)!
         let navigationController = toVC.navigationController!
         let toolbar = navigationController.toolbar!
@@ -206,7 +206,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.isReversed = true
         animator.continueAnimation(withTimingParameters: nil, durationFactor: 1)
         
-        let imageViewer = transitionContext.viewController(forKey: .from) as! ImageViewerViewController
+        let imageViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
         let currentPageView = imageViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         let toVC = transitionContext.viewController(forKey: .to)!
@@ -246,10 +246,10 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     
     private func imageViewerCurrentPageView(
         in transitionContext: some UIViewControllerContextTransitioning
-    ) -> ImageViewerOnePageView {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController else {
+    ) -> MediaViewerOnePageView {
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController else {
             preconditionFailure(
-                "\(Self.self) works only with the pop animation for \(ImageViewerViewController.self)."
+                "\(Self.self) works only with the pop animation for \(MediaViewerViewController.self)."
             )
         }
         return imageViewer.currentPageViewController.imageViewerOnePageView
@@ -257,7 +257,7 @@ extension ImageViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     
     func panRecognized(
         by recognizer: UIPanGestureRecognizer,
-        in imageViewer: ImageViewerViewController
+        in imageViewer: MediaViewerViewController
     ) {
         let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
         let panningImageView = currentPageView.imageView

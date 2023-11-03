@@ -1,5 +1,5 @@
 //
-//  ImageViewerOnePageViewController.swift
+//  MediaViewerOnePageViewController.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -8,22 +8,22 @@
 import UIKit
 
 @MainActor
-protocol ImageViewerOnePageViewControllerDelegate: AnyObject {
-    func imageViewerPageTapped(_ imageViewerPage: ImageViewerOnePageViewController)
+protocol MediaViewerOnePageViewControllerDelegate: AnyObject {
+    func imageViewerPageTapped(_ imageViewerPage: MediaViewerOnePageViewController)
     
     func imageViewerPage(
-        _ imageViewerPage: ImageViewerOnePageViewController,
+        _ imageViewerPage: MediaViewerOnePageViewController,
         didDoubleTap imageView: UIImageView
     )
 }
 
-final class ImageViewerOnePageViewController: UIViewController {
+final class MediaViewerOnePageViewController: UIViewController {
     
     let page: Int
     
-    weak var delegate: (any ImageViewerOnePageViewControllerDelegate)?
+    weak var delegate: (any MediaViewerOnePageViewControllerDelegate)?
     
-    let imageViewerOnePageView = ImageViewerOnePageView()
+    let imageViewerOnePageView = MediaViewerOnePageView()
     
     let singleTapRecognizer = UITapGestureRecognizer()
     

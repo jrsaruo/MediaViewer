@@ -1,5 +1,5 @@
 //
-//  ImageViewerPageControlBarLayout.swift
+//  MediaViewerPageControlBarLayout.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/03/18.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
+final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     
     enum Style {
         case expanded(IndexPath, expandingImageWidthToHeight: CGFloat?)

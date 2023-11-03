@@ -1,5 +1,5 @@
 //
-//  ImageViewerTransition.swift
+//  MediaViewerTransition.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/21.
@@ -8,7 +8,7 @@
 import UIKit
 
 @MainActor
-final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
+final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
     let operation: UINavigationController.Operation
     let sourceImageView: UIImageView?
@@ -58,12 +58,12 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     private func animatePushTransition(
         using transitionContext: some UIViewControllerContextTransitioning
     ) {
-        guard let imageViewer = transitionContext.viewController(forKey: .to) as? ImageViewerViewController,
+        guard let imageViewer = transitionContext.viewController(forKey: .to) as? MediaViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
             preconditionFailure(
-                "\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self)."
+                "\(Self.self) works only with the push/pop animation for \(MediaViewerViewController.self)."
             )
         }
         let containerView = transitionContext.containerView
@@ -200,14 +200,14 @@ final class ImageViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     private func animatePopTransition(
         using transitionContext: some UIViewControllerContextTransitioning
     ) {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? ImageViewerViewController,
+        guard let imageViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
               let imageViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to),
               let navigationController = imageViewer.navigationController
         else {
             preconditionFailure(
-                "\(Self.self) works only with the push/pop animation for \(ImageViewerViewController.self)."
+                "\(Self.self) works only with the push/pop animation for \(MediaViewerViewController.self)."
             )
         }
         let containerView = transitionContext.containerView
