@@ -7,8 +7,8 @@
 
 import UIKit
 
-/// The way to animate the image transition.
-public enum ImageTransition: Hashable, Sendable {
+/// The way to animate media transition.
+public enum MediaTransition: Hashable, Sendable {
     
     /// The fade animation with the specified duration.
     case fade(duration: TimeInterval)
@@ -16,9 +16,6 @@ public enum ImageTransition: Hashable, Sendable {
     /// No animation.
     case none
 }
-
-/// The way to animate media transition.
-public typealias MediaTransition = ImageTransition
 
 /// The source for the media viewer.
 public enum Source<Resource> {
