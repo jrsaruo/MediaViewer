@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import ImageViewer
+import MediaViewer
 
 final class SyncImagesViewController: UIViewController {
     

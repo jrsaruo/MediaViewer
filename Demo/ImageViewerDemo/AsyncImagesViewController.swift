@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import ImageViewer
+import MediaViewer
 @preconcurrency import Photos
 
 final class AsyncImagesViewController: UIViewController {

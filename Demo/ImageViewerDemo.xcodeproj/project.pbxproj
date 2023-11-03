@@ -13,10 +13,10 @@
 		5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54612B29A2594700F16456 /* SceneDelegate.swift */; };
 		5A54613329A2594800F16456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613229A2594800F16456 /* Assets.xcassets */; };
 		5A54613629A2594800F16456 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613429A2594800F16456 /* LaunchScreen.storyboard */; };
-		5A54614129A25A5600F16456 /* ImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614029A25A5600F16456 /* ImageViewer */; };
 		5A54614329A25A8900F16456 /* AsyncImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */; };
 		5A54614929A25BCD00F16456 /* AceLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614829A25BCD00F16456 /* AceLayout */; };
 		5A54614B29A25CDF00F16456 /* ImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614A29A25CDF00F16456 /* ImageCell.swift */; };
+		5A88B3882AF50B9600B65BCD /* MediaViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A88B3872AF50B9600B65BCD /* MediaViewer */; };
 		5AE4F46E29D31E7A0048E8B4 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */; };
 /* End PBXBuildFile section */
 
@@ -41,7 +41,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5A54614929A25BCD00F16456 /* AceLayout in Frameworks */,
-				5A54614129A25A5600F16456 /* ImageViewer in Frameworks */,
+				5A88B3882AF50B9600B65BCD /* MediaViewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,8 +115,8 @@
 			);
 			name = ImageViewerDemo;
 			packageProductDependencies = (
-				5A54614029A25A5600F16456 /* ImageViewer */,
 				5A54614829A25BCD00F16456 /* AceLayout */,
+				5A88B3872AF50B9600B65BCD /* MediaViewer */,
 			);
 			productName = ImageViewerDemo;
 			productReference = 5A54612629A2594700F16456 /* ImageViewerDemo.app */;
@@ -406,14 +406,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5A54614029A25A5600F16456 /* ImageViewer */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ImageViewer;
-		};
 		5A54614829A25BCD00F16456 /* AceLayout */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */;
 			productName = AceLayout;
+		};
+		5A88B3872AF50B9600B65BCD /* MediaViewer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaViewer;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
