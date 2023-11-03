@@ -1,5 +1,5 @@
 //
-//  ImageSource.swift
+//  Media.swift
 //
 //
 //  Created by Yusaku Nishi on 2023/10/31.
