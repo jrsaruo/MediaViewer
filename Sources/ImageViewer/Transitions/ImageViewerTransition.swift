@@ -58,18 +58,18 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     private func animatePushTransition(
         using transitionContext: some UIViewControllerContextTransitioning
     ) {
-        guard let imageViewer = transitionContext.viewController(forKey: .to) as? MediaViewerViewController,
-              let imageViewerView = transitionContext.view(forKey: .to),
-              let navigationController = imageViewer.navigationController
+        guard let mediaViewer = transitionContext.viewController(forKey: .to) as? MediaViewerViewController,
+              let mediaViewerView = transitionContext.view(forKey: .to),
+              let navigationController = mediaViewer.navigationController
         else {
             preconditionFailure(
                 "\(Self.self) works only with the push/pop animation for \(MediaViewerViewController.self)."
             )
         }
         let containerView = transitionContext.containerView
-        containerView.addSubview(imageViewerView)
+        containerView.addSubview(mediaViewerView)
         
-        let tabBar = imageViewer.tabBarController?.tabBar
+        let tabBar = mediaViewer.tabBarController?.tabBar
         
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
@@ -79,12 +79,12 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // MARK: Prepare for the transition
         
-        imageViewerView.frame = transitionContext.finalFrame(for: imageViewer)
+        mediaViewerView.frame = transitionContext.finalFrame(for: mediaViewer)
         
         // Determine the layout of the destination before the transition
-        imageViewerView.layoutIfNeeded()
+        mediaViewerView.layoutIfNeeded()
         
-        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
+        let currentPageView = mediaViewer.currentPageViewController.mediaViewerOnePageView
         let currentPageImageView = currentPageView.imageView
         
         /*
@@ -97,13 +97,13 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
-        let currentPageImageFrameInViewer = imageViewerView.convert(
+        let currentPageImageFrameInViewer = mediaViewerView.convert(
             currentPageImageView.frame,
             from: currentPageImageView
         )
         if let sourceImageView {
             // Match the appearance of the animating image view to the source
-            let sourceImageFrameInViewer = imageViewerView.convert(
+            let sourceImageFrameInViewer = mediaViewerView.convert(
                 sourceImageView.frame,
                 from: sourceImageView
             )
@@ -115,7 +115,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.frame = currentPageImageFrameInViewer
         }
         currentPageImageView.layer.masksToBounds = true
-        imageViewer.insertImageViewForTransition(currentPageImageView)
+        mediaViewer.insertImageViewForTransition(currentPageImageView)
         sourceImageView?.isHidden = true
         
         if let tabBar {
@@ -129,7 +129,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             tabBar.scrollEdgeAppearance = appearance
             
             // Disable the default animation applied to the tabBar
-            if imageViewer.hidesBottomBarWhenPushed,
+            if mediaViewer.hidesBottomBarWhenPushed,
                let animationKeys = tabBar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy { $0.starts(with: "position") })
                 tabBar.layer.removeAllAnimations()
@@ -144,18 +144,18 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         toolbar.alpha = 0
-        let viewsToFadeDuringTransition = imageViewer.subviewsToFadeDuringTransition
+        let viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         for view in viewsToFadeDuringTransition {
             view.alpha = 0
         }
         
-        imageViewer.willStartPushTransition()
+        mediaViewer.willStartPushTransition()
         
         // MARK: Animation
         
         // NOTE: Animate only pageControlToolbar with easeInOut curve.
         UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
-            imageViewerView.layoutIfNeeded()
+            mediaViewerView.layoutIfNeeded()
         }.startAnimation()
         
         let duration = transitionDuration(using: transitionContext)
@@ -178,7 +178,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             switch position {
             case .end:
                 // Restore properties
-                imageViewer.didFinishPushTransition()
+                mediaViewer.didFinishPushTransition()
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
@@ -200,11 +200,11 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     private func animatePopTransition(
         using transitionContext: some UIViewControllerContextTransitioning
     ) {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
-              let imageViewerView = transitionContext.view(forKey: .from),
+        guard let mediaViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
+              let mediaViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to),
-              let navigationController = imageViewer.navigationController
+              let navigationController = mediaViewer.navigationController
         else {
             preconditionFailure(
                 "\(Self.self) works only with the push/pop animation for \(MediaViewerViewController.self)."
@@ -212,7 +212,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         let containerView = transitionContext.containerView
         containerView.addSubview(toView)
-        containerView.addSubview(imageViewerView)
+        containerView.addSubview(mediaViewerView)
         
         // Back up
         let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
@@ -222,35 +222,35 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         toView.frame = transitionContext.finalFrame(for: toVC)
         toView.layoutIfNeeded()
         
-        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
+        let currentPageView = mediaViewer.currentPageViewController.mediaViewerOnePageView
         let currentPageImageView = currentPageView.imageView
-        let currentPageImageFrameInViewer = imageViewerView.convert(
+        let currentPageImageFrameInViewer = mediaViewerView.convert(
             currentPageImageView.frame,
             from: currentPageView.scrollView
         )
         let sourceImageFrameInViewer = sourceImageView.map { sourceView in
-            imageViewerView.convert(sourceView.frame, from: sourceView)
+            mediaViewerView.convert(sourceView.frame, from: sourceView)
         }
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = currentPageImageFrameInViewer
-        imageViewer.insertImageViewForTransition(currentPageImageView)
+        mediaViewer.insertImageViewForTransition(currentPageImageView)
         sourceImageView?.isHidden = true
         
         let toolbar = navigationController.toolbar!
         assert(toolbar.layer.animationKeys() == nil)
         
-        imageViewer.willStartPopTransition()
+        mediaViewer.willStartPopTransition()
         
         // MARK: Animation
         
         // NOTE: Animate only pageControlToolbar with easeInOut curve.
         UIViewPropertyAnimator(duration: 0.25, curve: .easeInOut) {
-            imageViewerView.layoutIfNeeded()
+            mediaViewerView.layoutIfNeeded()
         }.startAnimation()
         
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            for subview in imageViewer.subviewsToFadeDuringTransition {
+            for subview in mediaViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
             if let sourceImageFrameInViewer {
@@ -291,11 +291,11 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             defer { transitionContext.completeTransition() }
             switch position {
             case .end:
-                imageViewerView.removeFromSuperview()
+                mediaViewerView.removeFromSuperview()
                 
                 // Restore properties
                 self.sourceImageView?.isHidden = sourceImageHiddenBackup
-                navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
+                navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
                 
                 // Disable the default animation applied to the toolbar
                 if let animationKeys = toolbar.layer.animationKeys() {

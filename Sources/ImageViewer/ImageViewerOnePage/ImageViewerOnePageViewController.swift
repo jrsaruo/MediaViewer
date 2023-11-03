@@ -9,10 +9,10 @@ import UIKit
 
 @MainActor
 protocol MediaViewerOnePageViewControllerDelegate: AnyObject {
-    func imageViewerPageTapped(_ imageViewerPage: MediaViewerOnePageViewController)
+    func mediaViewerPageTapped(_ mediaViewerPage: MediaViewerOnePageViewController)
     
-    func imageViewerPage(
-        _ imageViewerPage: MediaViewerOnePageViewController,
+    func mediaViewerPage(
+        _ mediaViewerPage: MediaViewerOnePageViewController,
         didDoubleTap imageView: UIImageView
     )
 }
@@ -23,7 +23,7 @@ final class MediaViewerOnePageViewController: UIViewController {
     
     weak var delegate: (any MediaViewerOnePageViewControllerDelegate)?
     
-    let imageViewerOnePageView = MediaViewerOnePageView()
+    let mediaViewerOnePageView = MediaViewerOnePageView()
     
     let singleTapRecognizer = UITapGestureRecognizer()
     
@@ -49,7 +49,7 @@ final class MediaViewerOnePageViewController: UIViewController {
     // MARK: - Lifecycle
     
     override func loadView() {
-        view = imageViewerOnePageView
+        view = mediaViewerOnePageView
     }
     
     override func viewDidLoad() {
@@ -62,7 +62,7 @@ final class MediaViewerOnePageViewController: UIViewController {
         view.addGestureRecognizer(singleTapRecognizer)
         
         imageDoubleTapRecognizer.addTarget(self, action: #selector(imageDoubleTapped))
-        imageViewerOnePageView.imageView.addGestureRecognizer(imageDoubleTapRecognizer)
+        mediaViewerOnePageView.imageView.addGestureRecognizer(imageDoubleTapRecognizer)
         
         // Dependencies
         singleTapRecognizer.require(toFail: imageDoubleTapRecognizer)
@@ -76,25 +76,25 @@ final class MediaViewerOnePageViewController: UIViewController {
         
         // Update layout when screen is rotated
         coordinator.animate { context in
-            self.imageViewerOnePageView.invalidateLayout()
+            self.mediaViewerOnePageView.invalidateLayout()
         }
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        imageViewerOnePageView.scrollView.zoomScale = 1
+        mediaViewerOnePageView.scrollView.zoomScale = 1
     }
     
     // MARK: - Actions
     
     @objc
     private func singleTapped() {
-        delegate?.imageViewerPageTapped(self)
+        delegate?.mediaViewerPageTapped(self)
     }
     
     @objc
     private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
-        delegate?.imageViewerPage(self, didDoubleTap: imageViewerOnePageView.imageView)
-        imageViewerOnePageView.updateZoomScaleOnDoubleTap(recognizedBy: recognizer)
+        delegate?.mediaViewerPage(self, didDoubleTap: mediaViewerOnePageView.imageView)
+        mediaViewerOnePageView.updateZoomScaleOnDoubleTap(recognizedBy: recognizer)
     }
 }

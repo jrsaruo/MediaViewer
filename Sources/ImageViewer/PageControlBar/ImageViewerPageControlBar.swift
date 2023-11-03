@@ -10,13 +10,13 @@ import Combine
 
 @MainActor
 protocol MediaViewerPageControlBarDataSource: AnyObject {
-    func imageViewerPageControlBar(
+    func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
         thumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource
     
-    func imageViewerPageControlBar(
+    func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat?
@@ -127,7 +127,7 @@ final class MediaViewerPageControlBar: UIView {
             width: cell.bounds.width * scale,
             height: cell.bounds.height * scale
         )
-        let thumbnailSource = dataSource.imageViewerPageControlBar(
+        let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
             thumbnailOnPage: page,
             filling: preferredSize
@@ -274,7 +274,7 @@ final class MediaViewerPageControlBar: UIView {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
         let page = indexPathForCurrentCenterItem.item
         
-        if let imageWidthToHeight = dataSource.imageViewerPageControlBar(self, imageWidthToHeightOnPage: page) {
+        if let imageWidthToHeight = dataSource.mediaViewerPageControlBar(self, imageWidthToHeightOnPage: page) {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
@@ -284,7 +284,7 @@ final class MediaViewerPageControlBar: UIView {
             return
         }
         
-        let thumbnailSource = dataSource.imageViewerPageControlBar(
+        let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
             thumbnailOnPage: page,
             filling: .init(width: 100, height: 100)
@@ -355,7 +355,7 @@ extension MediaViewerPageControlBar {
             return
         }
         
-        let expandingImageWidthToHeight = dataSource?.imageViewerPageControlBar(
+        let expandingImageWidthToHeight = dataSource?.mediaViewerPageControlBar(
             self,
             imageWidthToHeightOnPage: destinationPage
         )

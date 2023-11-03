@@ -44,11 +44,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     func startInteractiveTransition(
         _ transitionContext: any UIViewControllerContextTransitioning
     ) {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
-              let imageViewerView = transitionContext.view(forKey: .from),
+        guard let mediaViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
+              let mediaViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
               let toVC = transitionContext.viewController(forKey: .to),
-              let navigationController = imageViewer.navigationController
+              let navigationController = mediaViewer.navigationController
         else {
             preconditionFailure(
                 "\(Self.self) works only with the pop animation for \(MediaViewerViewController.self)."
@@ -56,7 +56,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
-        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let currentPageView = mediaViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         
         // Back up
@@ -66,7 +66,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         toVCToolbarItemsBackup = toVC.toolbarItems
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
-        initialImageFrameInViewer = imageViewerView.convert(
+        initialImageFrameInViewer = mediaViewerView.convert(
             currentPageImageView.frame,
             from: currentPageView.scrollView
         )
@@ -78,8 +78,8 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         toView.frame = transitionContext.finalFrame(for: toVC)
         containerView.addSubview(toView)
-        containerView.addSubview(imageViewerView)
-        imageViewer.insertImageViewForTransition(currentPageImageView)
+        containerView.addSubview(mediaViewerView)
+        mediaViewer.insertImageViewForTransition(currentPageImageView)
         
         sourceImageView?.isHidden = true
         
@@ -104,25 +104,25 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             })
             navigationBar.layer.removeAllAnimations()
         }
-        navigationBar.alpha = imageViewer.isShowingImageOnly 
+        navigationBar.alpha = mediaViewer.isShowingImageOnly 
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
         : 1
         
         // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
         toVC.toolbarItems = nil
         
-        let pageControlToolbar = imageViewer.pageControlToolbar
+        let pageControlToolbar = mediaViewer.pageControlToolbar
         let pageControlToolbarFrame = pageControlToolbar.frame
         // Disable AutoLayout
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = true
         
-        imageViewer.willStartInteractivePopTransition()
+        mediaViewer.willStartInteractivePopTransition()
         
         // MARK: Animation
         
         animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
-            navigationBar.alpha = imageViewer.navigationBarAlphaBackup
-            for subview in imageViewer.subviewsToFadeDuringTransition {
+            navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
+            for subview in mediaViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
             
@@ -150,15 +150,15 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         animator.continueAnimation(withTimingParameters: nil, durationFactor: 1)
         
-        let imageViewerView = transitionContext.view(forKey: .from)!
-        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let mediaViewerView = transitionContext.view(forKey: .from)!
+        let currentPageView = mediaViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         
         tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
         
         let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
             if let sourceImageView = self.sourceImageView {
-                let sourceImageFrameInViewer = imageViewerView.convert(
+                let sourceImageFrameInViewer = mediaViewerView.convert(
                     sourceImageView.frame,
                     from: sourceImageView
                 )
@@ -174,7 +174,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             }
         }
         
-        let imageViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
+        let mediaViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
         let toVC = transitionContext.viewController(forKey: .to)!
         let navigationController = toVC.navigationController!
         let toolbar = navigationController.toolbar!
@@ -185,8 +185,8 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageImageView.removeFromSuperview()
             
             toVC.toolbarItems = self.toVCToolbarItemsBackup
-            navigationController.isToolbarHidden = imageViewer.toolbarHiddenBackup
-            toolbar.scrollEdgeAppearance = imageViewer.toolbarScrollEdgeAppearanceBackup
+            navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
+            toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             // Disable the default animation applied to the toolbar
             if let animationKeys = toolbar.layer.animationKeys() {
@@ -206,8 +206,8 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         animator.isReversed = true
         animator.continueAnimation(withTimingParameters: nil, durationFactor: 1)
         
-        let imageViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
-        let currentPageView = imageViewerCurrentPageView(in: transitionContext)
+        let mediaViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
+        let currentPageView = mediaViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         let toVC = transitionContext.viewController(forKey: .to)!
         
@@ -233,33 +233,33 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             
-            let pageControlToolbar = imageViewer.pageControlToolbar
+            let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
-            imageViewer.didCancelInteractivePopTransition()
+            mediaViewer.didCancelInteractivePopTransition()
             let toolbar = toVC.navigationController!.toolbar!
-            toolbar.scrollEdgeAppearance = imageViewer.toolbarScrollEdgeAppearanceBackup
+            toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             transitionContext.completeTransition(false)
         }
         cancelAnimator.startAnimation()
     }
     
-    private func imageViewerCurrentPageView(
+    private func mediaViewerCurrentPageView(
         in transitionContext: some UIViewControllerContextTransitioning
     ) -> MediaViewerOnePageView {
-        guard let imageViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController else {
+        guard let mediaViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController else {
             preconditionFailure(
                 "\(Self.self) works only with the pop animation for \(MediaViewerViewController.self)."
             )
         }
-        return imageViewer.currentPageViewController.imageViewerOnePageView
+        return mediaViewer.currentPageViewController.mediaViewerOnePageView
     }
     
     func panRecognized(
         by recognizer: UIPanGestureRecognizer,
-        in imageViewer: MediaViewerViewController
+        in mediaViewer: MediaViewerViewController
     ) {
-        let currentPageView = imageViewer.currentPageViewController.imageViewerOnePageView
+        let currentPageView = mediaViewer.currentPageViewController.mediaViewerOnePageView
         let panningImageView = currentPageView.imageView
         
         if let tabBar, tabBar.layer.animationKeys() != nil {
