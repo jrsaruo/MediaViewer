@@ -17,19 +17,30 @@ public enum ImageTransition: Hashable, Sendable {
     case none
 }
 
-/// The image source for the image viewer.
-public enum ImageSource {
+/// The way to animate media transition.
+public typealias MediaTransition = ImageTransition
+
+/// The source for the media viewer.
+public enum Source<Resource> {
     
-    /// An image that can be acquired synchronously.
-    case sync(UIImage?)
+    /// A resource that can be acquired synchronously.
+    case sync(Resource)
     
-    /// An image that can be acquired asynchronously.
+    /// A resource that can be acquired asynchronously.
     ///
-    /// The viewer will use `provider` to acquire an image and display it using `transition`.
+    /// The viewer will use `provider` to acquire a resource and display it using `transition`.
     case async(
-        transition: ImageTransition = .fade(duration: 0.2),
-        provider: @Sendable () async -> UIImage?
+        transition: MediaTransition = .fade(duration: 0.2),
+        provider: @Sendable () async -> Resource
     )
+}
+
+extension Source: Sendable where Resource: Sendable {}
+
+/// The image source for the media viewer.
+public typealias ImageSource = Source<UIImage?>
+
+extension ImageSource {
     
     /// An image source that represents the lack of an image.
     ///
