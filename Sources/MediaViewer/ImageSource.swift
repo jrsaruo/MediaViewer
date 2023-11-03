@@ -48,10 +48,14 @@ extension Source where Resource: ExpressibleByNilLiteral {
 /// The image source for the media viewer.
 public typealias ImageSource = Source<UIImage?>
 
+// MARK: - Media -
+
 /// The media source for the media viewer.
 public enum Media: Sendable {
     case image(ImageSource)
 }
+
+// MARK: - Convenience methods to create Media
 
 extension Media {
     
