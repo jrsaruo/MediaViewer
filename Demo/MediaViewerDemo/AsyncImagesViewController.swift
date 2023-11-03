@@ -191,7 +191,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageWidthToHeightOnPage page: Int
+        mediaWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let options = PHImageRequestOptions()

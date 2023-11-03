@@ -40,7 +40,7 @@ public protocol MediaViewerDataSource: AnyObject {
     /// - Returns: An aspect ratio of media on the specified page.
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageWidthToHeightOnPage page: Int
+        mediaWidthToHeightOnPage page: Int
     ) -> CGFloat?
     
     /// Asks the data source to return a source of a thumbnail image on the page control bar in the media viewer.
@@ -73,7 +73,7 @@ extension MediaViewerDataSource {
     
     public func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageWidthToHeightOnPage page: Int
+        mediaWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         let imageSource = self.mediaViewer(mediaViewer, imageSourceOnPage: page)
         switch imageSource {
@@ -623,7 +623,7 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         _ pageControlBar: MediaViewerPageControlBar,
         thumbnailWidthToHeightOnPage page: Int
     ) -> CGFloat? {
-        mediaViewerDataSource?.mediaViewer(self, imageWidthToHeightOnPage: page)
+        mediaViewerDataSource?.mediaViewer(self, mediaWidthToHeightOnPage: page)
     }
 }
 
