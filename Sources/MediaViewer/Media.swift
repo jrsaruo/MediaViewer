@@ -25,7 +25,7 @@ public enum Source<Resource> {
     
     /// A resource that can be acquired asynchronously.
     ///
-    /// The viewer will use `provider` to acquire a resource and display it using `transition`.
+    /// The media viewer will use `provider` to acquire a resource and display it using `transition`.
     case async(
         transition: MediaTransition = .fade(duration: 0.2),
         provider: @Sendable () async -> Resource
