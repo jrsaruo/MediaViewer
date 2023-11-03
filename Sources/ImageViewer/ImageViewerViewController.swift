@@ -17,14 +17,14 @@ public protocol MediaViewerDataSource: AnyObject {
     /// Asks the data source to return the number of media in the media viewer.
     /// - Parameter mediaViewer: An object representing the media viewer requesting this information.
     /// - Returns: The number of media in `mediaViewer`.
-    func numberOfImages(in mediaViewer: MediaViewerViewController) -> Int
+    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int
     
     /// Asks the data source to return a source of media to view at the particular page in the media viewer.
     /// - Parameters:
     ///   - mediaViewer: An object representing the media viewer requesting this information.
     ///   - page: A page in the media viewer.
     /// - Returns: A source of media to view at `page` in `mediaViewer`.
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
     ) -> ImageSource
@@ -38,7 +38,7 @@ public protocol MediaViewerDataSource: AnyObject {
     ///   - mediaViewer: An object representing the media viewer requesting this information.
     ///   - page: A page in the media viewer.
     /// - Returns: An aspect ratio of media on the specified page.
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat?
@@ -49,7 +49,7 @@ public protocol MediaViewerDataSource: AnyObject {
     ///   - page: A page in the media viewer.
     ///   - preferredThumbnailSize: An expected size of the thumbnail image. For better performance, it is preferable to shrink the thumbnail image to a size that fills this size.
     /// - Returns: A source of a thumbnail image on the page control bar in `mediaViewer`.
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
@@ -71,11 +71,11 @@ public protocol MediaViewerDataSource: AnyObject {
 
 extension MediaViewerDataSource {
     
-    public func imageViewer(
+    public func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat? {
-        let imageSource = self.imageViewer(mediaViewer, imageSourceOnPage: page)
+        let imageSource = self.mediaViewer(mediaViewer, imageSourceOnPage: page)
         switch imageSource {
         case .sync(let image?) where image.size.height > 0:
             return image.size.width / image.size.height
@@ -84,12 +84,12 @@ extension MediaViewerDataSource {
         }
     }
     
-    public func imageViewer(
+    public func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource {
-        switch self.imageViewer(mediaViewer, imageSourceOnPage: page) {
+        switch self.mediaViewer(mediaViewer, imageSourceOnPage: page) {
         case .sync(let image):
             return .sync(image?.preparingThumbnail(of: preferredThumbnailSize) ?? image)
         case .async(let transition, let imageProvider):
@@ -110,11 +110,11 @@ public protocol MediaViewerDelegate: AnyObject {
     /// - Parameters:
     ///   - mediaViewer: An media viewer informing the delegate about the page move.
     ///   - page: A destination page.
-    func imageViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int)
+    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int)
 }
 
 extension MediaViewerDelegate {
-    public func imageViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {}
+    public func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {}
 }
 
 // MARK: - MediaViewerViewController -
@@ -123,8 +123,7 @@ extension MediaViewerDelegate {
 ///
 /// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
 /// ```swift
-/// let mediaViewer = MediaViewerViewController(image: imageToView)
-/// mediaViewer.imageViewerDataSource = self
+/// let mediaViewer = MediaViewerViewController(page: 0, dataSource: self)
 /// navigationController?.delegate = mediaViewer
 /// navigationController?.pushViewController(mediaViewer, animated: true)
 /// ```
@@ -135,10 +134,10 @@ open class MediaViewerViewController: UIPageViewController {
     private var cancellables: Set<AnyCancellable> = []
     
     /// The data source of the media viewer object.
-    open weak var imageViewerDataSource: (any MediaViewerDataSource)?
+    open weak var mediaViewerDataSource: (any MediaViewerDataSource)?
     
     /// The object that acts as the delegate of the media viewer.
-    open weak var imageViewerDelegate: (any MediaViewerDelegate)?
+    open weak var mediaViewerDelegate: (any MediaViewerDelegate)?
     
     /// The current page of the media viewer.
     public var currentPage: Int {
@@ -154,7 +153,7 @@ open class MediaViewerViewController: UIPageViewController {
         return mediaViewerOnePage
     }
     
-    public var isShowingImageOnly: Bool {
+    public var isShowingMediaOnly: Bool {
         mediaViewerVM.showsMediaOnly
     }
     
@@ -224,7 +223,7 @@ open class MediaViewerViewController: UIPageViewController {
                 .spineLocation: SpineLocation.none.rawValue
             ]
         )
-        imageViewerDataSource = dataSource
+        mediaViewerDataSource = dataSource
         
         guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else {
             preconditionFailure("Page \(page) out of range.")
@@ -268,7 +267,7 @@ open class MediaViewerViewController: UIPageViewController {
          * but since the delegate has not yet been set by the caller,
          * it needs to be told to the caller again at this time.
          */
-        imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
+        mediaViewerDelegate?.mediaViewer(self, didMoveTo: currentPage)
     }
     
     private func setUpViews() {
@@ -281,8 +280,8 @@ open class MediaViewerViewController: UIPageViewController {
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
-        if let imageViewerDataSource {
-            let numberOfPages = imageViewerDataSource.numberOfImages(in: self)
+        if let mediaViewerDataSource {
+            let numberOfPages = mediaViewerDataSource.numberOfMedia(in: self)
             pageControlBar.configure(numberOfPages: numberOfPages, currentPage: currentPage)
         }
         pageControlToolbar.addSubview(pageControlBar)
@@ -406,9 +405,9 @@ open class MediaViewerViewController: UIPageViewController {
         transitionCoordinator?.animate(alongsideTransition: { _ in }) { context in
             if context.isCancelled {
                 // Cancel the appearance restoration
-                tabBar?.isHidden = self.isShowingImageOnly || self.hidesBottomBarWhenPushed
-                navigationController.navigationBar.alpha = self.isShowingImageOnly ? 0 : 1
-                navigationController.isNavigationBarHidden = self.isShowingImageOnly
+                tabBar?.isHidden = self.isShowingMediaOnly || self.hidesBottomBarWhenPushed
+                navigationController.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
+                navigationController.isNavigationBarHidden = self.isShowingMediaOnly
             }
         }
     }
@@ -461,7 +460,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func pageDidChange() {
-        imageViewerDelegate?.imageViewer(self, didMoveTo: currentPage)
+        mediaViewerDelegate?.mediaViewer(self, didMoveTo: currentPage)
     }
     
     private func handleContentOffsetChange() {
@@ -494,7 +493,7 @@ open class MediaViewerViewController: UIPageViewController {
     private func panned(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .began {
             // Start the interactive pop transition
-            let sourceImageView = imageViewerDataSource?.transitionSourceView(
+            let sourceImageView = mediaViewerDataSource?.transitionSourceView(
                 forCurrentPageOf: self
             )
             interactivePopTransition = .init(sourceImageView: sourceImageView)
@@ -547,7 +546,7 @@ extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
 extension MediaViewerViewController: UIPageViewControllerDataSource {
     
     open func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        imageViewerDataSource?.numberOfImages(in: self) ?? 0
+        mediaViewerDataSource?.numberOfMedia(in: self) ?? 0
     }
     
     open func pageViewController(
@@ -583,10 +582,10 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
     private func makeMediaViewerPage(
         forPage page: Int
     ) -> MediaViewerOnePageViewController? {
-        guard let imageViewerDataSource,
+        guard let mediaViewerDataSource,
               0 <= page,
-              page < imageViewerDataSource.numberOfImages(in: self) else { return nil }
-        let imageSource = imageViewerDataSource.imageViewer(self, imageSourceOnPage: page)
+              page < mediaViewerDataSource.numberOfMedia(in: self) else { return nil }
+        let imageSource = mediaViewerDataSource.mediaViewer(self, imageSourceOnPage: page)
         
         let mediaViewerPage = MediaViewerOnePageViewController(page: page)
         mediaViewerPage.delegate = self
@@ -612,8 +611,8 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         thumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource {
-        guard let imageViewerDataSource else { return .none }
-        return imageViewerDataSource.imageViewer(
+        guard let mediaViewerDataSource else { return .none }
+        return mediaViewerDataSource.mediaViewer(
             self,
             pageThumbnailOnPage: page,
             filling: preferredThumbnailSize
@@ -624,7 +623,7 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         _ pageControlBar: MediaViewerPageControlBar,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat? {
-        imageViewerDataSource?.imageViewer(self, imageWidthToHeightOnPage: page)
+        mediaViewerDataSource?.mediaViewer(self, imageWidthToHeightOnPage: page)
     }
 }
 
@@ -654,7 +653,7 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         from fromVC: UIViewController,
         to toVC: UIViewController
     ) -> (any UIViewControllerAnimatedTransitioning)? {
-        let sourceImageView = imageViewerDataSource?.transitionSourceView(
+        let sourceImageView = mediaViewerDataSource?.transitionSourceView(
             forCurrentPageOf: self
         )
         return MediaViewerTransition(

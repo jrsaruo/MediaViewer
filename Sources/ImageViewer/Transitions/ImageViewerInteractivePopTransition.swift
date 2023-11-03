@@ -104,7 +104,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             })
             navigationBar.layer.removeAllAnimations()
         }
-        navigationBar.alpha = mediaViewer.isShowingImageOnly 
+        navigationBar.alpha = mediaViewer.isShowingMediaOnly 
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
         : 1
         

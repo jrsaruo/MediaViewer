@@ -143,7 +143,7 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
-        mediaViewer.imageViewerDelegate = self
+        mediaViewer.mediaViewerDelegate = self
         mediaViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),
             .flexibleSpace(),
@@ -162,11 +162,11 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
 
 extension AsyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfImages(in mediaViewer: MediaViewerViewController) -> Int {
+    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
     }
     
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
     ) -> ImageSource {
@@ -189,7 +189,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         }
     }
     
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageWidthToHeightOnPage page: Int
     ) -> CGFloat? {
@@ -211,7 +211,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         return size.width / size.height
     }
     
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
@@ -254,7 +254,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
 
 extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func imageViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {
+    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let dateDescription = asset.creationDate?.formatted()
         mediaViewer.title = dateDescription

@@ -72,11 +72,11 @@ extension SyncImagesViewController: UICollectionViewDelegate {
 
 extension SyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfImages(in mediaViewer: MediaViewerViewController) -> Int {
+    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
     }
     
-    func imageViewer(
+    func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
     ) -> ImageSource {
