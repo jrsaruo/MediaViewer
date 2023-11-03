@@ -1,6 +1,6 @@
 //
 //  AsyncImagesViewController.swift
-//  ImageViewerDemo
+//  MediaViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/02/19.
 //

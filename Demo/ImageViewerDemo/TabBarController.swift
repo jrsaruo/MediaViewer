@@ -1,6 +1,6 @@
 //
 //  TabBarController.swift
-//  ImageViewerDemo
+//  MediaViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/03/28.
 //
