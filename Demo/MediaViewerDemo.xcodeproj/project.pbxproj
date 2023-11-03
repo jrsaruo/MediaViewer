@@ -29,7 +29,7 @@
 		5A54613229A2594800F16456 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5A54613529A2594800F16456 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A54613729A2594800F16456 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5A54613E29A25A2C00F16456 /* ImageViewer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ImageViewer; path = ..; sourceTree = "<group>"; };
+		5A54613E29A25A2C00F16456 /* MediaViewer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = MediaViewer; path = ..; sourceTree = "<group>"; };
 		5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImagesViewController.swift; sourceTree = "<group>"; };
 		5A54614A29A25CDF00F16456 /* ImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCell.swift; sourceTree = "<group>"; };
 		5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
@@ -86,7 +86,7 @@
 		5A54613D29A25A2C00F16456 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				5A54613E29A25A2C00F16456 /* ImageViewer */,
+				5A54613E29A25A2C00F16456 /* MediaViewer */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -118,7 +118,7 @@
 				5A54614829A25BCD00F16456 /* AceLayout */,
 				5A88B3872AF50B9600B65BCD /* MediaViewer */,
 			);
-			productName = ImageViewerDemo;
+			productName = MediaViewerDemo;
 			productReference = 5A54612629A2594700F16456 /* MediaViewerDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
