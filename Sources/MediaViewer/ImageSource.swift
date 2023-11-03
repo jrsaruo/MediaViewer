@@ -47,3 +47,26 @@ extension ImageSource {
     /// This is equivalent to `.sync(nil)`.
     static var none: Self { .sync(nil) }
 }
+
+/// The media source for the media viewer.
+public enum Media: Sendable {
+    case image(ImageSource)
+}
+
+extension Media {
+    
+    /// An image that can be acquired synchronously.
+    public static func sync(_ image: UIImage?) -> Self {
+        .image(.sync(image))
+    }
+    
+    /// An image that can be acquired asynchronously.
+    ///
+    /// The viewer will use `provider` to acquire an image and display it using `transition`.
+    public static func async(
+        transition: MediaTransition = .fade(duration: 0.2),
+        provider: @escaping @Sendable () async -> UIImage?
+    ) -> Self {
+        .image(.async(transition: transition, provider: provider))
+    }
+}
