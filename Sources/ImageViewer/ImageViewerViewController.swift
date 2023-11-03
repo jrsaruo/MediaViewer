@@ -155,7 +155,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     public var isShowingImageOnly: Bool {
-        mediaViewerVM.showsImageOnly
+        mediaViewerVM.showsMediaOnly
     }
     
     private let mediaViewerVM = MediaViewerViewModel()
@@ -314,22 +314,22 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func setUpSubscriptions() {
-        mediaViewerVM.$showsImageOnly
-            .sink { [weak self] showsImageOnly in
+        mediaViewerVM.$showsMediaOnly
+            .sink { [weak self] showsMediaOnly in
                 guard let self else { return }
-                self.shouldHideHomeIndicator = showsImageOnly
+                self.shouldHideHomeIndicator = showsMediaOnly
                 
                 let animator = UIViewPropertyAnimator(
                     duration: UINavigationController.hideShowBarDuration,
                     dampingRatio: 1
                 ) {
-                    self.tabBarController?.tabBar.isHidden = showsImageOnly || self.hidesBottomBarWhenPushed
-                    self.navigationController?.navigationBar.alpha = showsImageOnly ? 0 : 1
-                    self.backgroundView.backgroundColor = showsImageOnly ? .black : .systemBackground
-                    self.navigationController?.toolbar.isHidden = showsImageOnly
-                    self.pageControlToolbar.isHidden = showsImageOnly
+                    self.tabBarController?.tabBar.isHidden = showsMediaOnly || self.hidesBottomBarWhenPushed
+                    self.navigationController?.navigationBar.alpha = showsMediaOnly ? 0 : 1
+                    self.backgroundView.backgroundColor = showsMediaOnly ? .black : .systemBackground
+                    self.navigationController?.toolbar.isHidden = showsMediaOnly
+                    self.pageControlToolbar.isHidden = showsMediaOnly
                 }
-                if showsImageOnly {
+                if showsMediaOnly {
                     animator.addCompletion { position in
                         if position == .end {
                             self.navigationController?.isNavigationBarHidden = true
@@ -531,14 +531,14 @@ open class MediaViewerViewController: UIPageViewController {
 extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
     
     func mediaViewerPageTapped(_ mediaViewerPage: MediaViewerOnePageViewController) {
-        mediaViewerVM.showsImageOnly.toggle()
+        mediaViewerVM.showsMediaOnly.toggle()
     }
     
     func mediaViewerPage(
         _ mediaViewerPage: MediaViewerOnePageViewController,
         didDoubleTap imageView: UIImageView
     ) {
-        mediaViewerVM.showsImageOnly = true
+        mediaViewerVM.showsMediaOnly = true
     }
 }
 

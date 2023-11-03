@@ -8,5 +8,5 @@
 import Combine
 
 final class MediaViewerViewModel: ObservableObject {
-    @Published var showsImageOnly = false
+    @Published var showsMediaOnly = false
 }
