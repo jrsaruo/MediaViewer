@@ -91,7 +91,7 @@ final class MediaViewerOnePageView: UIView {
         layOutBasedOnImageSize()
     }
     
-    func setImage(_ image: UIImage?, with transition: ImageTransition) {
+    func setImage(_ image: UIImage?, with transition: MediaTransition) {
         switch transition {
         case .fade(let duration):
             UIView.transition(

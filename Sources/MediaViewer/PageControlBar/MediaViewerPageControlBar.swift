@@ -14,7 +14,7 @@ protocol MediaViewerPageControlBarDataSource: AnyObject {
         _ pageControlBar: MediaViewerPageControlBar,
         thumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
-    ) -> ImageSource
+    ) -> Source<UIImage?>
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,

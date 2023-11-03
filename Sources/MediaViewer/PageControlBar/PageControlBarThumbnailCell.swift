@@ -57,7 +57,7 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
     
     // MARK: - Methods
     
-    func configure(with imageSource: ImageSource) {
+    func configure(with imageSource: Source<UIImage?>) {
         imageLoadingTask = imageView.load(imageSource)
     }
 }

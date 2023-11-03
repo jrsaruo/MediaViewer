@@ -168,8 +168,8 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageSourceOnPage page: Int
-    ) -> ImageSource {
+        mediaOnPage page: Int
+    ) -> Media {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async {
             return await withCheckedContinuation { continuation in
@@ -215,7 +215,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
-    ) -> ImageSource {
+    ) -> Source<UIImage?> {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
             return await withCheckedContinuation { continuation in
@@ -254,7 +254,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
 
 extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {
+    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let dateDescription = asset.creationDate?.formatted()
         mediaViewer.title = dateDescription

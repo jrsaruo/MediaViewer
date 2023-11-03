@@ -78,8 +78,8 @@ extension SyncImagesViewController: MediaViewerDataSource {
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        imageSourceOnPage page: Int
-    ) -> ImageSource {
+        mediaOnPage page: Int
+    ) -> Media {
         .sync(dataSource.snapshot().itemIdentifiers[page])
     }
     
