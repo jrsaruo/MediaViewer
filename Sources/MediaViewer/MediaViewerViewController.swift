@@ -23,7 +23,7 @@ public protocol MediaViewerDataSource: AnyObject {
     /// - Parameters:
     ///   - mediaViewer: An object representing the media viewer requesting this information.
     ///   - page: A page in the media viewer.
-    /// - Returns: A source of media to view at `page` in `mediaViewer`.
+    /// - Returns: A source of media to view on `page` in `mediaViewer`.
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
@@ -122,13 +122,23 @@ extension MediaViewerDelegate {
 /// An media viewer.
 ///
 /// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+///
 /// ```swift
 /// let mediaViewer = MediaViewerViewController(page: 0, dataSource: self)
 /// navigationController?.delegate = mediaViewer
 /// navigationController?.pushViewController(mediaViewer, animated: true)
 /// ```
 ///
-/// - Note: `MediaViewerViewController` must be used in `UINavigationController`. It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
+/// You can show toolbar items by setting `toolbarItems` property on the media viewer instance.
+///
+/// ```swift
+/// mediaViewer.toolbarItems = [
+///     UIBarButtonItem(...)
+/// ]
+/// ```
+///
+/// - Note: `MediaViewerViewController` must be used in `UINavigationController`.
+///         It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
 open class MediaViewerViewController: UIPageViewController {
     
     private var cancellables: Set<AnyCancellable> = []
