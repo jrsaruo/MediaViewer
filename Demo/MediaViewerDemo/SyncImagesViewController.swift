@@ -1,12 +1,12 @@
 //
 //  SyncImagesViewController.swift
-//  ImageViewerDemo
+//  MediaViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/03/05.
 //
 
 import UIKit
-import ImageViewer
+import MediaViewer
 
 final class SyncImagesViewController: UIViewController {
     
@@ -62,31 +62,31 @@ final class SyncImagesViewController: UIViewController {
 extension SyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
-        navigationController?.delegate = imageViewer
-        navigationController?.pushViewController(imageViewer, animated: true)
+        let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        navigationController?.delegate = mediaViewer
+        navigationController?.pushViewController(mediaViewer, animated: true)
     }
 }
 
-// MARK: - ImageViewerDataSource -
+// MARK: - MediaViewerDataSource -
 
-extension SyncImagesViewController: ImageViewerDataSource {
+extension SyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
+    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
     }
     
-    func imageViewer(
-        _ imageViewer: ImageViewerViewController,
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
     ) -> ImageSource {
         .sync(dataSource.snapshot().itemIdentifiers[page])
     }
     
     func transitionSourceView(
-        forCurrentPageOf imageViewer: ImageViewerViewController
+        forCurrentPageOf mediaViewer: MediaViewerViewController
     ) -> UIImageView? {
-        let currentPage = imageViewer.currentPage
+        let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         
         // NOTE: Without this, later cellForItem(at:) sometimes returns nil.

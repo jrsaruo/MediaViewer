@@ -1,5 +1,5 @@
 //
-//  ImageViewerOnePageView.swift
+//  MediaViewerOnePageView.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/02/19.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ImageViewerOnePageView: UIView {
+final class MediaViewerOnePageView: UIView {
     
     private enum LayoutState {
         
@@ -228,7 +228,7 @@ final class ImageViewerOnePageView: UIView {
     }
 }
 
-extension ImageViewerOnePageView: UIScrollViewDelegate {
+extension MediaViewerOnePageView: UIScrollViewDelegate {
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView

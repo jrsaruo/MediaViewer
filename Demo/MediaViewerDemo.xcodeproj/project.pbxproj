@@ -13,23 +13,23 @@
 		5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54612B29A2594700F16456 /* SceneDelegate.swift */; };
 		5A54613329A2594800F16456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613229A2594800F16456 /* Assets.xcassets */; };
 		5A54613629A2594800F16456 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613429A2594800F16456 /* LaunchScreen.storyboard */; };
-		5A54614129A25A5600F16456 /* ImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614029A25A5600F16456 /* ImageViewer */; };
 		5A54614329A25A8900F16456 /* AsyncImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */; };
 		5A54614929A25BCD00F16456 /* AceLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 5A54614829A25BCD00F16456 /* AceLayout */; };
 		5A54614B29A25CDF00F16456 /* ImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54614A29A25CDF00F16456 /* ImageCell.swift */; };
+		5A88B3882AF50B9600B65BCD /* MediaViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 5A88B3872AF50B9600B65BCD /* MediaViewer */; };
 		5AE4F46E29D31E7A0048E8B4 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5A09B7A929B47C670042E3F1 /* ImageGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGridView.swift; sourceTree = "<group>"; };
 		5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncImagesViewController.swift; sourceTree = "<group>"; };
-		5A54612629A2594700F16456 /* ImageViewerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageViewerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A54612629A2594700F16456 /* MediaViewerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaViewerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A54612929A2594700F16456 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5A54612B29A2594700F16456 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5A54613229A2594800F16456 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5A54613529A2594800F16456 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A54613729A2594800F16456 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5A54613E29A25A2C00F16456 /* ImageViewer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ImageViewer; path = ..; sourceTree = "<group>"; };
+		5A54613E29A25A2C00F16456 /* MediaViewer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = MediaViewer; path = ..; sourceTree = "<group>"; };
 		5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImagesViewController.swift; sourceTree = "<group>"; };
 		5A54614A29A25CDF00F16456 /* ImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCell.swift; sourceTree = "<group>"; };
 		5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
@@ -41,7 +41,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5A54614929A25BCD00F16456 /* AceLayout in Frameworks */,
-				5A54614129A25A5600F16456 /* ImageViewer in Frameworks */,
+				5A88B3882AF50B9600B65BCD /* MediaViewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,7 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				5A54613D29A25A2C00F16456 /* Packages */,
-				5A54612829A2594700F16456 /* ImageViewerDemo */,
+				5A54612829A2594700F16456 /* MediaViewerDemo */,
 				5A54612729A2594700F16456 /* Products */,
 				5A54613F29A25A5600F16456 /* Frameworks */,
 			);
@@ -61,12 +61,12 @@
 		5A54612729A2594700F16456 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5A54612629A2594700F16456 /* ImageViewerDemo.app */,
+				5A54612629A2594700F16456 /* MediaViewerDemo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		5A54612829A2594700F16456 /* ImageViewerDemo */ = {
+		5A54612829A2594700F16456 /* MediaViewerDemo */ = {
 			isa = PBXGroup;
 			children = (
 				5A54612929A2594700F16456 /* AppDelegate.swift */,
@@ -80,13 +80,13 @@
 				5A54613429A2594800F16456 /* LaunchScreen.storyboard */,
 				5A54613729A2594800F16456 /* Info.plist */,
 			);
-			path = ImageViewerDemo;
+			path = MediaViewerDemo;
 			sourceTree = "<group>";
 		};
 		5A54613D29A25A2C00F16456 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				5A54613E29A25A2C00F16456 /* ImageViewer */,
+				5A54613E29A25A2C00F16456 /* MediaViewer */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -101,9 +101,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5A54612529A2594700F16456 /* ImageViewerDemo */ = {
+		5A54612529A2594700F16456 /* MediaViewerDemo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5A54613A29A2594800F16456 /* Build configuration list for PBXNativeTarget "ImageViewerDemo" */;
+			buildConfigurationList = 5A54613A29A2594800F16456 /* Build configuration list for PBXNativeTarget "MediaViewerDemo" */;
 			buildPhases = (
 				5A54612229A2594700F16456 /* Sources */,
 				5A54612329A2594700F16456 /* Frameworks */,
@@ -113,13 +113,13 @@
 			);
 			dependencies = (
 			);
-			name = ImageViewerDemo;
+			name = MediaViewerDemo;
 			packageProductDependencies = (
-				5A54614029A25A5600F16456 /* ImageViewer */,
 				5A54614829A25BCD00F16456 /* AceLayout */,
+				5A88B3872AF50B9600B65BCD /* MediaViewer */,
 			);
-			productName = ImageViewerDemo;
-			productReference = 5A54612629A2594700F16456 /* ImageViewerDemo.app */;
+			productName = MediaViewerDemo;
+			productReference = 5A54612629A2594700F16456 /* MediaViewerDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -137,7 +137,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5A54612129A2594700F16456 /* Build configuration list for PBXProject "ImageViewerDemo" */;
+			buildConfigurationList = 5A54612129A2594700F16456 /* Build configuration list for PBXProject "MediaViewerDemo" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -153,7 +153,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5A54612529A2594700F16456 /* ImageViewerDemo */,
+				5A54612529A2594700F16456 /* MediaViewerDemo */,
 			);
 		};
 /* End PBXProject section */
@@ -327,7 +327,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ImageViewerDemo/Info.plist;
+				INFOPLIST_FILE = MediaViewerDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -337,7 +337,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.ImageViewerDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.MediaViewerDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -353,7 +353,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ImageViewerDemo/Info.plist;
+				INFOPLIST_FILE = MediaViewerDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -363,7 +363,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.ImageViewerDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.co.jrsaruo.MediaViewerDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -374,7 +374,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5A54612129A2594700F16456 /* Build configuration list for PBXProject "ImageViewerDemo" */ = {
+		5A54612129A2594700F16456 /* Build configuration list for PBXProject "MediaViewerDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5A54613829A2594800F16456 /* Debug */,
@@ -383,7 +383,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5A54613A29A2594800F16456 /* Build configuration list for PBXNativeTarget "ImageViewerDemo" */ = {
+		5A54613A29A2594800F16456 /* Build configuration list for PBXNativeTarget "MediaViewerDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5A54613B29A2594800F16456 /* Debug */,
@@ -406,14 +406,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5A54614029A25A5600F16456 /* ImageViewer */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ImageViewer;
-		};
 		5A54614829A25BCD00F16456 /* AceLayout */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 5A54614729A25BCD00F16456 /* XCRemoteSwiftPackageReference "AceLayout" */;
 			productName = AceLayout;
+		};
+		5A88B3872AF50B9600B65BCD /* MediaViewer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaViewer;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

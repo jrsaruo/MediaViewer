@@ -1,5 +1,5 @@
 //
-//  ImageViewerPageControlBar.swift
+//  MediaViewerPageControlBar.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/03/18.
@@ -9,20 +9,20 @@ import UIKit
 import Combine
 
 @MainActor
-protocol ImageViewerPageControlBarDataSource: AnyObject {
-    func imageViewerPageControlBar(
-        _ pageControlBar: ImageViewerPageControlBar,
+protocol MediaViewerPageControlBarDataSource: AnyObject {
+    func mediaViewerPageControlBar(
+        _ pageControlBar: MediaViewerPageControlBar,
         thumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource
     
-    func imageViewerPageControlBar(
-        _ pageControlBar: ImageViewerPageControlBar,
-        imageWidthToHeightOnPage page: Int
+    func mediaViewerPageControlBar(
+        _ pageControlBar: MediaViewerPageControlBar,
+        thumbnailWidthToHeightOnPage page: Int
     ) -> CGFloat?
 }
 
-final class ImageViewerPageControlBar: UIView {
+final class MediaViewerPageControlBar: UIView {
     
     enum State: Hashable, Sendable {
         case collapsing
@@ -46,7 +46,7 @@ final class ImageViewerPageControlBar: UIView {
     
     enum Layout {
         /// A normal layout.
-        case normal(ImageViewerPageControlBarLayout)
+        case normal(MediaViewerPageControlBarLayout)
         
         /// A layout during interactive paging transition.
         case transition(UICollectionViewTransitionLayout)
@@ -57,7 +57,7 @@ final class ImageViewerPageControlBar: UIView {
         Int // page
     >
     
-    weak var dataSource: (any ImageViewerPageControlBarDataSource)?
+    weak var dataSource: (any MediaViewerPageControlBarDataSource)?
     
     private(set) var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
     
@@ -90,7 +90,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private var layout: Layout {
         switch collectionView.collectionViewLayout {
-        case let barLayout as ImageViewerPageControlBarLayout:
+        case let barLayout as MediaViewerPageControlBarLayout:
             return .normal(barLayout)
         case let transitionLayout as UICollectionViewTransitionLayout:
             return .transition(transitionLayout)
@@ -102,7 +102,7 @@ final class ImageViewerPageControlBar: UIView {
     }
     
     private lazy var collectionView: UICollectionView = {
-        let layout = ImageViewerPageControlBarLayout(style: .collapsed)
+        let layout = MediaViewerPageControlBarLayout(style: .collapsed)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
@@ -127,7 +127,7 @@ final class ImageViewerPageControlBar: UIView {
             width: cell.bounds.width * scale,
             height: cell.bounds.height * scale
         )
-        let thumbnailSource = dataSource.imageViewerPageControlBar(
+        let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
             thumbnailOnPage: page,
             filling: preferredSize
@@ -180,7 +180,7 @@ final class ImageViewerPageControlBar: UIView {
     
     private func adjustContentInset() {
         guard bounds.width > 0 else { return }
-        let offset = (bounds.width - ImageViewerPageControlBarLayout.collapsedItemWidth) / 2
+        let offset = (bounds.width - MediaViewerPageControlBarLayout.collapsedItemWidth) / 2
         collectionView.contentInset = .init(
             top: 0,
             left: offset,
@@ -208,19 +208,19 @@ final class ImageViewerPageControlBar: UIView {
     
     private func updateLayout(
         expandingItemAt indexPath: IndexPath?,
-        expandingImageWidthToHeight: CGFloat? = nil,
+        expandingThumbnailWidthToHeight: CGFloat? = nil,
         animated: Bool
     ) {
-        let style: ImageViewerPageControlBarLayout.Style
+        let style: MediaViewerPageControlBarLayout.Style
         if let indexPath {
             style = .expanded(
                 indexPath,
-                expandingImageWidthToHeight: expandingImageWidthToHeight
+                expandingThumbnailWidthToHeight: expandingThumbnailWidthToHeight
             )
         } else {
             style = .collapsed
         }
-        let layout = ImageViewerPageControlBarLayout(style: style)
+        let layout = MediaViewerPageControlBarLayout(style: style)
         collectionView.setCollectionViewLayout(layout, animated: animated)
     }
     
@@ -228,13 +228,13 @@ final class ImageViewerPageControlBar: UIView {
     /// - Parameters:
     ///   - indexPath: An index path for the expanding item.
     ///   - reason: What causes the page change. If non-nil, the page change will be notified with it.
-    ///   - imageWidthToHeight: An aspect ratio of the expanding image to calculate the size of expanding item.
+    ///   - thumbnailWidthToHeight: An aspect ratio of the expanding thumbnail to calculate the size of expanding item.
     ///   - duration: The total duration of the animation.
     ///   - animated: Whether to animate expanding and scrolling.
     private func expandAndScrollToItem(
         at indexPath: IndexPath,
         causingBy reason: PageChangeReason?,
-        imageWidthToHeight: CGFloat? = nil,
+        thumbnailWidthToHeight: CGFloat? = nil,
         duration: CGFloat = 0.5,
         animated: Bool
     ) {
@@ -246,7 +246,7 @@ final class ImageViewerPageControlBar: UIView {
         func expandAndScroll() {
             updateLayout(
                 expandingItemAt: indexPath,
-                expandingImageWidthToHeight: imageWidthToHeight,
+                expandingThumbnailWidthToHeight: thumbnailWidthToHeight,
                 animated: false
             )
             // NOTE: Without this, a thumbnail may shift out of the center after scrolling.
@@ -257,7 +257,7 @@ final class ImageViewerPageControlBar: UIView {
             )
             state = .expanded
             
-            if imageWidthToHeight == nil {
+            if thumbnailWidthToHeight == nil {
                 correctExpandingItemAspectRatioIfNeeded()
             }
         }
@@ -274,17 +274,17 @@ final class ImageViewerPageControlBar: UIView {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
         let page = indexPathForCurrentCenterItem.item
         
-        if let imageWidthToHeight = dataSource.imageViewerPageControlBar(self, imageWidthToHeightOnPage: page) {
+        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, thumbnailWidthToHeightOnPage: page) {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
-                imageWidthToHeight: imageWidthToHeight,
+                thumbnailWidthToHeight: thumbnailWidthToHeight,
                 animated: false
             )
             return
         }
         
-        let thumbnailSource = dataSource.imageViewerPageControlBar(
+        let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
             thumbnailOnPage: page,
             filling: .init(width: 100, height: 100)
@@ -295,7 +295,7 @@ final class ImageViewerPageControlBar: UIView {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
-                imageWidthToHeight: thumbnail.size.width / thumbnail.size.height,
+                thumbnailWidthToHeight: thumbnail.size.width / thumbnail.size.height,
                 animated: false
             )
         case .async(_, let thumbnailProvider):
@@ -307,7 +307,7 @@ final class ImageViewerPageControlBar: UIView {
                 expandAndScrollToItem(
                     at: indexPathForCurrentCenterItem,
                     causingBy: nil,
-                    imageWidthToHeight: thumbnail.size.width / thumbnail.size.height,
+                    thumbnailWidthToHeight: thumbnail.size.width / thumbnail.size.height,
                     duration: 0.2,
                     animated: true
                 )
@@ -340,7 +340,7 @@ final class ImageViewerPageControlBar: UIView {
 
 // MARK: - Interactive paging -
 
-extension ImageViewerPageControlBar {
+extension MediaViewerPageControlBar {
     
     func startInteractivePaging(forwards: Bool) {
         guard case .normal(let barLayout) = layout else {
@@ -355,15 +355,15 @@ extension ImageViewerPageControlBar {
             return
         }
         
-        let expandingImageWidthToHeight = dataSource?.imageViewerPageControlBar(
+        let expandingThumbnailWidthToHeight = dataSource?.mediaViewerPageControlBar(
             self,
-            imageWidthToHeightOnPage: destinationPage
+            thumbnailWidthToHeightOnPage: destinationPage
         )
-        let style: ImageViewerPageControlBarLayout.Style = .expanded(
+        let style: MediaViewerPageControlBarLayout.Style = .expanded(
             IndexPath(item: destinationPage, section: 0),
-            expandingImageWidthToHeight: expandingImageWidthToHeight
+            expandingThumbnailWidthToHeight: expandingThumbnailWidthToHeight
         )
-        let newLayout = ImageViewerPageControlBarLayout(style: style)
+        let newLayout = MediaViewerPageControlBarLayout(style: style)
         
         /*
          * NOTE:
@@ -409,7 +409,7 @@ extension ImageViewerPageControlBar {
 
 // MARK: - UICollectionViewDelegate -
 
-extension ImageViewerPageControlBar: UICollectionViewDelegate {
+extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)

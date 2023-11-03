@@ -1,5 +1,5 @@
 //
-//  ImageViewerPageControlBarLayout.swift
+//  MediaViewerPageControlBarLayout.swift
 //  
 //
 //  Created by Yusaku Nishi on 2023/03/18.
@@ -7,10 +7,10 @@
 
 import UIKit
 
-final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
+final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     
     enum Style {
-        case expanded(IndexPath, expandingImageWidthToHeight: CGFloat?)
+        case expanded(IndexPath, expandingThumbnailWidthToHeight: CGFloat?)
         case collapsed
         
         var indexPathForExpandingItem: IndexPath? {
@@ -109,31 +109,31 @@ final class ImageViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     private func expandingItemWidth(in collectionView: UICollectionView) -> CGFloat {
-        let expandingImageWidthToHeight: CGFloat
+        let expandingThumbnailWidthToHeight: CGFloat
         switch style {
-        case .expanded(let indexPath, let imageWidthToHeight):
-            if let imageWidthToHeight {
-                expandingImageWidthToHeight = imageWidthToHeight
+        case .expanded(let indexPath, let thumbnailWidthToHeight):
+            if let thumbnailWidthToHeight {
+                expandingThumbnailWidthToHeight = thumbnailWidthToHeight
             } else if let cell = collectionView.cellForItem(at: indexPath) {
                 let cell = cell as! PageControlBarThumbnailCell
                 let image = cell.imageView.image
                 if let imageSize = image?.size, imageSize.height > 0 {
-                    expandingImageWidthToHeight = imageSize.width / imageSize.height
+                    expandingThumbnailWidthToHeight = imageSize.width / imageSize.height
                 } else {
-                    expandingImageWidthToHeight = 0
+                    expandingThumbnailWidthToHeight = 0
                 }
             } else {
-                expandingImageWidthToHeight = 0
+                expandingThumbnailWidthToHeight = 0
             }
         case .collapsed:
-            expandingImageWidthToHeight = 0
+            expandingThumbnailWidthToHeight = 0
         }
         
         let minimumWidth = Self.collapsedItemWidth
         let maximumWidth = 84.0
         return min(
             max(
-                collectionView.bounds.height * expandingImageWidthToHeight,
+                collectionView.bounds.height * expandingThumbnailWidthToHeight,
                 minimumWidth
             ),
             maximumWidth

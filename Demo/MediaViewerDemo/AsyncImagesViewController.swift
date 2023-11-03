@@ -1,12 +1,12 @@
 //
 //  AsyncImagesViewController.swift
-//  ImageViewerDemo
+//  MediaViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/02/19.
 //
 
 import UIKit
-import ImageViewer
+import MediaViewer
 @preconcurrency import Photos
 
 final class AsyncImagesViewController: UIViewController {
@@ -142,9 +142,9 @@ final class AsyncImagesViewController: UIViewController {
 extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let imageViewer = ImageViewerViewController(page: indexPath.item, dataSource: self)
-        imageViewer.imageViewerDelegate = self
-        imageViewer.toolbarItems = [
+        let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        mediaViewer.mediaViewerDelegate = self
+        mediaViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),
             .flexibleSpace(),
             .init(image: .init(systemName: "heart")),
@@ -153,21 +153,21 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(systemItem: .trash)
         ]
-        navigationController?.delegate = imageViewer
-        navigationController?.pushViewController(imageViewer, animated: true)
+        navigationController?.delegate = mediaViewer
+        navigationController?.pushViewController(mediaViewer, animated: true)
     }
 }
 
-// MARK: - ImageViewerDataSource -
+// MARK: - MediaViewerDataSource -
 
-extension AsyncImagesViewController: ImageViewerDataSource {
+extension AsyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfImages(in imageViewer: ImageViewerViewController) -> Int {
+    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
         dataSource.snapshot().numberOfItems
     }
     
-    func imageViewer(
-        _ imageViewer: ImageViewerViewController,
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
         imageSourceOnPage page: Int
     ) -> ImageSource {
         let asset = dataSource.snapshot().itemIdentifiers[page]
@@ -189,9 +189,9 @@ extension AsyncImagesViewController: ImageViewerDataSource {
         }
     }
     
-    func imageViewer(
-        _ imageViewer: ImageViewerViewController,
-        imageWidthToHeightOnPage page: Int
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        mediaWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let options = PHImageRequestOptions()
@@ -211,8 +211,8 @@ extension AsyncImagesViewController: ImageViewerDataSource {
         return size.width / size.height
     }
     
-    func imageViewer(
-        _ imageViewer: ImageViewerViewController,
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
         pageThumbnailOnPage page: Int,
         filling preferredThumbnailSize: CGSize
     ) -> ImageSource {
@@ -234,8 +234,8 @@ extension AsyncImagesViewController: ImageViewerDataSource {
         }
     }
     
-    func transitionSourceView(forCurrentPageOf imageViewer: ImageViewerViewController) -> UIImageView? {
-        let currentPage = imageViewer.currentPage
+    func transitionSourceView(forCurrentPageOf mediaViewer: MediaViewerViewController) -> UIImageView? {
+        let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         
         // NOTE: Without this, later cellForItem(at:) sometimes returns nil.
@@ -250,13 +250,13 @@ extension AsyncImagesViewController: ImageViewerDataSource {
     }
 }
 
-// MARK: - ImageViewerDelegate -
+// MARK: - MediaViewerDelegate -
 
-extension AsyncImagesViewController: ImageViewerDelegate {
+extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func imageViewer(_ imageViewer: ImageViewerViewController, didMoveTo page: Int) {
+    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveTo page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let dateDescription = asset.creationDate?.formatted()
-        imageViewer.title = dateDescription
+        mediaViewer.title = dateDescription
     }
 }
