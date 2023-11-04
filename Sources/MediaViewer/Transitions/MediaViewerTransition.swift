@@ -110,7 +110,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             // Match the appearance of the animating image view to the source
             let sourceFrameInViewer = mediaViewerView.convert(
                 sourceView.frame,
-                from: sourceView
+                from: sourceView.superview
             )
             currentPageView.destroyLayoutConfigurationBeforeTransition()
             currentPageImageView.transitioningConfiguration = sourceView.transitioningConfiguration
@@ -234,7 +234,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             from: currentPageView.scrollView
         )
         let sourceFrameInViewer = sourceView.map { sourceView in
-            mediaViewerView.convert(sourceView.frame, from: sourceView)
+            mediaViewerView.convert(
+                sourceView.frame,
+                from: sourceView.superview
+            )
         }
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = currentPageImageFrameInViewer

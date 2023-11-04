@@ -160,7 +160,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             if let sourceView = self.sourceView {
                 let sourceFrameInViewer = mediaViewerView.convert(
                     sourceView.frame,
-                    from: sourceView
+                    from: sourceView.superview
                 )
                 currentPageImageView.frame = sourceFrameInViewer
                 currentPageImageView.transitioningConfiguration = sourceView.transitioningConfiguration
