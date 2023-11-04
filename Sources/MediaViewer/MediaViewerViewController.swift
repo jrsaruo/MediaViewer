@@ -688,16 +688,17 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         from fromVC: UIViewController,
         to toVC: UIViewController
     ) -> (any UIViewControllerAnimatedTransitioning)? {
-        let sourceView = mediaViewerDataSource?.transitionSourceView(
-            forCurrentPageOf: self
-        )
-        let sourceImage = mediaViewerDataSource?.transitionSourceImage(
-            forCurrentPageOf: self
-        )
-        return MediaViewerTransition(
+        MediaViewerTransition(
             operation: operation,
-            sourceView: sourceView,
-            sourceImage: sourceImage
+            sourceView: mediaViewerDataSource?.transitionSourceView(
+                forCurrentPageOf: self
+            ),
+            sourceImage: { [weak self] in
+                guard let self else { return nil }
+                return mediaViewerDataSource?.transitionSourceImage(
+                    forCurrentPageOf: self
+                )
+            }
         )
     }
     
