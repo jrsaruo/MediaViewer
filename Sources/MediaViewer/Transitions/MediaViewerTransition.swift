@@ -11,13 +11,13 @@ import UIKit
 final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
     let operation: UINavigationController.Operation
-    let sourceImageView: UIImageView?
+    let sourceImageView: UIView?
     
     // MARK: - Initializers
     
     init(
         operation: UINavigationController.Operation,
-        sourceImageView: UIImageView?
+        sourceImageView: UIView?
     ) {
         self.operation = operation
         self.sourceImageView = sourceImageView
@@ -93,7 +93,12 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
          * animate the source image instead.
          */
         if currentPageImageView.image == nil, let sourceImageView {
-            currentPageView.setImage(sourceImageView.image, with: .none)
+            switch sourceImageView {
+            case let imageView as UIImageView:
+                currentPageView.setImage(imageView.image, with: .none)
+            default:
+                break
+            }
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration

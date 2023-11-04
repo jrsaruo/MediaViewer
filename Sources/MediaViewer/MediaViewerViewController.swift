@@ -66,7 +66,7 @@ public protocol MediaViewerDataSource: AnyObject {
     /// - Returns: The transition source view for current page of `mediaViewer`.
     func transitionSourceView(
         forCurrentPageOf mediaViewer: MediaViewerViewController
-    ) -> UIImageView?
+    ) -> UIView?
 }
 
 extension MediaViewerDataSource {

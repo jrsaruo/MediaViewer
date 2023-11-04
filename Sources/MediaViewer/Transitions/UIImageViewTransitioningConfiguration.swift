@@ -8,7 +8,7 @@
 import UIKit
 
 /// The set of `UIImageView` properties to be animated during transitions.
-struct UIImageViewTransitioningConfiguration {
+struct UIViewTransitioningConfiguration {
     var alpha: CGFloat
     var backgroundColor: UIColor?
     var tintColor: UIColor?
@@ -19,9 +19,9 @@ struct UIImageViewTransitioningConfiguration {
     var masksToBounds: Bool
 }
 
-extension UIImageView {
+extension UIView {
     
-    var transitioningConfiguration: UIImageViewTransitioningConfiguration {
+    var transitioningConfiguration: UIViewTransitioningConfiguration {
         get {
             .init(
                 alpha: alpha,

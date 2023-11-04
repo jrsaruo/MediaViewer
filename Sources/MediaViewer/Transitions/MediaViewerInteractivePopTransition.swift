@@ -10,7 +10,7 @@ import UIKit
 @MainActor
 final class MediaViewerInteractivePopTransition: NSObject {
     
-    private let sourceImageView: UIImageView?
+    private let sourceImageView: UIView?
     
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
@@ -33,7 +33,7 @@ final class MediaViewerInteractivePopTransition: NSObject {
     
     // MARK: - Initializers
     
-    init(sourceImageView: UIImageView?) {
+    init(sourceImageView: UIView?) {
         self.sourceImageView = sourceImageView
         super.init()
     }
