@@ -23,41 +23,18 @@ enum PHAssetFetcher {
         return result.objects(at: IndexSet(integersIn: 0..<result.count))
     }
     
-    static func fetchImage(for asset: PHAsset) async -> UIImage? {
-        await withCheckedContinuation { continuation in
-            let options = PHImageRequestOptions()
-            options.deliveryMode = .highQualityFormat
-            options.resizeMode = .none
-            options.isNetworkAccessAllowed = true
-            PHImageManager.default().requestImage(
-                for: asset,
-                targetSize: .zero,
-                contentMode: .aspectFit,
-                options: options
-            ) { image, _ in
-                continuation.resume(returning: image)
-            }
-        }
-    }
-    
-    static func fetchThumbnail(
+    static func fetchImage(
         for asset: PHAsset,
-        targetSize: CGSize,
-        contentMode: PHImageContentMode
+        targetSize: CGSize = .zero,
+        contentMode: PHImageContentMode = .aspectFit,
+        resizeMode: PHImageRequestOptionsResizeMode = .none
     ) async -> UIImage? {
-        await withCheckedContinuation { continuation in
-            let options = PHImageRequestOptions()
-            options.deliveryMode = .highQualityFormat
-            options.isNetworkAccessAllowed = true
-            PHImageManager.default().requestImage(
-                for: asset,
-                targetSize: targetSize,
-                contentMode: contentMode,
-                options: options
-            ) { image, _ in
-                continuation.resume(returning: image)
-            }
-        }
+        await PHImageManager.default().image(
+            for: asset,
+            targetSize: targetSize,
+            contentMode: contentMode,
+            resizeMode: resizeMode
+        )
     }
     
     static func imageSize(of asset: PHAsset) -> CGSize? {
