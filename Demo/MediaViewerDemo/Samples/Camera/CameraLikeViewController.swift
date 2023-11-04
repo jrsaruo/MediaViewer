@@ -113,4 +113,10 @@ extension CameraLikeViewController: MediaViewerDataSource {
     ) -> UIView? {
         cameraLikeView.showLibraryButton
     }
+    
+    func transitionSourceImage(
+        forCurrentPageOf mediaViewer: MediaViewerViewController
+    ) -> UIImage? {
+        cameraLikeView.showLibraryButton.configuration?.background.image
+    }
 }
