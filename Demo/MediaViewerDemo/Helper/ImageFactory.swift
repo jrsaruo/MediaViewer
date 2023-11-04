@@ -43,6 +43,7 @@ struct CircledTextView: View {
     }
 }
 
+#if swift(>=5.9)
 @available(iOS 17, *)
 #Preview(traits: .fixedLayout(width: 300, height: 300)) {
     Image(
@@ -50,3 +51,4 @@ struct CircledTextView: View {
     )
     .foregroundStyle(.blue)
 }
+#endif
