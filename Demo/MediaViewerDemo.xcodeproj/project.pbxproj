@@ -11,6 +11,7 @@
 		5A09B7AC29B47F330042E3F1 /* SyncImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */; };
 		5A13B0602AF61D530095729F /* CameraLikeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A13B05F2AF61D530095729F /* CameraLikeViewController.swift */; };
 		5A13B0622AF62BFA0095729F /* PHImageFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */; };
+		5A13B0662AF660710095729F /* CameraLikeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A13B0652AF660710095729F /* CameraLikeView.swift */; };
 		5A54612A29A2594700F16456 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54612929A2594700F16456 /* AppDelegate.swift */; };
 		5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54612B29A2594700F16456 /* SceneDelegate.swift */; };
 		5A54613329A2594800F16456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613229A2594800F16456 /* Assets.xcassets */; };
@@ -28,6 +29,7 @@
 		5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncImagesViewController.swift; sourceTree = "<group>"; };
 		5A13B05F2AF61D530095729F /* CameraLikeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraLikeViewController.swift; sourceTree = "<group>"; };
 		5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PHImageFetcher.swift; sourceTree = "<group>"; };
+		5A13B0652AF660710095729F /* CameraLikeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraLikeView.swift; sourceTree = "<group>"; };
 		5A54612629A2594700F16456 /* MediaViewerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaViewerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A54612929A2594700F16456 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5A54612B29A2594700F16456 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 			isa = PBXGroup;
 			children = (
 				5A13B05F2AF61D530095729F /* CameraLikeViewController.swift */,
+				5A13B0652AF660710095729F /* CameraLikeView.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -221,6 +224,7 @@
 				5A09B7AC29B47F330042E3F1 /* SyncImagesViewController.swift in Sources */,
 				5A54614B29A25CDF00F16456 /* ImageCell.swift in Sources */,
 				5A54614329A25A8900F16456 /* AsyncImagesViewController.swift in Sources */,
+				5A13B0662AF660710095729F /* CameraLikeView.swift in Sources */,
 				5AE4F46E29D31E7A0048E8B4 /* TabBarController.swift in Sources */,
 				5A54612A29A2594700F16456 /* AppDelegate.swift in Sources */,
 				5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */,
