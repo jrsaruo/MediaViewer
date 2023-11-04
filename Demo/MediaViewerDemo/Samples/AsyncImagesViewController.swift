@@ -178,19 +178,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         mediaWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .fastFormat
-        options.resizeMode = .fast
-        options.isSynchronous = true
-        var size: CGSize?
-        PHImageManager.default().requestImage(
-            for: asset,
-            targetSize: CGSize(width: 100, height: 100),
-            contentMode: .aspectFit,
-            options: options
-        ) { image, _ in
-            size = image?.size
-        }
+        let size = PHAssetFetcher.imageSize(of: asset)
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }

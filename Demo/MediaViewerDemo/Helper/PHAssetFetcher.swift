@@ -39,4 +39,21 @@ enum PHAssetFetcher {
             }
         }
     }
+    
+    static func imageSize(of asset: PHAsset) -> CGSize? {
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .fastFormat
+        options.resizeMode = .fast
+        options.isSynchronous = true
+        var size: CGSize?
+        PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: CGSize(width: 100, height: 100),
+            contentMode: .aspectFit,
+            options: options
+        ) { image, _ in
+            size = image?.size
+        }
+        return size
+    }
 }
