@@ -199,7 +199,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         }
     }
     
-    func transitionSourceView(forCurrentPageOf mediaViewer: MediaViewerViewController) -> UIImageView? {
+    func transitionSourceView(forCurrentPageOf mediaViewer: MediaViewerViewController) -> UIView? {
         let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         

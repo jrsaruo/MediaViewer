@@ -88,7 +88,7 @@ extension SyncImagesViewController: MediaViewerDataSource {
     
     func transitionSourceView(
         forCurrentPageOf mediaViewer: MediaViewerViewController
-    ) -> UIImageView? {
+    ) -> UIView? {
         let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         

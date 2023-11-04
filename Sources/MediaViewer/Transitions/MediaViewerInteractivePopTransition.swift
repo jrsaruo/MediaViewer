@@ -10,7 +10,7 @@ import UIKit
 @MainActor
 final class MediaViewerInteractivePopTransition: NSObject {
     
-    private let sourceImageView: UIImageView?
+    private let sourceView: UIView?
     
     private var animator: UIViewPropertyAnimator?
     private var transitionContext: (any UIViewControllerContextTransitioning)?
@@ -23,7 +23,7 @@ final class MediaViewerInteractivePopTransition: NSObject {
     
     // MARK: Backups
     
-    private var sourceImageHiddenBackup = false
+    private var sourceViewHiddenBackup = false
     private var tabBarScrollEdgeAppearanceBackup: UITabBarAppearance?
     private var tabBarAlphaBackup: CGFloat?
     private var toVCToolbarItemsBackup: [UIBarButtonItem]?
@@ -33,8 +33,8 @@ final class MediaViewerInteractivePopTransition: NSObject {
     
     // MARK: - Initializers
     
-    init(sourceImageView: UIImageView?) {
-        self.sourceImageView = sourceImageView
+    init(sourceView: UIView?) {
+        self.sourceView = sourceView
         super.init()
     }
 }
@@ -60,7 +60,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageImageView = currentPageView.imageView
         
         // Back up
-        sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
+        sourceViewHiddenBackup = sourceView?.isHidden ?? false
         tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         tabBarAlphaBackup = tabBar?.alpha
         toVCToolbarItemsBackup = toVC.toolbarItems
@@ -81,7 +81,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         containerView.addSubview(mediaViewerView)
         mediaViewer.insertImageViewForTransition(currentPageImageView)
         
-        sourceImageView?.isHidden = true
+        sourceView?.isHidden = true
         
         if let tabBar {
             // Make tabBar opaque during the transition
@@ -157,13 +157,13 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
         
         let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
-            if let sourceImageView = self.sourceImageView {
-                let sourceImageFrameInViewer = mediaViewerView.convert(
-                    sourceImageView.frame,
-                    from: sourceImageView
+            if let sourceView = self.sourceView {
+                let sourceFrameInViewer = mediaViewerView.convert(
+                    sourceView.frame,
+                    from: sourceView.superview
                 )
-                currentPageImageView.frame = sourceImageFrameInViewer
-                currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
+                currentPageImageView.frame = sourceFrameInViewer
+                currentPageImageView.transitioningConfiguration = sourceView.transitioningConfiguration
                 currentPageImageView.layer.masksToBounds = true // TODO: Change according to the source configuration
             } else {
                 currentPageImageView.alpha = 0
@@ -180,7 +180,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let toolbar = navigationController.toolbar!
         
         finishAnimator.addCompletion { _ in
-            self.sourceImageView?.isHidden = self.sourceImageHiddenBackup
+            self.sourceView?.isHidden = self.sourceViewHiddenBackup
             currentPageView.removeFromSuperview()
             currentPageImageView.removeFromSuperview()
             
@@ -221,7 +221,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
-            self.sourceImageView?.isHidden = self.sourceImageHiddenBackup
+            self.sourceView?.isHidden = self.sourceViewHiddenBackup
             currentPageImageView.updateAnchorPointWithoutMoving(.init(x: 0.5, y: 0.5))
             currentPageImageView.transform = self.initialImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
