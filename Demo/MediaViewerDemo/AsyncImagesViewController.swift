@@ -7,7 +7,13 @@
 
 import UIKit
 import MediaViewer
+
+#if swift(>=5.9)
+import Photos
+#else
+// PHAsset does not conform to Sendable
 @preconcurrency import Photos
+#endif
 
 final class AsyncImagesViewController: UIViewController {
     
