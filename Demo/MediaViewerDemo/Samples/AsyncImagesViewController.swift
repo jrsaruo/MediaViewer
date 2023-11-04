@@ -178,7 +178,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     ) -> Media {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async {
-            return await withCheckedContinuation { continuation in
+            await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
                 options.deliveryMode = .highQualityFormat
                 options.resizeMode = .none
@@ -224,7 +224,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     ) -> Source<UIImage?> {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
-            return await withCheckedContinuation { continuation in
+            await withCheckedContinuation { continuation in
                 let options = PHImageRequestOptions()
                 options.deliveryMode = .highQualityFormat
                 options.isNetworkAccessAllowed = true
