@@ -74,10 +74,13 @@ public protocol MediaViewerDataSource: AnyObject {
     /// If the viewer has not yet acquired an image asynchronously at the start of the push transition,
     /// the viewer starts a transition animation with this image.
     ///
-    /// - Parameter mediaViewer: An object representing the media viewer requesting this information.
+    /// - Parameters:
+    ///   - mediaViewer: An object representing the media viewer requesting this information.
+    ///   - sourceView: A transition source view that is returned from `transitionSourceView(forCurrentPageOf:)` method.
     /// - Returns: The transition source image for current page of `mediaViewer`.
-    func transitionSourceImage(
-        forCurrentPageOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceImageWith sourceView: UIView?
     ) -> UIImage?
 }
 
@@ -113,10 +116,10 @@ extension MediaViewerDataSource {
         }
     }
     
-    public func transitionSourceImage(
-        forCurrentPageOf mediaViewer: MediaViewerViewController
+    public func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceImageWith sourceView: UIView?
     ) -> UIImage? {
-        let sourceView = transitionSourceView(forCurrentPageOf: mediaViewer)
         switch sourceView {
         case let sourceImageView as UIImageView:
             return sourceImageView.image
@@ -688,15 +691,17 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         from fromVC: UIViewController,
         to toVC: UIViewController
     ) -> (any UIViewControllerAnimatedTransitioning)? {
-        MediaViewerTransition(
+        let sourceView = mediaViewerDataSource?.transitionSourceView(
+            forCurrentPageOf: self
+        )
+        return MediaViewerTransition(
             operation: operation,
-            sourceView: mediaViewerDataSource?.transitionSourceView(
-                forCurrentPageOf: self
-            ),
+            sourceView: sourceView,
             sourceImage: { [weak self] in
                 guard let self else { return nil }
-                return mediaViewerDataSource?.transitionSourceImage(
-                    forCurrentPageOf: self
+                return mediaViewerDataSource?.mediaViewer(
+                    self,
+                    transitionSourceImageWith: sourceView
                 )
             }
         )
