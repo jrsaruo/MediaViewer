@@ -88,7 +88,7 @@
 				5A54612B29A2594700F16456 /* SceneDelegate.swift */,
 				5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */,
 				5A13B05E2AF6171E0095729F /* Samples */,
-				5AC3B5522AF60D8400A028FC /* Helper */,
+				5AC3B5522AF60D8400A028FC /* Helpers */,
 				5A54613229A2594800F16456 /* Assets.xcassets */,
 				5A54613429A2594800F16456 /* LaunchScreen.storyboard */,
 				5A54613729A2594800F16456 /* Info.plist */,
@@ -111,13 +111,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		5AC3B5522AF60D8400A028FC /* Helper */ = {
+		5AC3B5522AF60D8400A028FC /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
 				5AC3B5542AF60DAE00A028FC /* ImageFactory.swift */,
 				5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */,
 			);
-			path = Helper;
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
