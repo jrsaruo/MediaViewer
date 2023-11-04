@@ -50,6 +50,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5A13B05E2AF6171E0095729F /* Samples */ = {
+			isa = PBXGroup;
+			children = (
+				5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */,
+				5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */,
+				5A09B7A929B47C670042E3F1 /* ImageGridView.swift */,
+				5A54614A29A25CDF00F16456 /* ImageCell.swift */,
+			);
+			path = Samples;
+			sourceTree = "<group>";
+		};
 		5A54611D29A2594700F16456 = {
 			isa = PBXGroup;
 			children = (
@@ -74,10 +85,7 @@
 				5A54612929A2594700F16456 /* AppDelegate.swift */,
 				5A54612B29A2594700F16456 /* SceneDelegate.swift */,
 				5AE4F46D29D31E7A0048E8B4 /* TabBarController.swift */,
-				5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */,
-				5A54614229A25A8900F16456 /* AsyncImagesViewController.swift */,
-				5A09B7A929B47C670042E3F1 /* ImageGridView.swift */,
-				5A54614A29A25CDF00F16456 /* ImageCell.swift */,
+				5A13B05E2AF6171E0095729F /* Samples */,
 				5AC3B5522AF60D8400A028FC /* Helper */,
 				5A54613229A2594800F16456 /* Assets.xcassets */,
 				5A54613429A2594800F16456 /* LaunchScreen.storyboard */,
