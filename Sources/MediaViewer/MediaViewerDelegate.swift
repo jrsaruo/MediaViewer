@@ -10,9 +10,9 @@ import UIKit
 @MainActor
 public protocol MediaViewerDelegate: AnyObject {
     
-    /// Tells the delegate an media viewer has moved to a particular page.
+    /// Tells the delegate a media viewer has moved to a particular page.
     /// - Parameters:
-    ///   - mediaViewer: An media viewer informing the delegate about the page move.
+    ///   - mediaViewer: A media viewer informing the delegate about the page move.
     ///   - page: A destination page.
     func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int)
 }
