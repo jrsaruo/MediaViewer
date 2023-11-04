@@ -170,22 +170,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         mediaOnPage page: Int
     ) -> Media {
         let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async {
-            await withCheckedContinuation { continuation in
-                let options = PHImageRequestOptions()
-                options.deliveryMode = .highQualityFormat
-                options.resizeMode = .none
-                options.isNetworkAccessAllowed = true
-                PHImageManager.default().requestImage(
-                    for: asset,
-                    targetSize: .zero,
-                    contentMode: .aspectFit,
-                    options: options
-                ) { image, _ in
-                    continuation.resume(returning: image)
-                }
-            }
-        }
+        return .async { await PHAssetFetcher.fetchImage(for: asset) }
     }
     
     func mediaViewer(
