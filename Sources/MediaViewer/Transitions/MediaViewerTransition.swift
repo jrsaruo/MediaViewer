@@ -220,8 +220,12 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         // Back up
         let sourceViewHiddenBackup = sourceView?.isHidden ?? false
+        let toVCToolbarItemsBackup = toVC.toolbarItems
         
         // MARK: Prepare for the transition
+        
+        // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
+        toVC.toolbarItems = nil
         
         toView.frame = transitionContext.finalFrame(for: toVC)
         toView.layoutIfNeeded()
@@ -301,6 +305,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 mediaViewerView.removeFromSuperview()
                 
                 // Restore properties
+                toVC.toolbarItems = toVCToolbarItemsBackup
                 self.sourceView?.isHidden = sourceViewHiddenBackup
                 navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
                 
