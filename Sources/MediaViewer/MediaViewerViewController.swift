@@ -67,6 +67,18 @@ public protocol MediaViewerDataSource: AnyObject {
     func transitionSourceView(
         forCurrentPageOf mediaViewer: MediaViewerViewController
     ) -> UIView?
+    
+    /// Asks the data source to return the transition source image for the current page of the media viewer.
+    ///
+    /// The media viewer uses this image for the push transition if needed.
+    /// If the viewer has not yet acquired an image asynchronously at the start of the push transition,
+    /// the viewer starts a transition animation with this image.
+    ///
+    /// - Parameter mediaViewer: An object representing the media viewer requesting this information.
+    /// - Returns: The transition source image for current page of `mediaViewer`.
+    func transitionSourceImage(
+        forCurrentPageOf mediaViewer: MediaViewerViewController
+    ) -> UIImage?
 }
 
 extension MediaViewerDataSource {
@@ -98,6 +110,18 @@ extension MediaViewerDataSource {
                 let image = await imageProvider()
                 return await image?.byPreparingThumbnail(ofSize: preferredThumbnailSize) ?? image
             }
+        }
+    }
+    
+    public func transitionSourceImage(
+        forCurrentPageOf mediaViewer: MediaViewerViewController
+    ) -> UIImage? {
+        let sourceView = transitionSourceView(forCurrentPageOf: mediaViewer)
+        switch sourceView {
+        case let sourceImageView as UIImageView:
+            return sourceImageView.image
+        default:
+            return nil
         }
     }
 }
@@ -667,9 +691,13 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         let sourceView = mediaViewerDataSource?.transitionSourceView(
             forCurrentPageOf: self
         )
+        let sourceImage = mediaViewerDataSource?.transitionSourceImage(
+            forCurrentPageOf: self
+        )
         return MediaViewerTransition(
             operation: operation,
-            sourceView: sourceView
+            sourceView: sourceView,
+            sourceImage: sourceImage
         )
     }
     

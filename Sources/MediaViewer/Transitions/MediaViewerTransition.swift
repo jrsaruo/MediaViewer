@@ -12,15 +12,18 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
     
     private let operation: UINavigationController.Operation
     private let sourceView: UIView?
+    private let sourceImage: UIImage?
     
     // MARK: - Initializers
     
     init(
         operation: UINavigationController.Operation,
-        sourceView: UIView?
+        sourceView: UIView?,
+        sourceImage: UIImage?
     ) {
         self.operation = operation
         self.sourceView = sourceView
+        self.sourceImage = sourceImage
     }
     
     // MARK: - Methods
@@ -92,13 +95,8 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
          * If the image has not yet been fetched asynchronously,
          * animate the source image instead.
          */
-        if currentPageImageView.image == nil, let sourceView {
-            switch sourceView {
-            case let imageView as UIImageView:
-                currentPageView.setImage(imageView.image, with: .none)
-            default:
-                break
-            }
+        if currentPageImageView.image == nil, let sourceImage {
+            currentPageView.setImage(sourceImage, with: .none)
         }
         
         let configurationBackup = currentPageImageView.transitioningConfiguration
