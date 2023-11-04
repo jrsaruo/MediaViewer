@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MediaViewer
 
 #if swift(>=5.9)
 import Photos
@@ -42,6 +43,11 @@ final class CameraLikeViewController: UIViewController {
         // Navigation
         navigationItem.backButtonDisplayMode = .minimal
         navigationController?.setNavigationBarHidden(true, animated: false)
+        
+        // Subviews
+        cameraLikeView.showLibraryButton.addAction(.init { [weak self] _ in
+            self?.showLibrary()
+        }, for: .primaryActionTriggered)
     }
     
     private func loadPhotos() async {
@@ -64,6 +70,48 @@ final class CameraLikeViewController: UIViewController {
             resizeMode: .fast
         )
         showLibraryButton.configuration?.background.image = latestImage
+    }
+    
+    // MARK: - Methods
+    
+    private func showLibrary() {
+        guard !assets.isEmpty else { return }
+        let mediaViewer = MediaViewerViewController(page: assets.count - 1, dataSource: self)
+        navigationController?.delegate = mediaViewer
+        navigationController?.pushViewController(mediaViewer, animated: true)
+    }
+}
+
+// MARK: - MediaViewerDataSource
+
+extension CameraLikeViewController: MediaViewerDataSource {
+    
+    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
+        assets.count
+    }
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        mediaOnPage page: Int
+    ) -> Media {
+        let asset = assets[page]
+        return .async { await PHImageFetcher.image(for: asset) }
+    }
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        mediaWidthToHeightOnPage page: Int
+    ) -> CGFloat? {
+        let asset = assets[page]
+        let size = PHImageFetcher.imageSize(of: asset)
+        guard let size, size.height > 0 else { return nil }
+        return size.width / size.height
+    }
+    
+    func transitionSourceView(
+        forCurrentPageOf mediaViewer: MediaViewerViewController
+    ) -> UIImageView? {
+        nil
     }
 }
 
