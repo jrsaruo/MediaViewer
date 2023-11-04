@@ -14,6 +14,7 @@ final class TabBarController: UITabBarController {
         
         let syncImagesVC = SyncImagesViewController()
         let asyncImagesVC = AsyncImagesViewController()
+        let cameraLikeVC = CameraLikeViewController()
         syncImagesVC.tabBarItem = .init(
             title: "Sync",
             image: .init(systemName: "0.circle"),
@@ -24,10 +25,16 @@ final class TabBarController: UITabBarController {
             image: .init(systemName: "rectangle.stack.fill"),
             tag: 1
         )
+        cameraLikeVC.tabBarItem = .init(
+            title: "CameraLike",
+            image: .init(systemName: "camera.fill"),
+            tag: 2
+        )
         setViewControllers(
             [
                 UINavigationController(rootViewController: syncImagesVC),
-                UINavigationController(rootViewController: asyncImagesVC)
+                UINavigationController(rootViewController: asyncImagesVC),
+                UINavigationController(rootViewController: cameraLikeVC)
             ],
             animated: false
         )
