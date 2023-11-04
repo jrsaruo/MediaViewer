@@ -52,7 +52,10 @@ final class SyncImagesViewController: UIViewController {
         // Subviews
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems((0...20).map { UIImage(systemName: "\($0).circle")! })
+        snapshot.appendItems((0...20).map {
+            ImageFactory.circledText("\($0)", width: 1000)
+                .withTintColor(.tintColor)
+        })
         dataSource.apply(snapshot)
     }
 }
