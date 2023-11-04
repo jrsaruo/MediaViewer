@@ -81,15 +81,8 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.rightBarButtonItem = toggleContentModeButton
     }
     
-    private nonisolated func fetchAssets() async -> [PHAsset] {
-        await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-        
-        let result = PHAsset.fetchAssets(with: .image, options: nil)
-        return result.objects(at: IndexSet(integersIn: 0..<result.count))
-    }
-    
     private func loadPhotos() async {
-        let assets = await fetchAssets()
+        let assets = await PHAssetFetcher.fetchImageAssets()
         
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
