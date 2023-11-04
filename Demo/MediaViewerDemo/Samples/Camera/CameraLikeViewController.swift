@@ -46,6 +46,24 @@ final class CameraLikeViewController: UIViewController {
     
     private func loadPhotos() async {
         assets = await PHImageFetcher.imageAssets()
+        await showLatestPhotoAsThumbnail()
+    }
+    
+    private func showLatestPhotoAsThumbnail() async {
+        guard let latestAsset = assets.last else { return }
+        
+        let showLibraryButton = cameraLikeView.showLibraryButton
+        let scale = view.window?.windowScene?.screen.scale ?? 3
+        let latestImage = await PHImageFetcher.image(
+            for: latestAsset,
+            targetSize: CGSize(
+                width: showLibraryButton.bounds.width * scale,
+                height: showLibraryButton.bounds.height * scale
+            ),
+            contentMode: .aspectFill,
+            resizeMode: .fast
+        )
+        showLibraryButton.configuration?.background.image = latestImage
     }
 }
 
