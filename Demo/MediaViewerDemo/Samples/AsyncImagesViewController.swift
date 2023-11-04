@@ -7,7 +7,13 @@
 
 import UIKit
 import MediaViewer
+
+#if swift(>=5.9)
+import Photos
+#else
+// PHAsset does not conform to Sendable
 @preconcurrency import Photos
+#endif
 
 final class AsyncImagesViewController: UIViewController {
     
@@ -75,15 +81,8 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.rightBarButtonItem = toggleContentModeButton
     }
     
-    private nonisolated func fetchAssets() async -> [PHAsset] {
-        await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-        
-        let result = PHAsset.fetchAssets(with: .image, options: nil)
-        return result.objects(at: IndexSet(integersIn: 0..<result.count))
-    }
-    
     private func loadPhotos() async {
-        let assets = await fetchAssets()
+        let assets = await PHImageFetcher.imageAssets()
         
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
@@ -171,22 +170,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         mediaOnPage page: Int
     ) -> Media {
         let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async {
-            return await withCheckedContinuation { continuation in
-                let options = PHImageRequestOptions()
-                options.deliveryMode = .highQualityFormat
-                options.resizeMode = .none
-                options.isNetworkAccessAllowed = true
-                PHImageManager.default().requestImage(
-                    for: asset,
-                    targetSize: .zero,
-                    contentMode: .aspectFit,
-                    options: options
-                ) { image, _ in
-                    continuation.resume(returning: image)
-                }
-            }
-        }
+        return .async { await PHImageFetcher.image(for: asset) }
     }
     
     func mediaViewer(
@@ -194,19 +178,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         mediaWidthToHeightOnPage page: Int
     ) -> CGFloat? {
         let asset = dataSource.snapshot().itemIdentifiers[page]
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .fastFormat
-        options.resizeMode = .fast
-        options.isSynchronous = true
-        var size: CGSize?
-        PHImageManager.default().requestImage(
-            for: asset,
-            targetSize: CGSize(width: 100, height: 100),
-            contentMode: .aspectFit,
-            options: options
-        ) { image, _ in
-            size = image?.size
-        }
+        let size = PHImageFetcher.imageSize(of: asset)
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }
@@ -218,19 +190,12 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     ) -> Source<UIImage?> {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
-            return await withCheckedContinuation { continuation in
-                let options = PHImageRequestOptions()
-                options.deliveryMode = .highQualityFormat
-                options.isNetworkAccessAllowed = true
-                PHImageManager.default().requestImage(
-                    for: asset,
-                    targetSize: preferredThumbnailSize,
-                    contentMode: .aspectFill,
-                    options: options
-                ) { image, _ in
-                    continuation.resume(returning: image)
-                }
-            }
+            await PHImageFetcher.image(
+                for: asset,
+                targetSize: preferredThumbnailSize,
+                contentMode: .aspectFill,
+                resizeMode: .fast
+            )
         }
     }
     
