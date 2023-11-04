@@ -40,6 +40,26 @@ enum PHAssetFetcher {
         }
     }
     
+    static func fetchThumbnail(
+        for asset: PHAsset,
+        targetSize: CGSize,
+        contentMode: PHImageContentMode
+    ) async -> UIImage? {
+        await withCheckedContinuation { continuation in
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .highQualityFormat
+            options.isNetworkAccessAllowed = true
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: targetSize,
+                contentMode: contentMode,
+                options: options
+            ) { image, _ in
+                continuation.resume(returning: image)
+            }
+        }
+    }
+    
     static func imageSize(of asset: PHAsset) -> CGSize? {
         let options = PHImageRequestOptions()
         options.deliveryMode = .fastFormat

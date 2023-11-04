@@ -190,19 +190,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     ) -> Source<UIImage?> {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
-            await withCheckedContinuation { continuation in
-                let options = PHImageRequestOptions()
-                options.deliveryMode = .highQualityFormat
-                options.isNetworkAccessAllowed = true
-                PHImageManager.default().requestImage(
-                    for: asset,
-                    targetSize: preferredThumbnailSize,
-                    contentMode: .aspectFill,
-                    options: options
-                ) { image, _ in
-                    continuation.resume(returning: image)
-                }
-            }
+            await PHAssetFetcher.fetchThumbnail(
+                for: asset,
+                targetSize: preferredThumbnailSize,
+                contentMode: .aspectFill
+            )
         }
     }
     
