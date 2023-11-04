@@ -16,14 +16,14 @@ import Photos
 
 enum PHImageFetcher {
     
-    static func fetchImageAssets() async -> [PHAsset] {
+    static func imageAssets() async -> [PHAsset] {
         await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         
         let result = PHAsset.fetchAssets(with: .image, options: nil)
         return result.objects(at: IndexSet(integersIn: 0..<result.count))
     }
     
-    static func fetchImage(
+    static func image(
         for asset: PHAsset,
         targetSize: CGSize = .zero,
         contentMode: PHImageContentMode = .aspectFit,

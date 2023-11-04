@@ -82,7 +82,7 @@ final class AsyncImagesViewController: UIViewController {
     }
     
     private func loadPhotos() async {
-        let assets = await PHImageFetcher.fetchImageAssets()
+        let assets = await PHImageFetcher.imageAssets()
         
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
@@ -170,7 +170,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         mediaOnPage page: Int
     ) -> Media {
         let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async { await PHImageFetcher.fetchImage(for: asset) }
+        return .async { await PHImageFetcher.image(for: asset) }
     }
     
     func mediaViewer(
@@ -190,7 +190,7 @@ extension AsyncImagesViewController: MediaViewerDataSource {
     ) -> Source<UIImage?> {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         return .async(transition: .fade(duration: 0.1)) {
-            await PHImageFetcher.fetchImage(
+            await PHImageFetcher.image(
                 for: asset,
                 targetSize: preferredThumbnailSize,
                 contentMode: .aspectFill,
