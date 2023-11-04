@@ -10,8 +10,8 @@ import UIKit
 @MainActor
 final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
-    let operation: UINavigationController.Operation
-    let sourceView: UIView?
+    private let operation: UINavigationController.Operation
+    private let sourceView: UIView?
     
     // MARK: - Initializers
     
