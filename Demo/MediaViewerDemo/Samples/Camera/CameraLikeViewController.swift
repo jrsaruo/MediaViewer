@@ -7,14 +7,45 @@
 
 import UIKit
 
+#if swift(>=5.9)
+import Photos
+#else
+// PHAsset does not conform to Sendable
+@preconcurrency import Photos
+#endif
+
 final class CameraLikeViewController: UIViewController {
     
     private let cameraLikeView = CameraLikeView()
+    
+    private var assets: [PHAsset] = []
     
     // MARK: - Lifecycle
     
     override func loadView() {
         view = cameraLikeView
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        setUpViews()
+        
+        Task {
+            await loadPhotos()
+        }
+    }
+    
+    private func setUpViews() {
+        title = "CameraLike"
+        
+        // Navigation
+        navigationItem.backButtonDisplayMode = .minimal
+        navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+    
+    private func loadPhotos() async {
+        assets = await PHImageFetcher.imageAssets()
     }
 }
 
