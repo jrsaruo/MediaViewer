@@ -11,16 +11,16 @@ import UIKit
 final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
     let operation: UINavigationController.Operation
-    let sourceImageView: UIView?
+    let sourceView: UIView?
     
     // MARK: - Initializers
     
     init(
         operation: UINavigationController.Operation,
-        sourceImageView: UIView?
+        sourceView: UIView?
     ) {
         self.operation = operation
-        self.sourceImageView = sourceImageView
+        self.sourceView = sourceView
     }
     
     // MARK: - Methods
@@ -72,7 +72,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let tabBar = mediaViewer.tabBarController?.tabBar
         
         // Back up
-        let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
+        let sourceViewHiddenBackup = sourceView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
         let tabBarHiddenBackup = tabBar?.isHidden
         let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
@@ -92,8 +92,8 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
          * If the image has not yet been fetched asynchronously,
          * animate the source image instead.
          */
-        if currentPageImageView.image == nil, let sourceImageView {
-            switch sourceImageView {
+        if currentPageImageView.image == nil, let sourceView {
+            switch sourceView {
             case let imageView as UIImageView:
                 currentPageView.setImage(imageView.image, with: .none)
             default:
@@ -106,22 +106,22 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.frame,
             from: currentPageImageView
         )
-        if let sourceImageView {
+        if let sourceView {
             // Match the appearance of the animating image view to the source
-            let sourceImageFrameInViewer = mediaViewerView.convert(
-                sourceImageView.frame,
-                from: sourceImageView
+            let sourceFrameInViewer = mediaViewerView.convert(
+                sourceView.frame,
+                from: sourceView
             )
             currentPageView.destroyLayoutConfigurationBeforeTransition()
-            currentPageImageView.transitioningConfiguration = sourceImageView.transitioningConfiguration
-            currentPageImageView.frame = sourceImageFrameInViewer
+            currentPageImageView.transitioningConfiguration = sourceView.transitioningConfiguration
+            currentPageImageView.frame = sourceFrameInViewer
         } else {
             currentPageView.destroyLayoutConfigurationBeforeTransition()
             currentPageImageView.frame = currentPageImageFrameInViewer
         }
         currentPageImageView.layer.masksToBounds = true
         mediaViewer.insertImageViewForTransition(currentPageImageView)
-        sourceImageView?.isHidden = true
+        sourceView?.isHidden = true
         
         if let tabBar {
             // Show the tabBar during the transition
@@ -173,8 +173,8 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.transitioningConfiguration = configurationBackup
             
             // NOTE: Keep following properties during transition for smooth animation.
-            if let sourceImageView = self.sourceImageView {
-                currentPageImageView.contentMode = sourceImageView.contentMode
+            if let sourceView = self.sourceView {
+                currentPageImageView.contentMode = sourceView.contentMode
             }
             currentPageImageView.layer.masksToBounds = true
         }
@@ -186,7 +186,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 mediaViewer.didFinishPushTransition()
                 currentPageImageView.transitioningConfiguration = configurationBackup
                 currentPageView.restoreLayoutConfigurationAfterTransition()
-                self.sourceImageView?.isHidden = sourceImageHiddenBackup
+                self.sourceView?.isHidden = sourceViewHiddenBackup
                 
                 if let tabBar {
                     tabBar.isHidden = tabBarHiddenBackup!
@@ -220,7 +220,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         containerView.addSubview(mediaViewerView)
         
         // Back up
-        let sourceImageHiddenBackup = sourceImageView?.isHidden ?? false
+        let sourceViewHiddenBackup = sourceView?.isHidden ?? false
         
         // MARK: Prepare for the transition
         
@@ -233,13 +233,13 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.frame,
             from: currentPageView.scrollView
         )
-        let sourceImageFrameInViewer = sourceImageView.map { sourceView in
+        let sourceFrameInViewer = sourceView.map { sourceView in
             mediaViewerView.convert(sourceView.frame, from: sourceView)
         }
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = currentPageImageFrameInViewer
         mediaViewer.insertImageViewForTransition(currentPageImageView)
-        sourceImageView?.isHidden = true
+        sourceView?.isHidden = true
         
         let toolbar = navigationController.toolbar!
         assert(toolbar.layer.animationKeys() == nil)
@@ -258,9 +258,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             for subview in mediaViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
-            if let sourceImageFrameInViewer {
-                currentPageImageView.frame = sourceImageFrameInViewer
-                currentPageImageView.transitioningConfiguration = self.sourceImageView!.transitioningConfiguration
+            if let sourceFrameInViewer {
+                currentPageImageView.frame = sourceFrameInViewer
+                currentPageImageView.transitioningConfiguration = self.sourceView!.transitioningConfiguration
             } else {
                 currentPageImageView.alpha = 0
             }
@@ -299,7 +299,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 mediaViewerView.removeFromSuperview()
                 
                 // Restore properties
-                self.sourceImageView?.isHidden = sourceImageHiddenBackup
+                self.sourceView?.isHidden = sourceViewHiddenBackup
                 navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
                 
                 // Disable the default animation applied to the toolbar

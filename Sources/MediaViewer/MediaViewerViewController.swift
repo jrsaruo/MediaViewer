@@ -55,7 +55,7 @@ public protocol MediaViewerDataSource: AnyObject {
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?>
     
-    /// Asks the data source to return the transition source image view for the current page of the media viewer.
+    /// Asks the data source to return the transition source view for the current page of the media viewer.
     ///
     /// The media viewer uses this view for push or pop transitions.
     /// On the push transition, an animation runs as the image expands from this view. The reverse happens on the pop.
@@ -504,10 +504,10 @@ open class MediaViewerViewController: UIPageViewController {
     private func panned(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .began {
             // Start the interactive pop transition
-            let sourceImageView = mediaViewerDataSource?.transitionSourceView(
+            let sourceView = mediaViewerDataSource?.transitionSourceView(
                 forCurrentPageOf: self
             )
-            interactivePopTransition = .init(sourceImageView: sourceImageView)
+            interactivePopTransition = .init(sourceView: sourceView)
             
             /*
              * [Workaround]
@@ -664,12 +664,12 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         from fromVC: UIViewController,
         to toVC: UIViewController
     ) -> (any UIViewControllerAnimatedTransitioning)? {
-        let sourceImageView = mediaViewerDataSource?.transitionSourceView(
+        let sourceView = mediaViewerDataSource?.transitionSourceView(
             forCurrentPageOf: self
         )
         return MediaViewerTransition(
             operation: operation,
-            sourceImageView: sourceImageView
+            sourceView: sourceView
         )
     }
     
