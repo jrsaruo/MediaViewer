@@ -1,5 +1,5 @@
 //
-//  PHAssetFetcher.swift
+//  PHImageFetcher.swift
 //  MediaViewerDemo
 //
 //  Created by Yusaku Nishi on 2023/11/04.
@@ -14,7 +14,7 @@ import Photos
 @preconcurrency import Photos
 #endif
 
-enum PHAssetFetcher {
+enum PHImageFetcher {
     
     static func fetchImageAssets() async -> [PHAsset] {
         await PHPhotoLibrary.requestAuthorization(for: .addOnly)

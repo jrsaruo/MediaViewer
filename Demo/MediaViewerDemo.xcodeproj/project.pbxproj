@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		5A09B7AA29B47C670042E3F1 /* ImageGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A09B7A929B47C670042E3F1 /* ImageGridView.swift */; };
 		5A09B7AC29B47F330042E3F1 /* SyncImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */; };
-		5A13B0622AF62BFA0095729F /* PHAssetFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A13B0612AF62BFA0095729F /* PHAssetFetcher.swift */; };
+		5A13B0622AF62BFA0095729F /* PHImageFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */; };
 		5A54612A29A2594700F16456 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54612929A2594700F16456 /* AppDelegate.swift */; };
 		5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A54612B29A2594700F16456 /* SceneDelegate.swift */; };
 		5A54613329A2594800F16456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A54613229A2594800F16456 /* Assets.xcassets */; };
@@ -25,7 +25,7 @@
 /* Begin PBXFileReference section */
 		5A09B7A929B47C670042E3F1 /* ImageGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGridView.swift; sourceTree = "<group>"; };
 		5A09B7AB29B47F330042E3F1 /* SyncImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncImagesViewController.swift; sourceTree = "<group>"; };
-		5A13B0612AF62BFA0095729F /* PHAssetFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PHAssetFetcher.swift; sourceTree = "<group>"; };
+		5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PHImageFetcher.swift; sourceTree = "<group>"; };
 		5A54612629A2594700F16456 /* MediaViewerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaViewerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A54612929A2594700F16456 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5A54612B29A2594700F16456 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -115,7 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				5AC3B5542AF60DAE00A028FC /* ImageFactory.swift */,
-				5A13B0612AF62BFA0095729F /* PHAssetFetcher.swift */,
+				5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -205,7 +205,7 @@
 				5AE4F46E29D31E7A0048E8B4 /* TabBarController.swift in Sources */,
 				5A54612A29A2594700F16456 /* AppDelegate.swift in Sources */,
 				5A54612C29A2594700F16456 /* SceneDelegate.swift in Sources */,
-				5A13B0622AF62BFA0095729F /* PHAssetFetcher.swift in Sources */,
+				5A13B0622AF62BFA0095729F /* PHImageFetcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
