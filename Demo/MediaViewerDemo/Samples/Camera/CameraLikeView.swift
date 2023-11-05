@@ -17,6 +17,8 @@ final class CameraLikeView: UIView {
         let button = UIButton(configuration: configuration)
         button.contentMode = .scaleAspectFill
         button.clipsToBounds = true
+        button.layer.cornerRadius = 4
+        button.layer.cornerCurve = .continuous
         return button
     }()
     
