@@ -22,6 +22,13 @@ final class CameraLikeView: UIView {
         return button
     }()
     
+    let toggleTabBarHiddenButton: UIButton = {
+        var configuration = UIButton.Configuration.borderedTinted()
+        configuration.buttonSize = .small
+        configuration.title = "Hide Tab Bar"
+        return UIButton(configuration: configuration)
+    }()
+    
     private let previewView: UIView = {
         let view = UIView()
         view.backgroundColor = .secondarySystemBackground
@@ -53,6 +60,7 @@ final class CameraLikeView: UIView {
         addSubview(previewView)
         addSubview(shutterButton)
         addSubview(showLibraryButton)
+        addSubview(toggleTabBarHiddenButton)
         
         let bottomAreaLayoutGuide = UILayoutGuide()
         addLayoutGuide(bottomAreaLayoutGuide)
@@ -81,6 +89,11 @@ final class CameraLikeView: UIView {
             item.leading.equal(to: layoutMarginsGuide)
             item.centerY.equal(to: bottomAreaLayoutGuide)
             item.size.equal(toSquare: 48)
+        }
+        
+        toggleTabBarHiddenButton.autoLayout { item in
+            item.trailing.equal(to: layoutMarginsGuide)
+            item.centerY.equal(to: bottomAreaLayoutGuide)
         }
     }
 }

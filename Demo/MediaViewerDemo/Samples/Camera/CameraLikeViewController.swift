@@ -48,6 +48,10 @@ final class CameraLikeViewController: UIViewController {
         cameraLikeView.showLibraryButton.addAction(.init { [weak self] _ in
             self?.showLibrary()
         }, for: .primaryActionTriggered)
+        
+        cameraLikeView.toggleTabBarHiddenButton.addAction(.init { [weak self] _ in
+            self?.toggleTabBarHidden()
+        }, for: .primaryActionTriggered)
     }
     
     private func loadPhotos() async {
@@ -79,6 +83,19 @@ final class CameraLikeViewController: UIViewController {
         let mediaViewer = MediaViewerViewController(page: assets.count - 1, dataSource: self)
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
+    }
+    
+    private func toggleTabBarHidden() {
+        let tabBar = tabBarController!.tabBar
+        tabBar.isHidden.toggle()
+        
+        navigationController?.view.setNeedsLayout()
+        UIView.animate(withDuration: 0.3) {
+            self.navigationController?.view.layoutIfNeeded()
+        } completion: { _ in
+            let buttonTitle = tabBar.isHidden ? "Show Tab Bar" : "Hide Tab Bar"
+            self.cameraLikeView.toggleTabBarHiddenButton.configuration?.title = buttonTitle
+        }
     }
 }
 
