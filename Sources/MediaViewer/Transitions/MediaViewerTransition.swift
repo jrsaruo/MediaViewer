@@ -153,8 +153,8 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             toolbar.layer.removeAllAnimations()
         }
         
-        toolbar.alpha = 0
-        let viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        viewsToFadeDuringTransition.append(toolbar)
         for view in viewsToFadeDuringTransition {
             view.alpha = 0
         }
@@ -171,7 +171,6 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             navigationBar.alpha = navigationBarAlphaBackup
-            toolbar.alpha = 1
             for view in viewsToFadeDuringTransition {
                 view.alpha = 1
             }
