@@ -93,19 +93,12 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         
         /*
-         * NOTE:
+         * [Workaround]
          * If the navigation bar is hidden on transition start, some animations
          * are applied by system and the bar remains hidden after the transition.
-         * Removed those animations to avoid this problem.
+         * Specifying alpha solved this problem.
          */
         let navigationBar = navigationController.navigationBar
-        if let animationKeys = navigationBar.layer.animationKeys() {
-            assert(animationKeys.allSatisfy {
-                $0.starts(with: "opacity")
-                || $0.starts(with: "UIPacingAnimationForAnimatorsKey")
-            })
-            navigationBar.layer.removeAllAnimations()
-        }
         navigationBar.alpha = mediaViewer.isShowingMediaOnly 
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
         : 1
