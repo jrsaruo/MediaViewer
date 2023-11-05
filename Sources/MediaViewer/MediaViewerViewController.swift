@@ -555,6 +555,12 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         let sourceView = mediaViewerDataSource?.transitionSourceView(
             forCurrentPageOf: self
         )
+        if operation == .pop && fromVC == self {
+            mediaViewerDelegate?.mediaViewer(
+                self,
+                willBeginPopTransitionInto: sourceView
+            )
+        }
         return MediaViewerTransition(
             operation: operation,
             sourceView: sourceView,
