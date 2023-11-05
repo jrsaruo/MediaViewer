@@ -101,9 +101,9 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: Backups
     
-    private var tabBarHiddenBackup: Bool?
+    private(set) var tabBarHiddenBackup: Bool?
     private(set) var navigationBarAlphaBackup = 1.0
-    private var navigationBarHiddenBackup = false
+    private(set) var navigationBarHiddenBackup = false
     private(set) var toolbarHiddenBackup = true
     private(set) var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
     

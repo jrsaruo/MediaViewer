@@ -48,6 +48,10 @@ final class CameraLikeViewController: UIViewController {
         cameraLikeView.showLibraryButton.addAction(.init { [weak self] _ in
             self?.showLibrary()
         }, for: .primaryActionTriggered)
+        
+        cameraLikeView.toggleTabBarHiddenButton.addAction(.init { [weak self] _ in
+            self?.toggleTabBarHidden()
+        }, for: .primaryActionTriggered)
     }
     
     private func loadPhotos() async {
@@ -79,6 +83,31 @@ final class CameraLikeViewController: UIViewController {
         let mediaViewer = MediaViewerViewController(page: assets.count - 1, dataSource: self)
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
+    }
+    
+    private func toggleTabBarHidden() {
+        let tabBarController = self.tabBarController!
+        let tabBar = tabBarController.tabBar
+        tabBar.isHidden.toggle()
+        
+        /*
+         * [Workaround]
+         * After an interactive pop transition while the tabBar is hidden,
+         * the toolbar appearance will be broken on the next transition.
+         * Switching tabs fixed it. (Perhaps because the internal state of
+         * the tabBarController may be correctly updated.)
+         */
+        let currentIndex = tabBarController.selectedIndex
+        tabBarController.selectedIndex = 0
+        tabBarController.selectedIndex = currentIndex
+        
+        navigationController?.view.setNeedsLayout()
+        UIView.animate(withDuration: 0.3) {
+            self.navigationController?.view.layoutIfNeeded()
+        } completion: { _ in
+            let buttonTitle = tabBar.isHidden ? "Show Tab Bar" : "Hide Tab Bar"
+            self.cameraLikeView.toggleTabBarHiddenButton.configuration?.title = buttonTitle
+        }
     }
 }
 
