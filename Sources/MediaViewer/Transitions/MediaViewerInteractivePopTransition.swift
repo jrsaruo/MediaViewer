@@ -319,11 +319,12 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             let panAreaSize = currentPageView.bounds.size
             
             let transitionProgress = translation.y * 2 / panAreaSize.height
-            animator.fractionComplete = transitionProgress
-            transitionContext.updateInteractiveTransition(transitionProgress)
+            let fractionComplete = max(min(transitionProgress, 1), 0)
+            animator.fractionComplete = fractionComplete
+            transitionContext.updateInteractiveTransition(fractionComplete)
             
             if shouldAnimateTabBar {
-                tabBar?.alpha = transitionProgress
+                tabBar?.alpha = fractionComplete
             }
             
             panningImageView.transform = panningImageTransform(
