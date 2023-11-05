@@ -127,8 +127,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // MARK: Animation
         
+        let navigationBarAlpha = mediaViewer.navigationBarHiddenBackup
+        ? 0
+        : mediaViewer.navigationBarAlphaBackup
         animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
-            navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
+            navigationBar.alpha = navigationBarAlpha
             for subview in mediaViewer.subviewsToFadeDuringTransition {
                 subview.alpha = 0
             }
@@ -195,6 +198,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
+            navigationController.navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             // Disable the default animation applied to the toolbar
