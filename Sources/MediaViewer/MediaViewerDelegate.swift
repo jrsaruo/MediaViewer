@@ -13,10 +13,10 @@ public protocol MediaViewerDelegate: AnyObject {
     /// Notifies the delegate before a media viewer is popped from the navigation controller.
     /// - Parameters:
     ///   - mediaViewer: A media viewer that will be popped.
-    ///   - sourceView: A view that is the destination of the pop transition for the media viewer.
+    ///   - destinationVC: A destination view controller of the pop transition.
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        willBeginPopTransitionInto sourceView: UIView?
+        willBeginPopTransitionTo destinationVC: UIViewController
     )
     
     /// Tells the delegate a media viewer has moved to a particular page.
@@ -32,7 +32,7 @@ extension MediaViewerDelegate {
     
     public func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        willBeginPopTransitionInto sourceView: UIView?
+        willBeginPopTransitionTo destinationVC: UIViewController
     ) {}
     
     public func mediaViewer(
