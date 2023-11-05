@@ -250,11 +250,12 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             // Restore properties
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
+            let toolbar = toVC.navigationController!.toolbar!
+            toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
+            
             let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
             mediaViewer.didCancelInteractivePopTransition()
-            let toolbar = toVC.navigationController!.toolbar!
-            toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             transitionContext.completeTransition(false)
         }
