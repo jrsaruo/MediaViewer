@@ -127,7 +127,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         if let tabBar {
             // Show the tabBar during the transition
             containerView.addSubview(tabBar)
-            tabBar.isHidden = false
+            let wasTabBarHidden = mediaViewer.tabBarHiddenBackup ?? true
+            if !wasTabBarHidden {
+                tabBar.isHidden = false
+            }
             
             // Make the tabBar opaque during the transition
             let appearance = UITabBarAppearance()
