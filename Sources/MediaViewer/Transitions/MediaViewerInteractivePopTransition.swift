@@ -203,8 +203,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         finishAnimator.addCompletion { _ in
             self.sourceView?.isHidden = self.sourceViewHiddenBackup
-            currentPageView.removeFromSuperview()
-            currentPageImageView.removeFromSuperview()
+            mediaViewerView.removeFromSuperview()
             
             // Restore properties
             toVC.toolbarItems = self.toVCToolbarItemsBackup
