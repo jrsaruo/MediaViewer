@@ -124,10 +124,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         mediaViewer.insertImageViewForTransition(currentPageImageView)
         sourceView?.isHidden = true
         
+        let wasTabBarHidden = mediaViewer.tabBarHiddenBackup ?? true
         if let tabBar {
             // Show the tabBar during the transition
             containerView.addSubview(tabBar)
-            let wasTabBarHidden = mediaViewer.tabBarHiddenBackup ?? true
             if !wasTabBarHidden {
                 tabBar.isHidden = false
             }
@@ -158,6 +158,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         viewsToFadeDuringTransition.append(toolbar)
+        if wasTabBarHidden {
+            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+        }
         for view in viewsToFadeDuringTransition {
             view.alpha = 0
         }
