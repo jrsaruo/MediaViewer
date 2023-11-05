@@ -66,6 +66,7 @@ extension SyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        mediaViewer.mediaViewerDelegate = self
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
     }
@@ -99,5 +100,22 @@ extension SyncImagesViewController: MediaViewerDataSource {
             return nil
         }
         return cellForCurrentImage.imageView
+    }
+}
+
+extension SyncImagesViewController: MediaViewerDelegate {
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        willBeginPopTransitionInto sourceView: UIView?
+    ) {
+        guard let sourceView else { return }
+        guard let cell = sourceView.superview?.superview as? ImageCell else {
+            preconditionFailure("Unknown source view: \(sourceView)")
+        }
+        imageGridView.collectionView.scrollRectToVisible(
+            cell.frame,
+            animated: false
+        )
     }
 }

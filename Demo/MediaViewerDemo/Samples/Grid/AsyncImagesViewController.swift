@@ -219,6 +219,20 @@ extension AsyncImagesViewController: MediaViewerDataSource {
 
 extension AsyncImagesViewController: MediaViewerDelegate {
     
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        willBeginPopTransitionInto sourceView: UIView?
+    ) {
+        guard let sourceView else { return }
+        guard let cell = sourceView.superview?.superview as? ImageCell else {
+            preconditionFailure("Unknown source view: \(sourceView)")
+        }
+        imageGridView.collectionView.scrollRectToVisible(
+            cell.frame,
+            animated: false
+        )
+    }
+    
     func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int) {
         let asset = dataSource.snapshot().itemIdentifiers[page]
         let dateDescription = asset.creationDate?.formatted()
