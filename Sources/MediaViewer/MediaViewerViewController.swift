@@ -215,7 +215,7 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.$showsMediaOnly
             .sink { [weak self] showsMediaOnly in
                 guard let self else { return }
-                self.shouldHideHomeIndicator = showsMediaOnly
+                shouldHideHomeIndicator = showsMediaOnly
                 
                 let animator = UIViewPropertyAnimator(
                     duration: UINavigationController.hideShowBarDuration,
@@ -234,11 +234,11 @@ open class MediaViewerViewController: UIPageViewController {
                         }
                     }
                 } else {
-                    self.navigationController?.isNavigationBarHidden = false
+                    navigationController?.isNavigationBarHidden = false
                 }
                 
                 // Ignore single tap during animation
-                let singleTap = self.currentPageViewController.singleTapRecognizer
+                let singleTap = currentPageViewController.singleTapRecognizer
                 singleTap.isEnabled = false
                 animator.addCompletion { _ in
                     singleTap.isEnabled = true
