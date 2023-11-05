@@ -24,7 +24,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "MediaViewer",
-            dependencies: []
+            dependencies: [],
+            swiftSettings: [
+                .enableUpcomingFeature("ExistentialAny", .when(configuration: .debug))
+            ]
         ),
         .testTarget(
             name: "MediaViewerTests",
