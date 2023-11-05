@@ -73,12 +73,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         containerView.addSubview(mediaViewerView)
         
         let tabBar = mediaViewer.tabBarController?.tabBar
+        let navigationBar = navigationController.navigationBar
         
         // Back up
         let sourceViewHiddenBackup = sourceView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
         let tabBarHiddenBackup = tabBar?.isHidden
         let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
+        let navigationBarAlphaBackup = navigationBar.alpha
         
         // MARK: Prepare for the transition
         
@@ -140,6 +142,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
         }
         
+        if mediaViewer.navigationBarHiddenBackup {
+            navigationBar.alpha = 0
+        }
+        
         // Disable the default animation applied to the toolbar
         let toolbar = navigationController.toolbar!
         if let animationKeys = toolbar.layer.animationKeys() {
@@ -164,6 +170,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
+            navigationBar.alpha = navigationBarAlphaBackup
             toolbar.alpha = 1
             for view in viewsToFadeDuringTransition {
                 view.alpha = 1
