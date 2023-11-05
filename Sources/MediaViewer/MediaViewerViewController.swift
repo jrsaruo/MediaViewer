@@ -578,7 +578,7 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
         _ navigationController: UINavigationController,
         interactionControllerFor animationController: any UIViewControllerAnimatedTransitioning
     ) -> (any UIViewControllerInteractiveTransitioning)? {
-        return interactivePopTransition
+        interactivePopTransition
     }
 }
 
