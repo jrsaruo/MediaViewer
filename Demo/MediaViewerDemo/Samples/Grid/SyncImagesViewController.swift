@@ -92,10 +92,19 @@ extension SyncImagesViewController: MediaViewerDataSource {
         let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         
-        // NOTE: Without this, later cellForItem(at:) sometimes returns nil.
-        imageGridView.collectionView.layoutIfNeeded()
+        let collectionView = imageGridView.collectionView
         
-        guard let cellForCurrentImage = imageGridView.collectionView.cellForItem(at: indexPathForCurrentImage) as? ImageCell else {
+        // NOTE: Without this, later cellForItem(at:) sometimes returns nil.
+        if !collectionView.indexPathsForVisibleItems.contains(indexPathForCurrentImage) {
+            collectionView.scrollToItem(
+                at: indexPathForCurrentImage,
+                at: .centeredVertically,
+                animated: false
+            )
+        }
+        collectionView.layoutIfNeeded()
+        
+        guard let cellForCurrentImage = collectionView.cellForItem(at: indexPathForCurrentImage) as? ImageCell else {
             return nil
         }
         return cellForCurrentImage.imageView
