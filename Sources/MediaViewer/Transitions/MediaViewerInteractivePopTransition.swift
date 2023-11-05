@@ -27,6 +27,7 @@ final class MediaViewerInteractivePopTransition: NSObject {
     private var tabBarScrollEdgeAppearanceBackup: UITabBarAppearance?
     private var tabBarAlphaBackup: CGFloat?
     private var toVCToolbarItemsBackup: [UIBarButtonItem]?
+    private var toVCAdditionalSafeAreaInsetsBackup: UIEdgeInsets = .zero
     private var initialZoomScale: CGFloat = 1
     private var initialImageTransform = CGAffineTransform.identity
     private var initialImageFrameInViewer = CGRect.null
@@ -64,6 +65,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         tabBarAlphaBackup = tabBar?.alpha
         toVCToolbarItemsBackup = toVC.toolbarItems
+        toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
         initialZoomScale = currentPageView.scrollView.zoomScale
         initialImageTransform = currentPageImageView.transform
         initialImageFrameInViewer = mediaViewerView.convert(
@@ -110,6 +112,18 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
         toVC.toolbarItems = nil
+        
+        /*
+         * [Workaround]
+         * Even if toVC hides the toolbar, the bottom of the safe area will
+         * shift during the transition as if the toolbar were visible, and
+         * the layout will be corrupted.
+         * To avoid this, adjust the safe area only during the transition.
+         */
+        let toolbar = navigationController.toolbar!
+        if mediaViewer.toolbarHiddenBackup {
+            toVC.additionalSafeAreaInsets.bottom = -toolbar.bounds.height
+        }
         
         let pageControlToolbar = mediaViewer.pageControlToolbar
         let pageControlToolbarFrame = pageControlToolbar.frame
@@ -184,7 +198,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageView.removeFromSuperview()
             currentPageImageView.removeFromSuperview()
             
+            // Restore properties
             toVC.toolbarItems = self.toVCToolbarItemsBackup
+            toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
@@ -231,8 +247,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 self.tabBar?.alpha = tabBarAlphaBackup
             }
             
+            // Restore properties
             toVC.toolbarItems = self.toVCToolbarItemsBackup
-            
+            toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
             mediaViewer.didCancelInteractivePopTransition()

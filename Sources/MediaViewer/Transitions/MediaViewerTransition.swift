@@ -221,11 +221,26 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Back up
         let sourceViewHiddenBackup = sourceView?.isHidden ?? false
         let toVCToolbarItemsBackup = toVC.toolbarItems
+        let toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
         
         // MARK: Prepare for the transition
         
+        let toolbar = navigationController.toolbar!
+        assert(toolbar.layer.animationKeys() == nil)
+        
         // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
         toVC.toolbarItems = nil
+        
+        /*
+         * [Workaround]
+         * Even if toVC hides the toolbar, the bottom of the safe area will
+         * shift during the transition as if the toolbar were visible, and
+         * the layout will be corrupted.
+         * To avoid this, adjust the safe area only during the transition.
+         */
+        if mediaViewer.toolbarHiddenBackup {
+            toVC.additionalSafeAreaInsets.bottom = -toolbar.bounds.height
+        }
         
         toView.frame = transitionContext.finalFrame(for: toVC)
         toView.layoutIfNeeded()
@@ -246,9 +261,6 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         currentPageImageView.frame = currentPageImageFrameInViewer
         mediaViewer.insertImageViewForTransition(currentPageImageView)
         sourceView?.isHidden = true
-        
-        let toolbar = navigationController.toolbar!
-        assert(toolbar.layer.animationKeys() == nil)
         
         mediaViewer.willStartPopTransition()
         
@@ -306,6 +318,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 
                 // Restore properties
                 toVC.toolbarItems = toVCToolbarItemsBackup
+                toVC.additionalSafeAreaInsets = toVCAdditionalSafeAreaInsetsBackup
                 self.sourceView?.isHidden = sourceViewHiddenBackup
                 navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
                 
