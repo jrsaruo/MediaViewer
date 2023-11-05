@@ -26,6 +26,7 @@ final class MediaViewerInteractivePopTransition: NSObject {
     private var sourceViewHiddenBackup = false
     private var tabBarScrollEdgeAppearanceBackup: UITabBarAppearance?
     private var tabBarAlphaBackup: CGFloat?
+    private var toolbarAlphaBackup: CGFloat = 0
     private var toVCToolbarItemsBackup: [UIBarButtonItem]?
     private var toVCAdditionalSafeAreaInsetsBackup: UIEdgeInsets = .zero
     private var initialZoomScale: CGFloat = 1
@@ -60,10 +61,13 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageView = mediaViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         
+        let toolbar = navigationController.toolbar!
+        
         // Back up
         sourceViewHiddenBackup = sourceView?.isHidden ?? false
         tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         tabBarAlphaBackup = tabBar?.alpha
+        toolbarAlphaBackup = toolbar.alpha
         toVCToolbarItemsBackup = toVC.toolbarItems
         toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
         initialZoomScale = currentPageView.scrollView.zoomScale
@@ -113,7 +117,6 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
          * the layout will be corrupted.
          * To avoid this, adjust the safe area only during the transition.
          */
-        let toolbar = navigationController.toolbar!
         if mediaViewer.toolbarHiddenBackup {
             toVC.additionalSafeAreaInsets.bottom = -toolbar.bounds.height
         }
@@ -122,6 +125,15 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let pageControlToolbarFrame = pageControlToolbar.frame
         // Disable AutoLayout
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = true
+        
+        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        let isTabBarHidden = tabBar?.isHidden ?? true
+        if isTabBarHidden {
+            viewsToFadeDuringTransition.append(contentsOf: [
+                toolbar,
+                mediaViewer.pageControlToolbar
+            ])
+        }
         
         mediaViewer.willStartInteractivePopTransition()
         
@@ -132,8 +144,8 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         : mediaViewer.navigationBarAlphaBackup
         animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
             navigationBar.alpha = navigationBarAlpha
-            for subview in mediaViewer.subviewsToFadeDuringTransition {
-                subview.alpha = 0
+            for view in viewsToFadeDuringTransition {
+                view.alpha = 0
             }
             
             /*
@@ -199,6 +211,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
             navigationController.navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
+            toolbar.alpha = self.toolbarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             // Disable the default animation applied to the toolbar
