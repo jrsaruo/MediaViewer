@@ -257,7 +257,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let currentPageImageView = currentPageView.imageView
         let currentPageImageFrameInViewer = mediaViewerView.convert(
             currentPageImageView.frame,
-            from: currentPageView.scrollView
+            from: currentPageImageView.superview
         )
         let sourceFrameInViewer = sourceView.map { sourceView in
             mediaViewerView.convert(
@@ -335,9 +335,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 mediaViewerView.removeFromSuperview()
                 
                 // Restore properties
+                self.sourceView?.isHidden = sourceViewHiddenBackup
                 toVC.toolbarItems = toVCToolbarItemsBackup
                 toVC.additionalSafeAreaInsets = toVCAdditionalSafeAreaInsetsBackup
-                self.sourceView?.isHidden = sourceViewHiddenBackup
                 navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
                 toolbar.alpha = toolbarAlphaBackup
                 

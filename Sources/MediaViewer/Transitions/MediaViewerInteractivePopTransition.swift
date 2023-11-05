@@ -74,7 +74,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         initialImageTransform = currentPageImageView.transform
         initialImageFrameInViewer = mediaViewerView.convert(
             currentPageImageView.frame,
-            from: currentPageView.scrollView
+            from: currentPageImageView.superview
         )
         
         // MARK: Prepare for the transition
@@ -202,10 +202,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let toolbar = navigationController.toolbar!
         
         finishAnimator.addCompletion { _ in
-            self.sourceView?.isHidden = self.sourceViewHiddenBackup
             mediaViewerView.removeFromSuperview()
             
             // Restore properties
+            self.sourceView?.isHidden = self.sourceViewHiddenBackup
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
