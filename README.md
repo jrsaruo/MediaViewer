@@ -4,8 +4,8 @@ A comfortable media viewer like the iOS standard.
 
 ## Requirements
 
-- \<PLATFORM_VERSION\>
-- Swift 5.7+
+- iOS 16+
+- Swift 5.8+
 
 ## Using MediaViewer in your project
 

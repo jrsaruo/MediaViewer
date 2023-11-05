@@ -114,15 +114,15 @@ final class MediaViewerPageControlBar: UIView {
     ) { [weak self] collectionView, indexPath, page in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
-            using: self.cellRegistration,
+            using: cellRegistration,
             for: indexPath,
             item: page
         )
     }
     
     private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, page in
-        guard let self, let dataSource = self.dataSource else { return }
-        let scale = self.window?.screen.scale ?? 3
+        guard let self, let dataSource else { return }
+        let scale = window?.screen.scale ?? 3
         let preferredSize = CGSize(
             width: cell.bounds.width * scale,
             height: cell.bounds.height * scale
