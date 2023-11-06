@@ -33,6 +33,8 @@ final class MediaViewerInteractivePopTransition: NSObject {
     private var initialImageTransform = CGAffineTransform.identity
     private var initialImageFrameInViewer = CGRect.null
     
+    private var didPrepare = false
+    
     // MARK: - Initializers
     
     init(sourceView: UIView?) {
@@ -43,9 +45,42 @@ final class MediaViewerInteractivePopTransition: NSObject {
 
 extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransitioning {
     
+    func prepareForInteractiveTransition(
+        for mediaViewer: MediaViewerViewController
+    ) {
+        assert(!didPrepare)
+        defer { didPrepare = true }
+        
+        let mediaViewerView = mediaViewer.view!
+        let currentPageView = mediaViewer.currentPageViewController.mediaViewerOnePageView
+        let currentPageImageView = currentPageView.imageView
+        
+        // Backup
+        initialZoomScale = currentPageView.scrollView.zoomScale
+        initialImageTransform = currentPageImageView.transform
+        initialImageFrameInViewer = mediaViewerView.convert(
+            currentPageImageView.frame,
+            from: currentPageImageView.superview
+        )
+        
+        // MARK: Prepare for the transition
+        
+        /*
+         * NOTE:
+         * The main purpose of prepareForInteractiveTransition(for:) is
+         * to destroy the layout.
+         * For more information, check the caller.
+         */
+        currentPageView.destroyLayoutConfigurationBeforeTransition()
+        currentPageImageView.frame = initialImageFrameInViewer
+        mediaViewer.insertImageViewForTransition(currentPageImageView)
+    }
+    
     func startInteractiveTransition(
         _ transitionContext: any UIViewControllerContextTransitioning
     ) {
+        assert(didPrepare)
+        
         guard let mediaViewer = transitionContext.viewController(forKey: .from) as? MediaViewerViewController,
               let mediaViewerView = transitionContext.view(forKey: .from),
               let toView = transitionContext.view(forKey: .to),
@@ -58,8 +93,6 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         self.transitionContext = transitionContext
         let containerView = transitionContext.containerView
-        let currentPageView = mediaViewerCurrentPageView(in: transitionContext)
-        let currentPageImageView = currentPageView.imageView
         
         let toolbar = navigationController.toolbar!
         
@@ -70,22 +103,12 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         toolbarAlphaBackup = toolbar.alpha
         toVCToolbarItemsBackup = toVC.toolbarItems
         toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
-        initialZoomScale = currentPageView.scrollView.zoomScale
-        initialImageTransform = currentPageImageView.transform
-        initialImageFrameInViewer = mediaViewerView.convert(
-            currentPageImageView.frame,
-            from: currentPageImageView.superview
-        )
         
         // MARK: Prepare for the transition
-        
-        currentPageView.destroyLayoutConfigurationBeforeTransition()
-        currentPageImageView.frame = initialImageFrameInViewer
         
         toView.frame = transitionContext.finalFrame(for: toVC)
         containerView.addSubview(toView)
         containerView.addSubview(mediaViewerView)
-        mediaViewer.insertImageViewForTransition(currentPageImageView)
         
         sourceView?.isHidden = true
         

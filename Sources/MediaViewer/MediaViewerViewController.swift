@@ -404,7 +404,15 @@ open class MediaViewerViewController: UIPageViewController {
              * By delaying popViewController with Task, recognizer.state becomes
              * `.ended` first and interactivePopTransition becomes nil,
              * so a normal transition runs and avoids that problem.
+             *
+             * However, it leads to another glitch:
+             * later interactivePopTransition.panRecognized(by:in:) changes
+             * the anchor point of the image view while it is still on the
+             * scroll view, causing the image view to be shifted.
+             * To avoid it, call prepareForInteractiveTransition(for:) and
+             * remove the image view from the scroll view in advance.
              */
+            interactivePopTransition?.prepareForInteractiveTransition(for: self)
             Task {
                 navigationController?.popViewController(animated: true)
             }
