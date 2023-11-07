@@ -160,6 +160,11 @@ final class MediaViewerOnePageView: UIView {
         scrollView.zoom(to: zoomArea, animated: animated)
     }
     
+    func performDeleteAnimationBody() {
+        imageView.transform = imageView.transform.scaledBy(x: 0.5, y: 0.5)
+        imageView.alpha = 0
+    }
+    
     func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
