@@ -486,6 +486,8 @@ open class MediaViewerViewController: UIPageViewController {
             if progress != 0 {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
             }
+        case .deleting:
+            break
         }
     }
     

@@ -38,6 +38,8 @@ final class MediaViewerPageControlBar: UIView {
         /// The state of interactively transitioning between pages.
         case transitioningInteractively(UICollectionViewTransitionLayout, forwards: Bool)
         
+        case deleting
+        
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
             return indexPath
@@ -491,7 +493,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
                 expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
             }
-        case .collapsing, .expanding, .expanded, .transitioningInteractively:
+        case .collapsing, .expanding, .expanded, .transitioningInteractively, .deleting:
             break
         }
     }
@@ -540,7 +542,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         switch state {
-        case .collapsing, .collapsed:
+        case .collapsing, .collapsed, .deleting:
             expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
         case .expanding, .expanded, .transitioningInteractively:
             break // NOP
