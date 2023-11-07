@@ -24,39 +24,8 @@ protocol MediaViewerPageControlBarDataSource: AnyObject {
 
 final class MediaViewerPageControlBar: UIView {
     
-    /// An item of the page control bar.
-    ///
-    /// This is used as an item of the diffable data source so that
-    /// the thumbnail does not need to be reloaded when the viewer's page count changes.
     struct Item: Hashable, Identifiable, Sendable {
-        
-        /// An ID of the item.
-        ///
-        /// Only this value is used to compare for equality and calculate hash value.
         let id = UUID()
-        
-        /// A page of the media viewer.
-        ///
-        /// This value always matches the actual page number so it may change
-        /// while the ID remains the same.
-        /// For example, when some media is deleted, the page number after the deleted media is
-        /// carried down by one.
-        ///
-        /// ```swift
-        /// [(ID_A, 0), (ID_B, 1), (ID_C, 2), (ID_D, 3)]
-        /// // ↓ Delete (ID_B, 1)
-        /// [(ID_A, 0), (ID_C, 1), (ID_D, 2)]
-        /// ```
-        var page: Int
-        
-        @available(*, deprecated, message: "Compare id or page directly")
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.id == rhs.id
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
     }
     
     enum State: Hashable, Sendable {
@@ -164,7 +133,7 @@ final class MediaViewerPageControlBar: UIView {
         )
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: item.page,
+            thumbnailOnPage: page(of: item)!,
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
@@ -229,7 +198,7 @@ final class MediaViewerPageControlBar: UIView {
     func configure(numberOfPages: Int, currentPage: Int) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
-        snapshot.appendItems((0..<numberOfPages).map(Item.init))
+        snapshot.appendItems((0..<numberOfPages).map { _ in Item() })
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
@@ -241,10 +210,12 @@ final class MediaViewerPageControlBar: UIView {
         }
     }
     
+    private func page(of item: Item) -> Int? {
+        diffableDataSource.snapshot().indexOfItem(item)
+    }
+    
     private func item(forPage page: Int) -> Item {
-        let item = diffableDataSource.snapshot().itemIdentifiers[page]
-        precondition(item.page == page)
-        return item
+        diffableDataSource.snapshot().itemIdentifiers[page]
     }
     
     private func cell(for item: Item) -> PageControlBarThumbnailCell? {
