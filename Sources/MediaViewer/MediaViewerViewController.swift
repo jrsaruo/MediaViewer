@@ -420,6 +420,44 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
+    open func deleteMedia<MediaIdentifier>(
+        with identifier: MediaIdentifier,
+        after deleteAction: () async throws -> Void
+    ) async rethrows where MediaIdentifier: Hashable {
+        let identifier = AnyMediaIdentifier(rawValue: identifier)
+        let isDeletingLastPage = identifier == mediaViewerVM.mediaIdentifiers.last
+        let isDeletingCurrentPage = identifier == currentMediaIdentifier
+        
+        try await deleteAction()
+        
+        // Perform delete animation
+        let deletionAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
+            if isDeletingCurrentPage {
+                let currentPageView = self.currentPageViewController.mediaViewerOnePageView
+                currentPageView.performDeleteAnimationBody()
+            }
+            self.pageControlBar.performDeleteAnimationBody(for: identifier)
+        }
+        deletionAnimator.startAnimation()
+        await deletionAnimator.addCompletion()
+        
+        // TODO: Handle empty
+        // Reload data source
+        let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+            self.pageControlBar.deleteItems([identifier], animated: true)
+            
+            // Move page if deleted an image on the current page
+            if isDeletingCurrentPage {
+                let destinationIdentifier = isDeletingLastPage
+                ? self.mediaViewerVM.mediaIdentifier(before: identifier)! 
+                : self.mediaViewerVM.mediaIdentifier(after: identifier)!
+                self.move(toMediaWith: destinationIdentifier, animated: true)
+            }
+        }
+        finishAnimator.startAnimation()
+        await finishAnimator.addCompletion()
+    }
+    
     private func pageDidChange() {
         mediaViewerDelegate?.mediaViewer(
             self,
