@@ -89,7 +89,7 @@ final class MediaViewerPageControlBar: UIView {
     
     private typealias CellRegistration = UICollectionView.CellRegistration<
         PageControlBarThumbnailCell,
-        Int // page
+        Item
     >
     
     weak var dataSource: (any MediaViewerPageControlBarDataSource)?
@@ -144,18 +144,18 @@ final class MediaViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Item>(
         collectionView: collectionView
-    ) { [weak self] collectionView, indexPath, page in
+    ) { [weak self] collectionView, indexPath, item in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: cellRegistration,
             for: indexPath,
-            item: page
+            item: item
         )
     }
     
-    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, page in
+    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, item in
         guard let self, let dataSource else { return }
         let scale = window?.screen.scale ?? 3
         let preferredSize = CGSize(
@@ -164,7 +164,7 @@ final class MediaViewerPageControlBar: UIView {
         )
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: page,
+            thumbnailOnPage: item.page,
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
@@ -227,9 +227,9 @@ final class MediaViewerPageControlBar: UIView {
     // MARK: - Methods
     
     func configure(numberOfPages: Int, currentPage: Int) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
-        snapshot.appendItems(Array(0..<numberOfPages))
+        snapshot.appendItems((0..<numberOfPages).map(Item.init))
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
