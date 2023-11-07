@@ -50,6 +50,10 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
+        // Reset changes by delete animation.
+        transform = .identity
+        alpha = 1
+        
         imageLoadingTask?.cancel()
         imageLoadingTask = nil
         imageView.image = nil
@@ -59,5 +63,11 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
     
     func configure(with imageSource: Source<UIImage?>) {
         imageLoadingTask = imageView.load(imageSource)
+    }
+    
+    func performDeleteAnimationBody() {
+        // NOTE: These changes are reset in prepareForReuse().
+        transform = transform.scaledBy(x: 0.5, y: 0.5)
+        alpha = 0
     }
 }
