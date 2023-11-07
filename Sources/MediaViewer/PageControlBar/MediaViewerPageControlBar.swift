@@ -369,11 +369,23 @@ final class MediaViewerPageControlBar: UIView {
 
 extension MediaViewerPageControlBar {
     
+    func beginDeletion() {
+        state = .deleting
+    }
+    
+    func finishDeletion() {
+        state = .expanded
+    }
+    
     func performDeleteAnimationBody(for identifier: AnyMediaIdentifier) {
+        assert(state == .deleting)
+        
         cell(for: identifier)?.performDeleteAnimationBody()
     }
     
     func deleteItems(_ identifiers: [AnyMediaIdentifier], animated: Bool) {
+        assert(state == .deleting)
+        
         var snapshot = diffableDataSource.snapshot()
         snapshot.deleteItems(identifiers)
         diffableDataSource.apply(snapshot, animatingDifferences: animated)

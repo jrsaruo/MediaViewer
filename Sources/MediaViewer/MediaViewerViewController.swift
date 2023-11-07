@@ -430,6 +430,9 @@ open class MediaViewerViewController: UIPageViewController {
         
         try await deleteAction()
         
+        pageControlBar.beginDeletion()
+        defer { pageControlBar.finishDeletion() }
+        
         // Perform delete animation
         let deletionAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
             if isDeletingCurrentPage {
