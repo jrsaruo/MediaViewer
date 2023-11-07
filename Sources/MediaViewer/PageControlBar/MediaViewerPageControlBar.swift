@@ -241,6 +241,24 @@ final class MediaViewerPageControlBar: UIView {
         }
     }
     
+    private func item(forPage page: Int) -> Item {
+        let item = diffableDataSource.snapshot().itemIdentifiers[page]
+        precondition(item.page == page)
+        return item
+    }
+    
+    private func cell(for item: Item) -> PageControlBarThumbnailCell? {
+        guard let indexPath = diffableDataSource.indexPath(for: item),
+              let cell = collectionView.cellForItem(at: indexPath) else {
+            return nil
+        }
+        guard let cell = cell as? PageControlBarThumbnailCell else {
+            assertionFailure("Unexpected cell: \(cell)")
+            return nil
+        }
+        return cell
+    }
+    
     private func updateLayout(
         expandingItemAt indexPath: IndexPath?,
         expandingThumbnailWidthToHeight: CGFloat? = nil,
