@@ -363,6 +363,17 @@ final class MediaViewerPageControlBar: UIView {
     }
 }
 
+// MARK: - Deletion -
+
+extension MediaViewerPageControlBar {
+    
+    func deleteItems(_ identifiers: [AnyMediaIdentifier], animated: Bool) {
+        var snapshot = diffableDataSource.snapshot()
+        snapshot.deleteItems(identifiers)
+        diffableDataSource.apply(snapshot, animatingDifferences: animated)
+    }
+}
+
 // MARK: - Interactive paging -
 
 extension MediaViewerPageControlBar {
