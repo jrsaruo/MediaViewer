@@ -420,10 +420,17 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
+    public enum DeletionError: Error {
+        case notReadyToDelete
+    }
+    
     open func deleteMedia<MediaIdentifier>(
         with identifier: MediaIdentifier,
         after deleteAction: () async throws -> Void
-    ) async rethrows where MediaIdentifier: Hashable {
+    ) async throws where MediaIdentifier: Hashable {
+        try pageControlBar.beginDeletion()
+        defer { pageControlBar.finishDeletion() }
+        
         let identifier = AnyMediaIdentifier(rawValue: identifier)
         let isDeletingLastPage = identifier == mediaViewerVM.mediaIdentifiers.last
         let isDeletingCurrentPage = identifier == currentMediaIdentifier
@@ -435,9 +442,6 @@ open class MediaViewerViewController: UIPageViewController {
             identifiersAfterDeletion.count == mediaViewerVM.mediaIdentifiers.count - 1,
             "You have to complete deletion in `deleteAction` closure."
         )
-        
-        pageControlBar.beginDeletion()
-        defer { pageControlBar.finishDeletion() }
         
         // Perform delete animation
         let deletionAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
