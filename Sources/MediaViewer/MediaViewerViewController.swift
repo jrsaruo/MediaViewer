@@ -431,7 +431,7 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// Deletes media with the specified identifier.
     ///
-    /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation.
+    /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation. If all media is deleted, the viewer will close.
     ///
     /// ```swift
     /// try mediaViewer.deleteMedia(with: imageIdentifier, after: {
@@ -477,9 +477,15 @@ open class MediaViewerViewController: UIPageViewController {
             self.pageControlBar.performDeleteAnimationBody(for: identifier)
         }
         deletionAnimator.startAnimation()
+        
+        // If all media is deleted, close the viewer
+        if identifiersAfterDeletion.isEmpty {
+            navigationController?.popViewController(animated: true)
+            return
+        }
+        
         await deletionAnimator.addCompletion()
         
-        // TODO: Handle empty
         // Reload data source
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             self.pageControlBar.deleteItems([identifier], animated: true)
@@ -749,6 +755,17 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
                 willBeginPopTransitionTo: toVC
             )
         }
+        
+        if operation == .pop,
+           mediaViewerDataSource.mediaIdentifiers(for: self).isEmpty {
+            // When all media is deleted
+            return MediaViewerTransition(
+                operation: operation,
+                sourceView: nil,
+                sourceImage: { nil }
+            )
+        }
+        
         let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource.mediaViewer(
             self,
             transitionSourceViewForMediaWith: currentMediaIdentifier
