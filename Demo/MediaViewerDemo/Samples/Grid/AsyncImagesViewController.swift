@@ -134,6 +134,13 @@ final class AsyncImagesViewController: UIViewController {
             await dataSource.apply(snapshot)
         }
     }
+    
+    // Fake removal (not actually delete photo)
+    private func removeAsset(_ asset: PHAsset) async {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems([asset])
+        await dataSource.apply(snapshot, animatingDifferences: false)
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
@@ -151,7 +158,9 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
             .flexibleSpace(),
-            .init(systemItem: .trash)
+            mediaViewer.trashButton { currentMediaIdentifier in
+                await self.removeAsset(currentMediaIdentifier)
+            }
         ]
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
