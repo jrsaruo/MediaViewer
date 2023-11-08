@@ -571,6 +571,10 @@ open class MediaViewerViewController: UIPageViewController {
     
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
+        guard pageControlBar.state == .expanded else {
+            recognizer.state = .failed
+            return
+        }
         if recognizer.state == .began {
             // Start the interactive pop transition
             let sourceView = mediaViewerDataSource.mediaViewer(
