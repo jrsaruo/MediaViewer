@@ -471,6 +471,17 @@ open class MediaViewerViewController: UIPageViewController {
         await finishAnimator.addCompletion()
     }
     
+    open func deleteCurrentMedia<MediaIdentifier>(
+        after deleteAction: (
+            _ currentMediaIdentifier: MediaIdentifier
+        ) async throws -> Void
+    ) async throws where MediaIdentifier: Hashable {
+        let currentIdentifier = self.currentMediaIdentifier.rawValue as! MediaIdentifier
+        try await deleteMedia(with: currentIdentifier, after: {
+            try await deleteAction(currentIdentifier)
+        })
+    }
+    
     private func pageDidChange() {
         mediaViewerDelegate?.mediaViewer(
             self,
