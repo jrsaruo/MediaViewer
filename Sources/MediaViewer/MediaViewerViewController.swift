@@ -430,6 +430,12 @@ open class MediaViewerViewController: UIPageViewController {
         
         try await deleteAction()
         
+        let identifiersAfterDeletion = mediaViewerDataSource!.mediaIdentifiers(for: self)
+        precondition(
+            identifiersAfterDeletion.count == mediaViewerVM.mediaIdentifiers.count - 1,
+            "You have to complete deletion in `deleteAction` closure."
+        )
+        
         pageControlBar.beginDeletion()
         defer { pageControlBar.finishDeletion() }
         
