@@ -506,6 +506,8 @@ open class MediaViewerViewController: UIPageViewController {
     /// })
     /// ```
     ///
+    /// If you want to provide the deletion UI in an easy way, you can use `trashButton(deleteAction:)` instead.
+    ///
     /// - Note: `deleteAction` must complete deletion until it returns.
     ///         That means the number of media must be reduced by one after the `deleteAction` is succeeded.
     ///         If the deletion fails, `deleteAction` must throw an error.
