@@ -420,10 +420,35 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
+    /// An error on media deletion.
     public enum DeletionError: Error {
+        
+        /// An error that indicates the media viewer is not ready to delete media.
+        ///
+        /// It is thrown when the viewer is unsettled, e.g. during paging or delete animation.
         case notReadyToDelete
     }
     
+    /// Deletes media with the specified identifier.
+    ///
+    /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation.
+    ///
+    /// ```swift
+    /// try mediaViewer.deleteMedia(with: imageIdentifier, after: {
+    ///     try await your.deleteImage(with: imageIdentifier)
+    /// })
+    /// ```
+    ///
+    /// - Note: `deleteAction` must complete deletion until it returns.
+    ///         That means the number of media must be reduced by one after the `deleteAction` is succeeded.
+    ///         If the deletion fails, `deleteAction` must throw an error.
+    /// - Parameters:
+    ///   - identifier: An identifier for media to delete.
+    ///   - deleteAction: A closure that performs the actual media deletion.
+    ///                   It must complete deletion until it returns.
+    /// - Throws: If the viewer is not ready to delete (e.g. during paging or delete animation),
+    ///           `DeletionError.notReadyToDelete` will be thrown.
+    ///           If `deleteAction` throws some error, it will be thrown.
     open func deleteMedia<MediaIdentifier>(
         with identifier: MediaIdentifier,
         after deleteAction: () async throws -> Void
@@ -471,6 +496,25 @@ open class MediaViewerViewController: UIPageViewController {
         await finishAnimator.addCompletion()
     }
     
+    /// Deletes media on the current page.
+    ///
+    /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation.
+    ///
+    /// ```swift
+    /// try mediaViewer.deleteCurrentMedia(after: { currentImageIdentifier in
+    ///     try await your.deleteImage(with: currentImageIdentifier)
+    /// })
+    /// ```
+    ///
+    /// - Note: `deleteAction` must complete deletion until it returns.
+    ///         That means the number of media must be reduced by one after the `deleteAction` is succeeded.
+    ///         If the deletion fails, `deleteAction` must throw an error.
+    /// - Parameter deleteAction: A closure that takes the current media identifier and
+    ///                           performs the actual media deletion.
+    ///                           It must complete deletion until it returns.
+    /// - Throws: If the viewer is not ready to delete (e.g. during paging or delete animation),
+    ///           `DeletionError.notReadyToDelete` will be thrown.
+    ///           If `deleteAction` throws some error, it will be thrown.
     open func deleteCurrentMedia<MediaIdentifier>(
         after deleteAction: (
             _ currentMediaIdentifier: MediaIdentifier
