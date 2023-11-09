@@ -8,5 +8,11 @@
 import Combine
 
 final class MediaViewerViewModel: ObservableObject {
+    
+    /// Page identifiers of the media viewer.
+    ///
+    /// The page number corresponds to the index of this array.
+    @Published var pageIDs: [MediaViewerPageID] = []
+    
     @Published var showsMediaOnly = false
 }
