@@ -129,6 +129,9 @@ open class MediaViewerViewController: UIPageViewController {
         )
         mediaViewerDataSource = dataSource
         
+        let numberOfMedia = dataSource.numberOfMedia(in: self)
+        mediaViewerVM.setUpPageIDs(numberOfMedia: numberOfMedia)
+        
         guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else {
             preconditionFailure("Page \(page) out of range.")
         }

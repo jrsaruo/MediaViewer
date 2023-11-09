@@ -15,4 +15,8 @@ final class MediaViewerViewModel: ObservableObject {
     @Published var pageIDs: [MediaViewerPageID] = []
     
     @Published var showsMediaOnly = false
+    
+    func setUpPageIDs(numberOfMedia: Int) {
+        pageIDs = (0..<numberOfMedia).map { _ in .init() }
+    }
 }
