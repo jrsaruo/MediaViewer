@@ -399,13 +399,30 @@ extension MediaViewerPageControlBar {
     ///
     /// - Parameters:
     ///   - identifiers: Identifiers for media to delete.
+    ///   - destinationIdentifier: An identifier for media to move to after deletion.
     ///   - animated: Whether to animate the deletion.
-    func deleteItems(_ identifiers: [AnyMediaIdentifier], animated: Bool) {
+    func deleteItems(
+        _ identifiers: [AnyMediaIdentifier],
+        destinationIdentifier: AnyMediaIdentifier,
+        animated: Bool
+    ) {
         assert(state == .deleting)
         
         var snapshot = diffableDataSource.snapshot()
         snapshot.deleteItems(identifiers)
         diffableDataSource.apply(snapshot, animatingDifferences: animated)
+        
+        guard let indexPath = diffableDataSource.indexPath(for: destinationIdentifier) else {
+            return
+        }
+        updateLayout(
+            expandingItemAt: indexPath,
+            expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
+                self,
+                widthToHeightOfThumbnailWith: destinationIdentifier
+            ),
+            animated: animated
+        )
     }
 }
 

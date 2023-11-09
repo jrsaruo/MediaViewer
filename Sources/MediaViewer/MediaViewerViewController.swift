@@ -457,8 +457,21 @@ open class MediaViewerViewController: UIPageViewController {
         defer { pageControlBar.finishDeletion() }
         
         let identifier = AnyMediaIdentifier(rawValue: identifier)
+        let currentMediaIdentifier = currentMediaIdentifier
+        
         let isDeletingLastPage = identifier == mediaViewerVM.mediaIdentifiers.last
         let isDeletingCurrentPage = identifier == currentMediaIdentifier
+        
+        let destinationIdentifier: AnyMediaIdentifier
+        if isDeletingCurrentPage {
+            destinationIdentifier = isDeletingLastPage
+            // FIXME: force unwrap
+            ? self.mediaViewerVM.mediaIdentifier(before: identifier)! // Stay on the last page
+            : self.mediaViewerVM.mediaIdentifier(after: identifier)!
+        } else {
+            // Stay on the current page
+            destinationIdentifier = currentMediaIdentifier
+        }
         
         try await deleteAction()
         
@@ -488,13 +501,14 @@ open class MediaViewerViewController: UIPageViewController {
         
         // Reload data source
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            self.pageControlBar.deleteItems([identifier], animated: true)
+            self.pageControlBar.deleteItems(
+                [identifier],
+                destinationIdentifier: destinationIdentifier,
+                animated: true
+            )
             
             // Move page if deleted an image on the current page
             if isDeletingCurrentPage {
-                let destinationIdentifier = isDeletingLastPage
-                ? self.mediaViewerVM.mediaIdentifier(before: identifier)! 
-                : self.mediaViewerVM.mediaIdentifier(after: identifier)!
                 self.move(toMediaWith: destinationIdentifier, animated: true)
             }
         }
