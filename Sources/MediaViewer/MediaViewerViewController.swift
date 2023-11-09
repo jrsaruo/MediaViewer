@@ -45,7 +45,11 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// The current page of the media viewer.
     public var currentPage: Int {
-        currentPageViewController.page
+        mediaViewerVM.page(with: currentPageID)!
+    }
+    
+    var currentPageID: MediaViewerPageID {
+        currentPageViewController.pageID
     }
     
     var currentPageViewController: MediaViewerOnePageViewController {
@@ -476,8 +480,7 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        let previousPage = mediaViewerPageVC.page - 1
-        guard let previousPageID = mediaViewerVM.pageID(forPage: previousPage) else {
+        guard let previousPageID = mediaViewerVM.previousPageID(of: mediaViewerPageVC.pageID) else {
             return nil
         }
         if let previousPageVC = makeMediaViewerPage(with: previousPageID) {
@@ -494,8 +497,7 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        let nextPage = mediaViewerPageVC.page + 1
-        guard let nextPageID = mediaViewerVM.pageID(forPage: nextPage) else {
+        guard let nextPageID = mediaViewerVM.nextPageID(of: mediaViewerPageVC.pageID) else {
             return nil
         }
         if let nextPageVC = makeMediaViewerPage(with: nextPageID) {
@@ -508,12 +510,10 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
         with pageID: MediaViewerPageID
     ) -> MediaViewerOnePageViewController? {
         guard let page = mediaViewerVM.page(with: pageID),
-              let mediaViewerDataSource,
-              0 <= page,
-              page < mediaViewerDataSource.numberOfMedia(in: self) else { return nil }
+              let mediaViewerDataSource else { return nil }
         let media = mediaViewerDataSource.mediaViewer(self, mediaOnPage: page)
         
-        let mediaViewerPage = MediaViewerOnePageViewController(page: page)
+        let mediaViewerPage = MediaViewerOnePageViewController(pageID: pageID)
         mediaViewerPage.delegate = self
         switch media {
         case .image(.sync(let image)):

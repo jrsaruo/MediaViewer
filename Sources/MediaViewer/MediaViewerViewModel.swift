@@ -30,4 +30,16 @@ final class MediaViewerViewModel: ObservableObject {
     func page(with pageID: MediaViewerPageID) -> Int? {
         pageIDs.firstIndex(of: pageID)
     }
+    
+    func previousPageID(of id: MediaViewerPageID) -> MediaViewerPageID? {
+        guard let page = page(with: id) else { return nil }
+        let previousPage = page - 1
+        return pageID(forPage: previousPage)
+    }
+    
+    func nextPageID(of id: MediaViewerPageID) -> MediaViewerPageID? {
+        guard let page = page(with: id) else { return nil }
+        let nextPage = page + 1
+        return pageID(forPage: nextPage)
+    }
 }
