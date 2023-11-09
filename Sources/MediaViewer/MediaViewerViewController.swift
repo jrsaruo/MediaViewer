@@ -132,7 +132,8 @@ open class MediaViewerViewController: UIPageViewController {
         let numberOfMedia = dataSource.numberOfMedia(in: self)
         mediaViewerVM.setUpPageIDs(numberOfMedia: numberOfMedia)
         
-        guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else {
+        guard let pageID = mediaViewerVM.pageID(forPage: page),
+              let mediaViewerPage = makeMediaViewerPage(with: pageID) else {
             preconditionFailure("Page \(page) out of range.")
         }
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
@@ -358,7 +359,10 @@ open class MediaViewerViewController: UIPageViewController {
     /// Move to show media on the specified page.
     /// - Parameter page: The destination page.
     open func move(toPage page: Int, animated: Bool) {
-        guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else { return }
+        guard let pageID = mediaViewerVM.pageID(forPage: page) else {
+            preconditionFailure("Page \(page) out of range.")
+        }
+        guard let mediaViewerPage = makeMediaViewerPage(with: pageID) else { return }
         setViewControllers(
             [mediaViewerPage],
             direction: page < currentPage ? .reverse : .forward,
@@ -473,7 +477,10 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             return nil
         }
         let previousPage = mediaViewerPageVC.page - 1
-        if let previousPageVC = makeMediaViewerPage(forPage: previousPage) {
+        guard let previousPageID = mediaViewerVM.pageID(forPage: previousPage) else {
+            return nil
+        }
+        if let previousPageVC = makeMediaViewerPage(with: previousPageID) {
             return previousPageVC
         }
         return nil
@@ -488,16 +495,20 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             return nil
         }
         let nextPage = mediaViewerPageVC.page + 1
-        if let nextPageVC = makeMediaViewerPage(forPage: nextPage) {
+        guard let nextPageID = mediaViewerVM.pageID(forPage: nextPage) else {
+            return nil
+        }
+        if let nextPageVC = makeMediaViewerPage(with: nextPageID) {
             return nextPageVC
         }
         return nil
     }
     
     private func makeMediaViewerPage(
-        forPage page: Int
+        with pageID: MediaViewerPageID
     ) -> MediaViewerOnePageViewController? {
-        guard let mediaViewerDataSource,
+        guard let page = mediaViewerVM.page(with: pageID),
+              let mediaViewerDataSource,
               0 <= page,
               page < mediaViewerDataSource.numberOfMedia(in: self) else { return nil }
         let media = mediaViewerDataSource.mediaViewer(self, mediaOnPage: page)
