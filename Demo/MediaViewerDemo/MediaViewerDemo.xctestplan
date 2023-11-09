@@ -9,7 +9,15 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false,
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:..",
+          "identifier" : "MediaViewer",
+          "name" : "MediaViewer"
+        }
+      ]
+    },
     "targetForVariableExpansion" : {
       "containerPath" : "container:MediaViewerDemo.xcodeproj",
       "identifier" : "5A54612529A2594700F16456",
