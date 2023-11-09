@@ -8,6 +8,11 @@
 import UIKit
 import Combine
 
+/// An identifier of the media viewer page.
+struct MediaViewerPageID: Hashable, Sendable {
+    let rawValue = UUID()
+}
+
 /// An media viewer.
 ///
 /// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
