@@ -467,38 +467,42 @@ open class MediaViewerViewController: UIPageViewController {
         with identifier: MediaIdentifier,
         after deleteAction: () async throws -> Void
     ) async throws where MediaIdentifier: Hashable {
+        guard let mediaViewerDataSource else {
+            preconditionFailure("The media viewer requires the data source.")
+        }
+        
         try pageControlBar.beginDeletion()
         defer { pageControlBar.finishDeletion() }
         
         let identifier = AnyMediaIdentifier(rawValue: identifier)
-        let currentMediaIdentifier = currentMediaIdentifier
+        let currentPageVC = currentPageViewController
         
-        let isDeletingLastPage = identifier == mediaViewerVM.mediaIdentifiers.last
-        let isDeletingCurrentPage = identifier == currentMediaIdentifier
+        let animationAfterDeletion = mediaViewerVM.pagingAnimationAfterDeletion(
+            deletingIdentifier: identifier,
+            currentIdentifier: currentPageVC.mediaIdentifier
+        )
         
-        let destinationIdentifier: AnyMediaIdentifier
-        if isDeletingCurrentPage {
-            destinationIdentifier = isDeletingLastPage
-            // FIXME: force unwrap
-            ? self.mediaViewerVM.mediaIdentifier(before: identifier)! // Stay on the last page
-            : self.mediaViewerVM.mediaIdentifier(after: identifier)!
-        } else {
-            // Stay on the current page
-            destinationIdentifier = currentMediaIdentifier
-        }
+        // MARK: Delete media
+        
+        let identifiers = mediaViewerDataSource.mediaIdentifiers(for: self)
+        precondition(
+            mediaViewerVM.mediaIdentifiers.count == identifiers.count
+        )
         
         try await deleteAction()
+        mediaViewerVM.deleteMediaIdentifier(identifier)
         
-        let identifiersAfterDeletion = mediaViewerDataSource!.mediaIdentifiers(for: self)
-        precondition(
-            identifiersAfterDeletion.count == mediaViewerVM.mediaIdentifiers.count - 1,
+        let identifiersAfterDeletion = mediaViewerDataSource.mediaIdentifiers(for: self)
+        assert(
+            mediaViewerVM.mediaIdentifiers.count == identifiersAfterDeletion.count,
             "You have to complete deletion in `deleteAction` closure."
         )
         
-        // Perform delete animation
+        // MARK: Perform delete animation
+        
         let deletionAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
-            if isDeletingCurrentPage {
-                let currentPageView = self.currentPageViewController.mediaViewerOnePageView
+            if identifier == currentPageVC.mediaIdentifier {
+                let currentPageView = currentPageVC.mediaViewerOnePageView
                 currentPageView.performDeleteAnimationBody()
             }
             self.pageControlBar.performDeleteAnimationBody(for: identifier)
@@ -506,24 +510,36 @@ open class MediaViewerViewController: UIPageViewController {
         deletionAnimator.startAnimation()
         
         // If all media is deleted, close the viewer
-        if identifiersAfterDeletion.isEmpty {
+        guard let animationAfterDeletion else {
+            assert(identifiersAfterDeletion.isEmpty)
             navigationController?.popViewController(animated: true)
             return
         }
         
         await deletionAnimator.addCompletion()
         
-        // Reload data source
+        // MARK: Finalize deletion
+        
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             self.pageControlBar.deleteItems(
                 [identifier],
-                destinationIdentifier: destinationIdentifier,
+                destinationIdentifier: animationAfterDeletion.destinationIdentifier,
                 animated: true
             )
             
             // Move page if deleted an image on the current page
-            if isDeletingCurrentPage {
-                self.move(toMediaWith: destinationIdentifier, animated: true)
+            if let direction = animationAfterDeletion.direction {
+                /*
+                 * NOTE:
+                 * move(toPage:animated:) does not work here.
+                 * That method uses currentPage, which may crash as it tries
+                 * to reference a deleted page.
+                 */
+                self.move(
+                    toMediaWith: animationAfterDeletion.destinationIdentifier,
+                    direction: direction,
+                    animated: true
+                )
             }
         }
         finishAnimator.startAnimation()
