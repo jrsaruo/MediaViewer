@@ -193,10 +193,10 @@ final class MediaViewerPageControlBar: UIView {
     
     // MARK: - Methods
     
-    func configure(numberOfPages: Int, currentPage: Int) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
+    func configure(pageIDs: [MediaViewerPageID], currentPage: Int) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, MediaViewerPageID>()
         snapshot.appendSections([0])
-        snapshot.appendItems((0..<numberOfPages).map { _ in Item() })
+        snapshot.appendItems(pageIDs)
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)

@@ -187,10 +187,10 @@ open class MediaViewerViewController: UIPageViewController {
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
-        if let mediaViewerDataSource {
-            let numberOfPages = mediaViewerDataSource.numberOfMedia(in: self)
-            pageControlBar.configure(numberOfPages: numberOfPages, currentPage: currentPage)
-        }
+        pageControlBar.configure(
+            pageIDs: mediaViewerVM.pageIDs,
+            currentPage: currentPage
+        )
         pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
