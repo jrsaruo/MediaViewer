@@ -24,9 +24,7 @@ protocol MediaViewerPageControlBarDataSource: AnyObject {
 
 final class MediaViewerPageControlBar: UIView {
     
-    struct Item: Hashable, Identifiable, Sendable {
-        let id = UUID()
-    }
+    typealias Item = MediaViewerPageID
     
     enum State: Hashable, Sendable {
         case collapsing
