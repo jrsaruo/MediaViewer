@@ -408,13 +408,27 @@ open class MediaViewerViewController: UIPageViewController {
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) {
-        guard let mediaViewerPage = makeMediaViewerPage(with: identifier) else { return }
-        setViewControllers(
-            [mediaViewerPage],
+        move(
+            toMediaWith: identifier,
             direction: mediaViewerVM.moveDirection(
                 from: currentMediaIdentifier,
                 to: identifier
             ),
+            animated: animated,
+            completion: completion
+        )
+    }
+    
+    private func move(
+        toMediaWith identifier: AnyMediaIdentifier,
+        direction: NavigationDirection,
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        guard let mediaViewerPage = makeMediaViewerPage(with: identifier) else { return }
+        setViewControllers(
+            [mediaViewerPage],
+            direction: direction,
             animated: animated,
             completion: completion
         )
