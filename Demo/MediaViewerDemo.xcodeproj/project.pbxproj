@@ -30,6 +30,7 @@
 		5A13B05F2AF61D530095729F /* CameraLikeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraLikeViewController.swift; sourceTree = "<group>"; };
 		5A13B0612AF62BFA0095729F /* PHImageFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PHImageFetcher.swift; sourceTree = "<group>"; };
 		5A13B0652AF660710095729F /* CameraLikeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraLikeView.swift; sourceTree = "<group>"; };
+		5A13EC8B2AFD554C0007E405 /* MediaViewerDemo.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MediaViewerDemo.xctestplan; sourceTree = "<group>"; };
 		5A54612629A2594700F16456 /* MediaViewerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediaViewerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A54612929A2594700F16456 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5A54612B29A2594700F16456 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -114,6 +115,7 @@
 				5A54613229A2594800F16456 /* Assets.xcassets */,
 				5A54613429A2594800F16456 /* LaunchScreen.storyboard */,
 				5A54613729A2594800F16456 /* Info.plist */,
+				5A13EC8B2AFD554C0007E405 /* MediaViewerDemo.xctestplan */,
 			);
 			path = MediaViewerDemo;
 			sourceTree = "<group>";
