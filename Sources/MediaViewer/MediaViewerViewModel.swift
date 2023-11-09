@@ -16,7 +16,18 @@ final class MediaViewerViewModel: ObservableObject {
     
     @Published var showsMediaOnly = false
     
+    // MARK: - Methods
+    
     func setUpPageIDs(numberOfMedia: Int) {
         pageIDs = (0..<numberOfMedia).map { _ in .init() }
+    }
+    
+    func pageID(forPage page: Int) -> MediaViewerPageID? {
+        guard 0 <= page && page < pageIDs.endIndex else { return nil }
+        return pageIDs[page]
+    }
+    
+    func page(with pageID: MediaViewerPageID) -> Int? {
+        pageIDs.firstIndex(of: pageID)
     }
 }
