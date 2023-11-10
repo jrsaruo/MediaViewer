@@ -54,7 +54,13 @@ final class AsyncImagesViewController: UIViewController {
         }
     )
     
-    private let toggleContentModeButton = UIBarButtonItem()
+    private lazy var toggleContentModeButton = UIBarButtonItem(
+        primaryAction: .init(
+            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
+        ) { [weak self] _ in
+            self?.toggleContentMode()
+        }
+    )
     
     private var preferredContentMode: UIView.ContentMode = .scaleAspectFill
     
@@ -81,12 +87,6 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.leftBarButtonItem = refreshButton
         navigationItem.rightBarButtonItem = toggleContentModeButton
-        
-        toggleContentModeButton.primaryAction = UIAction(
-            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
-        ) { [weak self] _ in
-            self?.toggleContentMode()
-        }
     }
     
     private func loadPhotos() async {
