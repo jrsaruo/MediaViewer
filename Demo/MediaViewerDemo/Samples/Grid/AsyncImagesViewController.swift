@@ -47,6 +47,13 @@ final class AsyncImagesViewController: UIViewController {
         )
     }
     
+    private lazy var refreshButton = UIBarButtonItem(
+        systemItem: .refresh,
+        primaryAction: .init { [weak self] _ in
+            Task { await self?.refresh(animated: true) }
+        }
+    )
+    
     private let toggleContentModeButton = UIBarButtonItem()
     
     private var preferredContentMode: UIView.ContentMode = .scaleAspectFill
@@ -72,18 +79,17 @@ final class AsyncImagesViewController: UIViewController {
         // Navigation
         navigationItem.title = "Async Sample"
         navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.leftBarButtonItem = refreshButton
+        navigationItem.rightBarButtonItem = toggleContentModeButton
         
         toggleContentModeButton.primaryAction = UIAction(
             image: .init(systemName: "rectangle.arrowtriangle.2.inward")
         ) { [weak self] _ in
             self?.toggleContentMode()
         }
-        navigationItem.rightBarButtonItem = toggleContentModeButton
     }
     
     private func loadPhotos() async {
-        let assets = await PHImageFetcher.imageAssets()
-        
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
         defer {
@@ -96,10 +102,7 @@ final class AsyncImagesViewController: UIViewController {
             }
         }
         
-        var snapshot = dataSource.snapshot()
-        snapshot.appendSections([0])
-        snapshot.appendItems(assets)
-        await dataSource.apply(snapshot, animatingDifferences: false)
+        let assets = await refresh(animated: false)
         
         // Scroll to the bottom if needed
         if let lastAsset = assets.last {
@@ -112,6 +115,17 @@ final class AsyncImagesViewController: UIViewController {
     }
     
     // MARK: - Methods
+    
+    @discardableResult
+    private func refresh(animated: Bool) async -> [PHAsset] {
+        let assets = await PHImageFetcher.imageAssets()
+        
+        var snapshot = NSDiffableDataSourceSnapshot<Int, PHAsset>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(assets)
+        await dataSource.apply(snapshot, animatingDifferences: animated)
+        return assets
+    }
     
     private func toggleContentMode() {
         let newContentMode: UIView.ContentMode
