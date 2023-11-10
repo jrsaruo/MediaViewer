@@ -87,6 +87,14 @@ final class AsyncImagesViewController: UIViewController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.leftBarButtonItem = refreshButton
         navigationItem.rightBarButtonItem = toggleContentModeButton
+        
+        // Subviews
+        imageGridView.collectionView.refreshControl = .init(
+            frame: .zero,
+            primaryAction: .init { [weak self] _ in
+                Task { await self?.refresh(animated: true) }
+            }
+        )
     }
     
     private func loadPhotos() async {
@@ -124,6 +132,8 @@ final class AsyncImagesViewController: UIViewController {
         snapshot.appendSections([0])
         snapshot.appendItems(assets)
         await dataSource.apply(snapshot, animatingDifferences: animated)
+        
+        imageGridView.collectionView.refreshControl?.endRefreshing()
         return assets
     }
     
