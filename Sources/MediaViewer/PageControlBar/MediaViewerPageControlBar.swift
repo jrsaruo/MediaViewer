@@ -24,8 +24,6 @@ protocol MediaViewerPageControlBarDataSource: AnyObject {
 
 final class MediaViewerPageControlBar: UIView {
     
-    typealias Item = MediaViewerPageID
-    
     enum State: Hashable, Sendable {
         case collapsing
         
@@ -56,7 +54,7 @@ final class MediaViewerPageControlBar: UIView {
     
     private typealias CellRegistration = UICollectionView.CellRegistration<
         PageControlBarThumbnailCell,
-        Item
+        MediaViewerPageID
     >
     
     weak var dataSource: (any MediaViewerPageControlBarDataSource)?
@@ -111,7 +109,7 @@ final class MediaViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Item>(
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, MediaViewerPageID>(
         collectionView: collectionView
     ) { [weak self] collectionView, indexPath, item in
         guard let self else { return nil }
@@ -122,7 +120,7 @@ final class MediaViewerPageControlBar: UIView {
         )
     }
     
-    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, item in
+    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, pageID in
         guard let self, let dataSource else { return }
         let scale = window?.screen.scale ?? 3
         let preferredSize = CGSize(
@@ -131,7 +129,7 @@ final class MediaViewerPageControlBar: UIView {
         )
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: page(of: item)!,
+            thumbnailOnPage: page(with: pageID)!,
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
@@ -208,16 +206,16 @@ final class MediaViewerPageControlBar: UIView {
         }
     }
     
-    private func page(of item: Item) -> Int? {
-        diffableDataSource.snapshot().indexOfItem(item)
+    private func page(with pageID: MediaViewerPageID) -> Int? {
+        diffableDataSource.snapshot().indexOfItem(pageID)
     }
     
-    private func item(forPage page: Int) -> Item {
+    private func pageID(forPage page: Int) -> MediaViewerPageID {
         diffableDataSource.snapshot().itemIdentifiers[page]
     }
     
-    private func cell(for item: Item) -> PageControlBarThumbnailCell? {
-        guard let indexPath = diffableDataSource.indexPath(for: item),
+    private func cell(for pageID: MediaViewerPageID) -> PageControlBarThumbnailCell? {
+        guard let indexPath = diffableDataSource.indexPath(for: pageID),
               let cell = collectionView.cellForItem(at: indexPath) else {
             return nil
         }
