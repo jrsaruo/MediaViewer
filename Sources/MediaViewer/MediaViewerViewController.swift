@@ -8,6 +8,11 @@
 import UIKit
 import Combine
 
+/// An identifier of the media viewer page.
+struct MediaViewerPageID: Hashable, Sendable {
+    let rawValue = UUID()
+}
+
 /// An media viewer.
 ///
 /// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
@@ -40,7 +45,11 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// The current page of the media viewer.
     public var currentPage: Int {
-        currentPageViewController.page
+        mediaViewerVM.page(with: currentPageID)!
+    }
+    
+    var currentPageID: MediaViewerPageID {
+        currentPageViewController.pageID
     }
     
     var currentPageViewController: MediaViewerOnePageViewController {
@@ -124,7 +133,11 @@ open class MediaViewerViewController: UIPageViewController {
         )
         mediaViewerDataSource = dataSource
         
-        guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else {
+        let numberOfMedia = dataSource.numberOfMedia(in: self)
+        mediaViewerVM.setUpPageIDs(numberOfMedia: numberOfMedia)
+        
+        guard let pageID = mediaViewerVM.pageID(forPage: page),
+              let mediaViewerPage = makeMediaViewerPage(with: pageID) else {
             preconditionFailure("Page \(page) out of range.")
         }
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
@@ -179,10 +192,10 @@ open class MediaViewerViewController: UIPageViewController {
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
-        if let mediaViewerDataSource {
-            let numberOfPages = mediaViewerDataSource.numberOfMedia(in: self)
-            pageControlBar.configure(numberOfPages: numberOfPages, currentPage: currentPage)
-        }
+        pageControlBar.configure(
+            pageIDs: mediaViewerVM.pageIDs,
+            currentPage: currentPage
+        )
         pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
@@ -350,7 +363,10 @@ open class MediaViewerViewController: UIPageViewController {
     /// Move to show media on the specified page.
     /// - Parameter page: The destination page.
     open func move(toPage page: Int, animated: Bool) {
-        guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else { return }
+        guard let pageID = mediaViewerVM.pageID(forPage: page) else {
+            preconditionFailure("Page \(page) out of range.")
+        }
+        guard let mediaViewerPage = makeMediaViewerPage(with: pageID) else { return }
         setViewControllers(
             [mediaViewerPage],
             direction: page < currentPage ? .reverse : .forward,
@@ -464,11 +480,10 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        let previousPage = mediaViewerPageVC.page - 1
-        if let previousPageVC = makeMediaViewerPage(forPage: previousPage) {
-            return previousPageVC
+        guard let previousPageID = mediaViewerVM.previousPageID(of: mediaViewerPageVC.pageID) else {
+            return nil
         }
-        return nil
+        return makeMediaViewerPage(with: previousPageID)
     }
     
     open func pageViewController(
@@ -479,22 +494,20 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        let nextPage = mediaViewerPageVC.page + 1
-        if let nextPageVC = makeMediaViewerPage(forPage: nextPage) {
-            return nextPageVC
+        guard let nextPageID = mediaViewerVM.nextPageID(of: mediaViewerPageVC.pageID) else {
+            return nil
         }
-        return nil
+        return makeMediaViewerPage(with: nextPageID)
     }
     
     private func makeMediaViewerPage(
-        forPage page: Int
+        with pageID: MediaViewerPageID
     ) -> MediaViewerOnePageViewController? {
-        guard let mediaViewerDataSource,
-              0 <= page,
-              page < mediaViewerDataSource.numberOfMedia(in: self) else { return nil }
+        guard let page = mediaViewerVM.page(with: pageID),
+              let mediaViewerDataSource else { return nil }
         let media = mediaViewerDataSource.mediaViewer(self, mediaOnPage: page)
         
-        let mediaViewerPage = MediaViewerOnePageViewController(page: page)
+        let mediaViewerPage = MediaViewerOnePageViewController(pageID: pageID)
         mediaViewerPage.delegate = self
         switch media {
         case .image(.sync(let image)):
