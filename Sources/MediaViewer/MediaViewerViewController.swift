@@ -483,10 +483,7 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
         guard let previousPageID = mediaViewerVM.previousPageID(of: mediaViewerPageVC.pageID) else {
             return nil
         }
-        if let previousPageVC = makeMediaViewerPage(with: previousPageID) {
-            return previousPageVC
-        }
-        return nil
+        return makeMediaViewerPage(with: previousPageID)
     }
     
     open func pageViewController(
@@ -500,10 +497,7 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
         guard let nextPageID = mediaViewerVM.nextPageID(of: mediaViewerPageVC.pageID) else {
             return nil
         }
-        if let nextPageVC = makeMediaViewerPage(with: nextPageID) {
-            return nextPageVC
-        }
-        return nil
+        return makeMediaViewerPage(with: nextPageID)
     }
     
     private func makeMediaViewerPage(
