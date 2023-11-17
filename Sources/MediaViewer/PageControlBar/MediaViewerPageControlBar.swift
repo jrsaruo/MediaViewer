@@ -111,12 +111,12 @@ final class MediaViewerPageControlBar: UIView {
     
     lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, MediaViewerPageID>(
         collectionView: collectionView
-    ) { [weak self] collectionView, indexPath, item in
+    ) { [weak self] collectionView, indexPath, pageID in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: cellRegistration,
             for: indexPath,
-            item: item
+            item: pageID
         )
     }
     
