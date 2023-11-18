@@ -147,8 +147,10 @@ open class MediaViewerViewController: UIPageViewController {
         let identifiers = dataSource.mediaIdentifiers(for: self)
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
-        let identifier = AnyMediaIdentifier(rawValue: mediaIdentifier)
-        let mediaViewerPage = makeMediaViewerPage(with: identifier)!
+        let mediaViewerPage = makeMediaViewerPage(
+            with: AnyMediaIdentifier(rawValue: mediaIdentifier),
+            dataSource: dataSource
+        )
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
         hidesBottomBarWhenPushed = true
@@ -517,15 +519,15 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
     }
     
     private func makeMediaViewerPage(
-        with identifier: AnyMediaIdentifier
-    ) -> MediaViewerOnePageViewController? {
-        guard let mediaViewerDataSource else { return nil }
-        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: identifier)
-        
+        with identifier: AnyMediaIdentifier,
+        dataSource: some MediaViewerDataSource
+    ) -> MediaViewerOnePageViewController {
         let mediaViewerPage = MediaViewerOnePageViewController(
             mediaIdentifier: identifier
         )
         mediaViewerPage.delegate = self
+        
+        let media = dataSource.mediaViewer(self, mediaWith: identifier)
         switch media {
         case .image(.sync(let image)):
             mediaViewerPage.mediaViewerOnePageView.setImage(image, with: .none)
@@ -536,6 +538,13 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             }
         }
         return mediaViewerPage
+    }
+    
+    private func makeMediaViewerPage(
+        with identifier: AnyMediaIdentifier
+    ) -> MediaViewerOnePageViewController? {
+        guard let mediaViewerDataSource else { return nil }
+        return makeMediaViewerPage(with: identifier, dataSource: mediaViewerDataSource)
     }
 }
 
