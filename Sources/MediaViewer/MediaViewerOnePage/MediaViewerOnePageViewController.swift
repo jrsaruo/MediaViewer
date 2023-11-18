@@ -42,8 +42,7 @@ final class MediaViewerOnePageViewController: UIViewController {
     
     @available(*, unavailable, message: "init(coder:) is not supported.")
     required init?(coder: NSCoder) {
-        self.pageID = .init()
-        super.init(coder: coder)
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Lifecycle

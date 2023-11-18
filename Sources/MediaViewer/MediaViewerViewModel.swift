@@ -5,6 +5,7 @@
 //  Created by Yusaku Nishi on 2023/02/25.
 //
 
+import Foundation
 import Combine
 
 final class MediaViewerViewModel: ObservableObject {
@@ -19,7 +20,7 @@ final class MediaViewerViewModel: ObservableObject {
     // MARK: - Methods
     
     func setUpPageIDs(numberOfMedia: Int) {
-        pageIDs = (0..<numberOfMedia).map { _ in .init() }
+        pageIDs = (0..<numberOfMedia).map { _ in .init(rawValue: UUID()) }
     }
     
     func pageID(forPage page: Int) -> MediaViewerPageID? {

@@ -8,9 +8,10 @@
 import UIKit
 import Combine
 
+// TODO: Rename to AnyMediaIdentifier
 /// An identifier of the media viewer page.
 struct MediaViewerPageID: Hashable, Sendable {
-    let rawValue = UUID()
+    let rawValue: AnyHashable
 }
 
 /// An media viewer.
