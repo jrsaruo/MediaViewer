@@ -193,12 +193,13 @@ final class MediaViewerPageControlBar: UIView {
     
     func configure(
         mediaIdentifiers: [AnyMediaIdentifier],
-        currentPage: Int
+        currentIdentifier: AnyMediaIdentifier
     ) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
         snapshot.appendSections([0])
         snapshot.appendItems(mediaIdentifiers)
         
+        let currentPage = snapshot.indexOfItem(currentIdentifier)!
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
             self.expandAndScrollToItem(

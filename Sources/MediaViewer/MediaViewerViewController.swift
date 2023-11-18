@@ -213,7 +213,7 @@ open class MediaViewerViewController: UIPageViewController {
         
         pageControlBar.configure(
             mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
-            currentPage: currentPage
+            currentIdentifier: currentMediaIdentifier
         )
         pageControlToolbar.addSubview(pageControlBar)
         
