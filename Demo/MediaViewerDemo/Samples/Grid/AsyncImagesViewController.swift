@@ -141,7 +141,8 @@ final class AsyncImagesViewController: UIViewController {
 extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        let asset = dataSource.itemIdentifier(for: indexPath)!
+        let mediaViewer = MediaViewerViewController(opening: asset, dataSource: self)
         mediaViewer.mediaViewerDelegate = self
         mediaViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),

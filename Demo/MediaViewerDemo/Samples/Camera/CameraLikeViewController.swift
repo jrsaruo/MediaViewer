@@ -79,8 +79,11 @@ final class CameraLikeViewController: UIViewController {
     // MARK: - Methods
     
     private func showLibrary() {
-        guard !assets.isEmpty else { return }
-        let mediaViewer = MediaViewerViewController(page: assets.count - 1, dataSource: self)
+        guard let lastAsset = assets.last else { return }
+        let mediaViewer = MediaViewerViewController(
+            opening: lastAsset,
+            dataSource: self
+        )
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
     }

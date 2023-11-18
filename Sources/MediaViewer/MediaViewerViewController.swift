@@ -128,9 +128,12 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// Creates a new viewer.
     /// - Parameters:
-    ///   - page: The page number of the media.
+    ///   - mediaIdentifier: An identifier for media to view first.
     ///   - dataSource: The data source for the viewer.
-    public init(page: Int, dataSource: some MediaViewerDataSource) {
+    public init<MediaIdentifier>(
+        opening mediaIdentifier: MediaIdentifier,
+        dataSource: some MediaViewerDataSource<MediaIdentifier>
+    ) {
         super.init(
             transitionStyle: .scroll,
             navigationOrientation: .horizontal,
@@ -144,10 +147,8 @@ open class MediaViewerViewController: UIPageViewController {
         let identifiers = dataSource.mediaIdentifiers(for: self)
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
-        guard let identifier = mediaViewerVM.mediaIdentifier(forPage: page),
-              let mediaViewerPage = makeMediaViewerPage(with: identifier) else {
-            preconditionFailure("Page \(page) out of range.")
-        }
+        let identifier = AnyMediaIdentifier(rawValue: mediaIdentifier)
+        let mediaViewerPage = makeMediaViewerPage(with: identifier)!
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
         hidesBottomBarWhenPushed = true
