@@ -50,6 +50,15 @@ extension MediaViewerDelegate {
 
 extension MediaViewerDelegate {
     
+    func verifyMediaIdentifierTypeIsSame<DataSourceMediaIdentifier>(
+        as dataSource: some MediaViewerDataSource<DataSourceMediaIdentifier>
+    ) {
+        precondition(
+            MediaIdentifier.self == DataSourceMediaIdentifier.self,
+            "`MediaIdentifier` must be \(DataSourceMediaIdentifier.self), the same as the data source, but it is actually \(MediaIdentifier.self)."
+        )
+    }
+    
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
         didMoveToMediaWith mediaIdentifier: AnyMediaIdentifier

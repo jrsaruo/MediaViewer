@@ -44,7 +44,12 @@ open class MediaViewerViewController: UIPageViewController {
     ///
     /// - Precondition: The associated type `MediaIdentifier` must be the same as
     ///                 the one of `mediaViewerDataSource`.
-    open weak var mediaViewerDelegate: (any MediaViewerDelegate)?
+    open weak var mediaViewerDelegate: (any MediaViewerDelegate)? {
+        willSet {
+            guard let mediaViewerDataSource else { return }
+            newValue?.verifyMediaIdentifierTypeIsSame(as: mediaViewerDataSource)
+        }
+    }
     
     /// The current page of the media viewer.
     public var currentPage: Int {
