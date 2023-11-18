@@ -145,6 +145,11 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerDataSource = dataSource
         
         let identifiers = dataSource.mediaIdentifiers(for: self)
+        precondition(
+            identifiers.contains(mediaIdentifier),
+            "mediaIdentifier \(mediaIdentifier) must be included in identifiers returned by dataSource.mediaIdentifiers(for:)."
+        )
+        
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
         let mediaViewerPage = makeMediaViewerPage(
