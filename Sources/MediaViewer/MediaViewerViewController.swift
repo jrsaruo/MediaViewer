@@ -52,6 +52,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     /// The current page of the media viewer.
+    @available(*, deprecated)
     public var currentPage: Int {
         mediaViewerVM.page(with: currentMediaIdentifier)!
     }
