@@ -38,7 +38,9 @@ open class MediaViewerViewController: UIPageViewController {
     private var cancellables: Set<AnyCancellable> = []
     
     /// The data source of the media viewer object.
-    open weak var mediaViewerDataSource: (any MediaViewerDataSource)?
+    ///
+    /// - Note: This data source object must be set at object creation time and may not be changed.
+    open private(set) weak var mediaViewerDataSource: (any MediaViewerDataSource)?
     
     /// The object that acts as the delegate of the media viewer.
     ///
