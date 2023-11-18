@@ -22,20 +22,6 @@ protocol MediaViewerPageControlBarDataSource: AnyObject {
     ) -> CGFloat?
 }
 
-@MainActor
-protocol DeprecatedMediaViewerPageControlBarDataSource: AnyObject {
-    func mediaViewerPageControlBar(
-        _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailOnPage page: Int,
-        filling preferredThumbnailSize: CGSize
-    ) -> Source<UIImage?>
-    
-    func mediaViewerPageControlBar(
-        _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailWidthToHeightOnPage page: Int
-    ) -> CGFloat?
-}
-
 final class MediaViewerPageControlBar: UIView {
     
     enum State: Hashable, Sendable {
