@@ -140,7 +140,7 @@ extension MediaViewerDataSource {
     }
 }
 
-// MARK: - Open existential types -
+// MARK: - Type erasure support -
 
 extension MediaViewerDataSource {
     

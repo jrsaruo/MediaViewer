@@ -225,9 +225,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
 
 extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int) {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        let dateDescription = asset.creationDate?.formatted()
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        didMoveToMediaWith mediaIdentifier: PHAsset
+    ) {
+        let dateDescription = mediaIdentifier.creationDate?.formatted()
         mediaViewer.title = dateDescription
     }
 }

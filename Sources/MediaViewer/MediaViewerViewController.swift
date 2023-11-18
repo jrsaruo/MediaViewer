@@ -41,6 +41,9 @@ open class MediaViewerViewController: UIPageViewController {
     open weak var mediaViewerDataSource: (any MediaViewerDataSource)?
     
     /// The object that acts as the delegate of the media viewer.
+    ///
+    /// - Precondition: The associated type `MediaIdentifier` must be the same as
+    ///                 the one of `mediaViewerDataSource`.
     open weak var mediaViewerDelegate: (any MediaViewerDelegate)?
     
     /// The current page of the media viewer.
@@ -179,7 +182,10 @@ open class MediaViewerViewController: UIPageViewController {
          * but since the delegate has not yet been set by the caller,
          * it needs to be told to the caller again at this time.
          */
-        mediaViewerDelegate?.mediaViewer(self, didMoveToPage: currentPage)
+        mediaViewerDelegate?.mediaViewer(
+            self,
+            didMoveToMediaWith: currentMediaIdentifier
+        )
     }
     
     private func setUpViews() {
@@ -375,7 +381,10 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func pageDidChange() {
-        mediaViewerDelegate?.mediaViewer(self, didMoveToPage: currentPage)
+        mediaViewerDelegate?.mediaViewer(
+            self,
+            didMoveToMediaWith: currentMediaIdentifier
+        )
     }
     
     private func handleContentOffsetChange() {
