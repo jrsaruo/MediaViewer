@@ -75,19 +75,19 @@ extension SyncImagesViewController: UICollectionViewDelegate {
 
 extension SyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
-        dataSource.snapshot().numberOfItems
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [UIImage] {
+        dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaOnPage page: Int
+        mediaWith mediaIdentifier: UIImage
     ) -> Media {
-        .sync(dataSource.snapshot().itemIdentifiers[page])
+        .sync(mediaIdentifier)
     }
     
     func transitionSourceView(
-        forCurrentPageOf mediaViewer: MediaViewerViewController
+        forCurrentMediaOf mediaViewer: MediaViewerViewController
     ) -> UIView? {
         let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)

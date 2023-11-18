@@ -161,37 +161,34 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
 
 extension AsyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
-        dataSource.snapshot().numberOfItems
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [PHAsset] {
+        dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaOnPage page: Int
+        mediaWith mediaIdentifier: PHAsset
     ) -> Media {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async { await PHImageFetcher.image(for: asset) }
+        .async { await PHImageFetcher.image(for: mediaIdentifier) }
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWidthToHeightOnPage page: Int
+        widthToHeightOfMediaWith mediaIdentifier: PHAsset
     ) -> CGFloat? {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        let size = PHImageFetcher.imageSize(of: asset)
+        let size = PHImageFetcher.imageSize(of: mediaIdentifier)
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        pageThumbnailOnPage page: Int,
+        pageThumbnailForMediaWith mediaIdentifier: PHAsset,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async(transition: .fade(duration: 0.1)) {
+        .async(transition: .fade(duration: 0.1)) {
             await PHImageFetcher.image(
-                for: asset,
+                for: mediaIdentifier,
                 targetSize: preferredThumbnailSize,
                 contentMode: .aspectFill,
                 resizeMode: .fast
@@ -199,7 +196,9 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         }
     }
     
-    func transitionSourceView(forCurrentPageOf mediaViewer: MediaViewerViewController) -> UIView? {
+    func transitionSourceView(
+        forCurrentMediaOf mediaViewer: MediaViewerViewController
+    ) -> UIView? {
         let currentPage = mediaViewer.currentPage
         let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
         

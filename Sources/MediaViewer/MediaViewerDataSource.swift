@@ -9,7 +9,7 @@ import UIKit
 
 /// The object you use to provide data for an media viewer.
 @MainActor
-public protocol MediaViewerDataSource_<MediaIdentifier>: AnyObject {
+public protocol MediaViewerDataSource<MediaIdentifier>: AnyObject {
     
     /// A type representing the unique identifier for media.
     associatedtype MediaIdentifier: Hashable
@@ -88,7 +88,7 @@ public protocol MediaViewerDataSource_<MediaIdentifier>: AnyObject {
 
 // MARK: - Default implementations -
 
-extension MediaViewerDataSource_ {
+extension MediaViewerDataSource {
     
     public func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
@@ -137,9 +137,46 @@ extension MediaViewerDataSource_ {
     }
 }
 
+// MARK: - Open existential types -
+
+extension MediaViewerDataSource {
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        mediaWith pageID: MediaViewerPageID
+    ) -> Media {
+        self.mediaViewer(
+            mediaViewer,
+            mediaWith: pageID.rawValue as! MediaIdentifier
+        )
+    }
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        widthToHeightOfMediaWith pageID: MediaViewerPageID
+    ) -> CGFloat? {
+        self.mediaViewer(
+            mediaViewer,
+            widthToHeightOfMediaWith: pageID.rawValue as! MediaIdentifier
+        )
+    }
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        pageThumbnailForMediaWith pageID: MediaViewerPageID,
+        filling preferredThumbnailSize: CGSize
+    ) -> Source<UIImage?> {
+        self.mediaViewer(
+            mediaViewer,
+            pageThumbnailForMediaWith: pageID.rawValue as! MediaIdentifier,
+            filling: preferredThumbnailSize
+        )
+    }
+}
+
 /// The object you use to provide data for an media viewer.
 @MainActor
-public protocol MediaViewerDataSource: AnyObject {
+public protocol DeprecatedMediaViewerDataSource: AnyObject {
     
     /// Asks the data source to return the number of media in the media viewer.
     /// - Parameter mediaViewer: An object representing the media viewer requesting this information.
@@ -213,7 +250,7 @@ public protocol MediaViewerDataSource: AnyObject {
 
 // MARK: - Default implementations -
 
-extension MediaViewerDataSource {
+extension DeprecatedMediaViewerDataSource {
     
     public func mediaViewer(
         _ mediaViewer: MediaViewerViewController,

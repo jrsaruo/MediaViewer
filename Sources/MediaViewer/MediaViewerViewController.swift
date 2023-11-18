@@ -134,8 +134,8 @@ open class MediaViewerViewController: UIPageViewController {
         )
         mediaViewerDataSource = dataSource
         
-        let numberOfMedia = dataSource.numberOfMedia(in: self)
-        mediaViewerVM.setUpPageIDs(numberOfMedia: numberOfMedia)
+        let mediaIdentifiers = dataSource.mediaIdentifiers(for: self)
+        mediaViewerVM.pageIDs = mediaIdentifiers.map(MediaViewerPageID.init)
         
         guard let pageID = mediaViewerVM.pageID(forPage: page),
               let mediaViewerPage = makeMediaViewerPage(with: pageID) else {
@@ -410,7 +410,7 @@ open class MediaViewerViewController: UIPageViewController {
         if recognizer.state == .began {
             // Start the interactive pop transition
             let sourceView = mediaViewerDataSource?.transitionSourceView(
-                forCurrentPageOf: self
+                forCurrentMediaOf: self
             )
             interactivePopTransition = .init(sourceView: sourceView)
             
@@ -470,7 +470,7 @@ extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
 extension MediaViewerViewController: UIPageViewControllerDataSource {
     
     open func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        mediaViewerDataSource?.numberOfMedia(in: self) ?? 0
+        mediaViewerVM.pageIDs.count
     }
     
     open func pageViewController(
@@ -504,9 +504,8 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
     private func makeMediaViewerPage(
         with pageID: MediaViewerPageID
     ) -> MediaViewerOnePageViewController? {
-        guard let page = mediaViewerVM.page(with: pageID),
-              let mediaViewerDataSource else { return nil }
-        let media = mediaViewerDataSource.mediaViewer(self, mediaOnPage: page)
+        guard let mediaViewerDataSource else { return nil }
+        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: pageID)
         
         let mediaViewerPage = MediaViewerOnePageViewController(pageID: pageID)
         mediaViewerPage.delegate = self
@@ -532,11 +531,10 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         thumbnailWith pageID: MediaViewerPageID,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        guard let mediaViewerDataSource,
-              let page = mediaViewerVM.page(with: pageID) else { return .none }
+        guard let mediaViewerDataSource else { return .none }
         return mediaViewerDataSource.mediaViewer(
             self,
-            pageThumbnailOnPage: page,
+            pageThumbnailForMediaWith: pageID,
             filling: preferredThumbnailSize
         )
     }
@@ -545,8 +543,10 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         _ pageControlBar: MediaViewerPageControlBar,
         widthToHeightOfThumbnailWith pageID: MediaViewerPageID
     ) -> CGFloat? {
-        guard let page = mediaViewerVM.page(with: pageID) else { return nil }
-        return mediaViewerDataSource?.mediaViewer(self, mediaWidthToHeightOnPage: page)
+        mediaViewerDataSource?.mediaViewer(
+            self,
+            widthToHeightOfMediaWith: pageID
+        )
     }
 }
 
@@ -583,7 +583,7 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
             )
         }
         let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource?.transitionSourceView(
-            forCurrentPageOf: self
+            forCurrentMediaOf: self
         )
         return MediaViewerTransition(
             operation: operation,
