@@ -408,8 +408,9 @@ open class MediaViewerViewController: UIPageViewController {
     private func panned(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .began {
             // Start the interactive pop transition
-            let sourceView = mediaViewerDataSource?.transitionSourceView(
-                forCurrentMediaOf: self
+            let sourceView = mediaViewerDataSource?.mediaViewer(
+                self,
+                transitionSourceViewForMediaWith: currentMediaIdentifier
             )
             interactivePopTransition = .init(sourceView: sourceView)
             
@@ -583,8 +584,9 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
                 willBeginPopTransitionTo: toVC
             )
         }
-        let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource?.transitionSourceView(
-            forCurrentMediaOf: self
+        let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource?.mediaViewer(
+            self,
+            transitionSourceViewForMediaWith: currentMediaIdentifier
         )
         return MediaViewerTransition(
             operation: operation,

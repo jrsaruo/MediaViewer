@@ -135,8 +135,9 @@ extension CameraLikeViewController: MediaViewerDataSource {
         return size.width / size.height
     }
     
-    func transitionSourceView(
-        forCurrentMediaOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: PHAsset
     ) -> UIView? {
         cameraLikeView.showLibraryButton
     }

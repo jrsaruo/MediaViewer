@@ -196,11 +196,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         }
     }
     
-    func transitionSourceView(
-        forCurrentMediaOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: PHAsset
     ) -> UIView? {
-        let currentPage = mediaViewer.currentPage
-        let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+        let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         
         let collectionView = imageGridView.collectionView
         

@@ -86,11 +86,11 @@ extension SyncImagesViewController: MediaViewerDataSource {
         .sync(mediaIdentifier)
     }
     
-    func transitionSourceView(
-        forCurrentMediaOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: UIImage
     ) -> UIView? {
-        let currentPage = mediaViewer.currentPage
-        let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+        let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         
         let collectionView = imageGridView.collectionView
         

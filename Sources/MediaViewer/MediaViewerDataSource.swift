@@ -64,10 +64,13 @@ public protocol MediaViewerDataSource<MediaIdentifier>: AnyObject {
     ///
     /// If `nil`, the animation looks like cross-dissolve.
     ///
-    /// - Parameter mediaViewer: An object representing the media viewer requesting this information.
+    /// - Parameters:
+    ///   - mediaViewer: An object representing the media viewer requesting this information.
+    ///   - mediaIdentifier: An identifier for the current viewing media.
     /// - Returns: The transition source view for current media of `mediaViewer`.
-    func transitionSourceView(
-        forCurrentMediaOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: MediaIdentifier
     ) -> UIView?
     
     /// Asks the data source to return the transition source image for current media of the viewer.
@@ -170,6 +173,16 @@ extension MediaViewerDataSource {
             mediaViewer,
             pageThumbnailForMediaWith: mediaIdentifier.rawValue as! MediaIdentifier,
             filling: preferredThumbnailSize
+        )
+    }
+    
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: AnyMediaIdentifier
+    ) -> UIView? {
+        self.mediaViewer(
+            mediaViewer,
+            transitionSourceViewForMediaWith: mediaIdentifier.rawValue as! MediaIdentifier
         )
     }
 }
