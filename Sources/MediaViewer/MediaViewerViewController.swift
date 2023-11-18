@@ -480,7 +480,7 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        guard let previousIdentifier = mediaViewerVM.previousMediaIdentifier(of: mediaViewerPageVC.mediaIdentifier) else {
+        guard let previousIdentifier = mediaViewerVM.mediaIdentifier(before: mediaViewerPageVC.mediaIdentifier) else {
             return nil
         }
         return makeMediaViewerPage(with: previousIdentifier)
@@ -494,7 +494,7 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        guard let nextIdentifier = mediaViewerVM.nextMediaIdentifier(of: mediaViewerPageVC.mediaIdentifier) else {
+        guard let nextIdentifier = mediaViewerVM.mediaIdentifier(after: mediaViewerPageVC.mediaIdentifier) else {
             return nil
         }
         return makeMediaViewerPage(with: nextIdentifier)

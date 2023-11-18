@@ -27,16 +27,16 @@ final class MediaViewerViewModel: ObservableObject {
         mediaIdentifiers.firstIndex(of: identifier)
     }
     
-    func previousMediaIdentifier(
-        of identifier: AnyMediaIdentifier
+    func mediaIdentifier(
+        before identifier: AnyMediaIdentifier
     ) -> AnyMediaIdentifier? {
         guard let page = page(with: identifier) else { return nil }
         let previousPage = page - 1
         return mediaIdentifier(forPage: previousPage)
     }
     
-    func nextMediaIdentifier(
-        of identifier: AnyMediaIdentifier
+    func mediaIdentifier(
+        after identifier: AnyMediaIdentifier
     ) -> AnyMediaIdentifier? {
         guard let page = page(with: identifier) else { return nil }
         let nextPage = page + 1
