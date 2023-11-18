@@ -12,13 +12,13 @@ import Combine
 protocol MediaViewerPageControlBarDataSource: AnyObject {
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailWith pageID: MediaViewerPageID,
+        thumbnailWith mediaIdentifier: AnyMediaIdentifier,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?>
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        widthToHeightOfThumbnailWith pageID: MediaViewerPageID
+        widthToHeightOfThumbnailWith mediaIdentifier: AnyMediaIdentifier
     ) -> CGFloat?
 }
 
@@ -54,7 +54,7 @@ final class MediaViewerPageControlBar: UIView {
     
     private typealias CellRegistration = UICollectionView.CellRegistration<
         PageControlBarThumbnailCell,
-        MediaViewerPageID
+        AnyMediaIdentifier
     >
     
     weak var dataSource: (any MediaViewerPageControlBarDataSource)?
@@ -109,18 +109,18 @@ final class MediaViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, MediaViewerPageID>(
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, AnyMediaIdentifier>(
         collectionView: collectionView
-    ) { [weak self] collectionView, indexPath, pageID in
+    ) { [weak self] collectionView, indexPath, mediaIdentifier in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: cellRegistration,
             for: indexPath,
-            item: pageID
+            item: mediaIdentifier
         )
     }
     
-    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, pageID in
+    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, mediaIdentifier in
         guard let self, let dataSource else { return }
         let scale = window?.screen.scale ?? 3
         let preferredSize = CGSize(
@@ -129,7 +129,7 @@ final class MediaViewerPageControlBar: UIView {
         )
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailWith: pageID,
+            thumbnailWith: mediaIdentifier,
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
@@ -191,10 +191,13 @@ final class MediaViewerPageControlBar: UIView {
     
     // MARK: - Methods
     
-    func configure(pageIDs: [MediaViewerPageID], currentPage: Int) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, MediaViewerPageID>()
+    func configure(
+        mediaIdentifiers: [AnyMediaIdentifier],
+        currentPage: Int
+    ) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
         snapshot.appendSections([0])
-        snapshot.appendItems(pageIDs)
+        snapshot.appendItems(mediaIdentifiers)
         
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
@@ -206,16 +209,16 @@ final class MediaViewerPageControlBar: UIView {
         }
     }
     
-    private func page(with pageID: MediaViewerPageID) -> Int? {
-        diffableDataSource.snapshot().indexOfItem(pageID)
+    private func page(with identifier: AnyMediaIdentifier) -> Int? {
+        diffableDataSource.snapshot().indexOfItem(identifier)
     }
     
-    private func pageID(forPage page: Int) -> MediaViewerPageID {
+    private func mediaIdentifier(forPage page: Int) -> AnyMediaIdentifier {
         diffableDataSource.snapshot().itemIdentifiers[page]
     }
     
-    private func cell(for pageID: MediaViewerPageID) -> PageControlBarThumbnailCell? {
-        guard let indexPath = diffableDataSource.indexPath(for: pageID),
+    private func cell(for identifier: AnyMediaIdentifier) -> PageControlBarThumbnailCell? {
+        guard let indexPath = diffableDataSource.indexPath(for: identifier),
               let cell = collectionView.cellForItem(at: indexPath) else {
             return nil
         }
@@ -293,9 +296,9 @@ final class MediaViewerPageControlBar: UIView {
     private func correctExpandingItemAspectRatioIfNeeded() {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
         let page = indexPathForCurrentCenterItem.item
-        let pageID = pageID(forPage: page)
+        let identifier = mediaIdentifier(forPage: page)
         
-        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, widthToHeightOfThumbnailWith: pageID) {
+        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, widthToHeightOfThumbnailWith: identifier) {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
@@ -307,7 +310,7 @@ final class MediaViewerPageControlBar: UIView {
         
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailWith: pageID,
+            thumbnailWith: identifier,
             filling: .init(width: 100, height: 100)
         )
         switch thumbnailSource {
@@ -376,10 +379,12 @@ extension MediaViewerPageControlBar {
             return
         }
         
-        let destinationPageID = pageID(forPage: destinationPage)
+        let destinationIdentifier = mediaIdentifier(
+            forPage: destinationPage
+        )
         let expandingThumbnailWidthToHeight = dataSource?.mediaViewerPageControlBar(
             self,
-            widthToHeightOfThumbnailWith: destinationPageID
+            widthToHeightOfThumbnailWith: destinationIdentifier
         )
         let style: MediaViewerPageControlBarLayout.Style = .expanded(
             IndexPath(item: destinationPage, section: 0),

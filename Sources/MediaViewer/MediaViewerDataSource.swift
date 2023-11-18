@@ -143,32 +143,32 @@ extension MediaViewerDataSource {
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWith pageID: MediaViewerPageID
+        mediaWith mediaIdentifier: AnyMediaIdentifier
     ) -> Media {
         self.mediaViewer(
             mediaViewer,
-            mediaWith: pageID.rawValue as! MediaIdentifier
+            mediaWith: mediaIdentifier.rawValue as! MediaIdentifier
         )
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        widthToHeightOfMediaWith pageID: MediaViewerPageID
+        widthToHeightOfMediaWith mediaIdentifier: AnyMediaIdentifier
     ) -> CGFloat? {
         self.mediaViewer(
             mediaViewer,
-            widthToHeightOfMediaWith: pageID.rawValue as! MediaIdentifier
+            widthToHeightOfMediaWith: mediaIdentifier.rawValue as! MediaIdentifier
         )
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        pageThumbnailForMediaWith pageID: MediaViewerPageID,
+        pageThumbnailForMediaWith mediaIdentifier: AnyMediaIdentifier,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
         self.mediaViewer(
             mediaViewer,
-            pageThumbnailForMediaWith: pageID.rawValue as! MediaIdentifier,
+            pageThumbnailForMediaWith: mediaIdentifier.rawValue as! MediaIdentifier,
             filling: preferredThumbnailSize
         )
     }

@@ -19,7 +19,7 @@ protocol MediaViewerOnePageViewControllerDelegate: AnyObject {
 
 final class MediaViewerOnePageViewController: UIViewController {
     
-    let pageID: MediaViewerPageID
+    let mediaIdentifier: AnyMediaIdentifier
     
     weak var delegate: (any MediaViewerOnePageViewControllerDelegate)?
     
@@ -35,8 +35,8 @@ final class MediaViewerOnePageViewController: UIViewController {
     
     // MARK: - Initializers
     
-    init(pageID: MediaViewerPageID) {
-        self.pageID = pageID
+    init(mediaIdentifier: AnyMediaIdentifier) {
+        self.mediaIdentifier = mediaIdentifier
         super.init(nibName: nil, bundle: nil)
     }
     

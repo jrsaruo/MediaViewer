@@ -8,9 +8,8 @@
 import UIKit
 import Combine
 
-// TODO: Rename to AnyMediaIdentifier
-/// An identifier of the media viewer page.
-struct MediaViewerPageID: Hashable {
+/// A type-erased media identifier.
+struct AnyMediaIdentifier: Hashable {
     let rawValue: AnyHashable
 }
 
@@ -46,11 +45,11 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// The current page of the media viewer.
     public var currentPage: Int {
-        mediaViewerVM.page(with: currentPageID)!
+        mediaViewerVM.page(with: currentMediaIdentifier)!
     }
     
-    var currentPageID: MediaViewerPageID {
-        currentPageViewController.pageID
+    var currentMediaIdentifier: AnyMediaIdentifier {
+        currentPageViewController.mediaIdentifier
     }
     
     var currentPageViewController: MediaViewerOnePageViewController {
@@ -134,11 +133,11 @@ open class MediaViewerViewController: UIPageViewController {
         )
         mediaViewerDataSource = dataSource
         
-        let mediaIdentifiers = dataSource.mediaIdentifiers(for: self)
-        mediaViewerVM.pageIDs = mediaIdentifiers.map(MediaViewerPageID.init)
+        let identifiers = dataSource.mediaIdentifiers(for: self)
+        mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
-        guard let pageID = mediaViewerVM.pageID(forPage: page),
-              let mediaViewerPage = makeMediaViewerPage(with: pageID) else {
+        guard let identifier = mediaViewerVM.mediaIdentifier(forPage: page),
+              let mediaViewerPage = makeMediaViewerPage(with: identifier) else {
             preconditionFailure("Page \(page) out of range.")
         }
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
@@ -194,7 +193,7 @@ open class MediaViewerViewController: UIPageViewController {
         view.addSubview(pageControlToolbar)
         
         pageControlBar.configure(
-            pageIDs: mediaViewerVM.pageIDs,
+            mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
             currentPage: currentPage
         )
         pageControlToolbar.addSubview(pageControlBar)
@@ -364,10 +363,10 @@ open class MediaViewerViewController: UIPageViewController {
     /// Move to show media on the specified page.
     /// - Parameter page: The destination page.
     open func move(toPage page: Int, animated: Bool) {
-        guard let pageID = mediaViewerVM.pageID(forPage: page) else {
+        guard let identifier = mediaViewerVM.mediaIdentifier(forPage: page) else {
             preconditionFailure("Page \(page) out of range.")
         }
-        guard let mediaViewerPage = makeMediaViewerPage(with: pageID) else { return }
+        guard let mediaViewerPage = makeMediaViewerPage(with: identifier) else { return }
         setViewControllers(
             [mediaViewerPage],
             direction: page < currentPage ? .reverse : .forward,
@@ -470,7 +469,7 @@ extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
 extension MediaViewerViewController: UIPageViewControllerDataSource {
     
     open func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        mediaViewerVM.pageIDs.count
+        mediaViewerVM.mediaIdentifiers.count
     }
     
     open func pageViewController(
@@ -481,10 +480,10 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        guard let previousPageID = mediaViewerVM.previousPageID(of: mediaViewerPageVC.pageID) else {
+        guard let previousIdentifier = mediaViewerVM.previousMediaIdentifier(of: mediaViewerPageVC.mediaIdentifier) else {
             return nil
         }
-        return makeMediaViewerPage(with: previousPageID)
+        return makeMediaViewerPage(with: previousIdentifier)
     }
     
     open func pageViewController(
@@ -495,19 +494,21 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        guard let nextPageID = mediaViewerVM.nextPageID(of: mediaViewerPageVC.pageID) else {
+        guard let nextIdentifier = mediaViewerVM.nextMediaIdentifier(of: mediaViewerPageVC.mediaIdentifier) else {
             return nil
         }
-        return makeMediaViewerPage(with: nextPageID)
+        return makeMediaViewerPage(with: nextIdentifier)
     }
     
     private func makeMediaViewerPage(
-        with pageID: MediaViewerPageID
+        with identifier: AnyMediaIdentifier
     ) -> MediaViewerOnePageViewController? {
         guard let mediaViewerDataSource else { return nil }
-        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: pageID)
+        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: identifier)
         
-        let mediaViewerPage = MediaViewerOnePageViewController(pageID: pageID)
+        let mediaViewerPage = MediaViewerOnePageViewController(
+            mediaIdentifier: identifier
+        )
         mediaViewerPage.delegate = self
         switch media {
         case .image(.sync(let image)):
@@ -528,24 +529,24 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailWith pageID: MediaViewerPageID,
+        thumbnailWith mediaIdentifier: AnyMediaIdentifier,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
         guard let mediaViewerDataSource else { return .none }
         return mediaViewerDataSource.mediaViewer(
             self,
-            pageThumbnailForMediaWith: pageID,
+            pageThumbnailForMediaWith: mediaIdentifier,
             filling: preferredThumbnailSize
         )
     }
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        widthToHeightOfThumbnailWith pageID: MediaViewerPageID
+        widthToHeightOfThumbnailWith mediaIdentifier: AnyMediaIdentifier
     ) -> CGFloat? {
         mediaViewerDataSource?.mediaViewer(
             self,
-            widthToHeightOfMediaWith: pageID
+            widthToHeightOfMediaWith: mediaIdentifier
         )
     }
 }
