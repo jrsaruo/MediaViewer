@@ -6,6 +6,7 @@
 //
 
 import Combine
+import class UIKit.UIPageViewController
 
 final class MediaViewerViewModel: ObservableObject {
     
@@ -41,5 +42,14 @@ final class MediaViewerViewModel: ObservableObject {
         guard let page = page(with: identifier) else { return nil }
         let nextPage = page + 1
         return mediaIdentifier(forPage: nextPage)
+    }
+    
+    func moveDirection(
+        from currentIdentifier: AnyMediaIdentifier,
+        to destinationIdentifier: AnyMediaIdentifier
+    ) -> UIPageViewController.NavigationDirection {
+        let currentPage = page(with: currentIdentifier)!
+        let destinationPage = page(with: destinationIdentifier)!
+        return destinationPage < currentPage ? .reverse : .forward
     }
 }

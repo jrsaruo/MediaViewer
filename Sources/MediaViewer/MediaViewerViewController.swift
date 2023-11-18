@@ -282,9 +282,11 @@ open class MediaViewerViewController: UIPageViewController {
         
         pageControlBar.pageDidChange
             .sink { [weak self] page, reason in
+                guard let self else { return }
                 switch reason {
                 case .tapOnPageThumbnail, .scrollingBar:
-                    self?.move(toPage: page, animated: false)
+                    let identifier = mediaViewerVM.mediaIdentifier(forPage: page)!
+                    move(toMediaWith: identifier, animated: false)
                 case .configuration, .interactivePaging:
                     // Do nothing because it has already been moved to the page.
                     break
@@ -379,17 +381,38 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: - Methods
     
-    /// Move to show media on the specified page.
-    /// - Parameter page: The destination page.
-    open func move(toPage page: Int, animated: Bool) {
-        guard let identifier = mediaViewerVM.mediaIdentifier(forPage: page) else {
-            preconditionFailure("Page \(page) out of range.")
-        }
+    /// Move to media with the specified identifier.
+    /// - Parameters:
+    ///   - identifier: An identifier for destination media.
+    ///   - animated: A Boolean value that indicates whether the transition is to be animated.
+    ///   - completion: A closure to be called when the animation completes.
+    ///                 It takes a boolean value whether the transition is finished or not.
+    open func move<MediaIdentifier>(
+        toMediaWith identifier: MediaIdentifier,
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
+    ) where MediaIdentifier: Hashable {
+        self.move(
+            toMediaWith: AnyMediaIdentifier(rawValue: identifier),
+            animated: animated,
+            completion: completion
+        )
+    }
+    
+    func move(
+        toMediaWith identifier: AnyMediaIdentifier,
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
+    ) {
         guard let mediaViewerPage = makeMediaViewerPage(with: identifier) else { return }
         setViewControllers(
             [mediaViewerPage],
-            direction: page < currentPage ? .reverse : .forward,
-            animated: animated
+            direction: mediaViewerVM.moveDirection(
+                from: currentMediaIdentifier,
+                to: identifier
+            ),
+            animated: animated,
+            completion: completion
         )
     }
     
