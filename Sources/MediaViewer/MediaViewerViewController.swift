@@ -10,7 +10,7 @@ import Combine
 
 // TODO: Rename to AnyMediaIdentifier
 /// An identifier of the media viewer page.
-struct MediaViewerPageID: Hashable, Sendable {
+struct MediaViewerPageID: Hashable {
     let rawValue: AnyHashable
 }
 
