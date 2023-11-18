@@ -33,7 +33,8 @@ public protocol MediaViewerDataSource<MediaIdentifier>: AnyObject {
     
     /// Asks the data source to return an aspect ratio of media with the specified identifier.
     ///
-    /// The ratio will be used to determine a size of page thumbnail.
+    /// The aspect ratio is calculated by dividing the media width by the height.
+    /// It will be used to determine a size of page thumbnail.
     /// This method should return immediately.
     ///
     /// - Parameters:
