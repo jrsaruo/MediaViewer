@@ -9,6 +9,20 @@ import UIKit
 import Combine
 
 @MainActor
+protocol MediaViewerPageControlBarDataSource_: AnyObject {
+    func mediaViewerPageControlBar(
+        _ pageControlBar: MediaViewerPageControlBar,
+        thumbnailWith pageID: MediaViewerPageID,
+        filling preferredThumbnailSize: CGSize
+    ) -> Source<UIImage?>
+    
+    func mediaViewerPageControlBar(
+        _ pageControlBar: MediaViewerPageControlBar,
+        widthToHeightOfThumbnailWith pageID: MediaViewerPageID
+    ) -> CGFloat?
+}
+
+@MainActor
 protocol MediaViewerPageControlBarDataSource: AnyObject {
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
