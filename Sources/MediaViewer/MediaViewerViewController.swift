@@ -529,10 +529,11 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailOnPage page: Int,
+        thumbnailWith pageID: MediaViewerPageID,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        guard let mediaViewerDataSource else { return .none }
+        guard let mediaViewerDataSource,
+              let page = mediaViewerVM.page(with: pageID) else { return .none }
         return mediaViewerDataSource.mediaViewer(
             self,
             pageThumbnailOnPage: page,
@@ -542,9 +543,10 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailWidthToHeightOnPage page: Int
+        widthToHeightOfThumbnailWith pageID: MediaViewerPageID
     ) -> CGFloat? {
-        mediaViewerDataSource?.mediaViewer(self, mediaWidthToHeightOnPage: page)
+        guard let page = mediaViewerVM.page(with: pageID) else { return nil }
+        return mediaViewerDataSource?.mediaViewer(self, mediaWidthToHeightOnPage: page)
     }
 }
 

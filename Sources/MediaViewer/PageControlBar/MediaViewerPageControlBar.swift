@@ -9,7 +9,7 @@ import UIKit
 import Combine
 
 @MainActor
-protocol MediaViewerPageControlBarDataSource_: AnyObject {
+protocol MediaViewerPageControlBarDataSource: AnyObject {
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
         thumbnailWith pageID: MediaViewerPageID,
@@ -23,7 +23,7 @@ protocol MediaViewerPageControlBarDataSource_: AnyObject {
 }
 
 @MainActor
-protocol MediaViewerPageControlBarDataSource: AnyObject {
+protocol DeprecatedMediaViewerPageControlBarDataSource: AnyObject {
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
         thumbnailOnPage page: Int,
@@ -143,7 +143,7 @@ final class MediaViewerPageControlBar: UIView {
         )
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: page(with: pageID)!,
+            thumbnailWith: pageID,
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
@@ -307,8 +307,9 @@ final class MediaViewerPageControlBar: UIView {
     private func correctExpandingItemAspectRatioIfNeeded() {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
         let page = indexPathForCurrentCenterItem.item
+        let pageID = pageID(forPage: page)
         
-        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, thumbnailWidthToHeightOnPage: page) {
+        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, widthToHeightOfThumbnailWith: pageID) {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
@@ -320,7 +321,7 @@ final class MediaViewerPageControlBar: UIView {
         
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: page,
+            thumbnailWith: pageID,
             filling: .init(width: 100, height: 100)
         )
         switch thumbnailSource {
@@ -389,9 +390,10 @@ extension MediaViewerPageControlBar {
             return
         }
         
+        let destinationPageID = pageID(forPage: destinationPage)
         let expandingThumbnailWidthToHeight = dataSource?.mediaViewerPageControlBar(
             self,
-            thumbnailWidthToHeightOnPage: destinationPage
+            widthToHeightOfThumbnailWith: destinationPageID
         )
         let style: MediaViewerPageControlBarLayout.Style = .expanded(
             IndexPath(item: destinationPage, section: 0),
