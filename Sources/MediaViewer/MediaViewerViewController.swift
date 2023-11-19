@@ -164,8 +164,9 @@ open class MediaViewerViewController: UIPageViewController {
         hidesBottomBarWhenPushed = true
     }
     
-    required public init?(coder: NSCoder) {
-        super.init(coder: coder)
+    @available(*, unavailable, message: "init(coder:) is not supported.")
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Lifecycle
