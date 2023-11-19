@@ -40,7 +40,7 @@ open class MediaViewerViewController: UIPageViewController {
     /// The data source of the media viewer object.
     ///
     /// - Note: This data source object must be set at object creation time and may not be changed.
-    open private(set) weak var mediaViewerDataSource: (any MediaViewerDataSource)?
+    open private(set) weak var mediaViewerDataSource: (any MediaViewerDataSource)!
     
     /// The object that acts as the delegate of the media viewer.
     ///
