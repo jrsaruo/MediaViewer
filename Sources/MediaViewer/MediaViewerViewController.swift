@@ -457,7 +457,7 @@ open class MediaViewerViewController: UIPageViewController {
     private func panned(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .began {
             // Start the interactive pop transition
-            let sourceView = mediaViewerDataSource?.mediaViewer(
+            let sourceView = mediaViewerDataSource.mediaViewer(
                 self,
                 transitionSourceViewForMediaWith: currentMediaIdentifier
             )
@@ -589,8 +589,7 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         thumbnailWith mediaIdentifier: AnyMediaIdentifier,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        guard let mediaViewerDataSource else { return .none }
-        return mediaViewerDataSource.mediaViewer(
+        mediaViewerDataSource.mediaViewer(
             self,
             pageThumbnailForMediaWith: mediaIdentifier,
             filling: preferredThumbnailSize
@@ -601,7 +600,7 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
         _ pageControlBar: MediaViewerPageControlBar,
         widthToHeightOfThumbnailWith mediaIdentifier: AnyMediaIdentifier
     ) -> CGFloat? {
-        mediaViewerDataSource?.mediaViewer(
+        mediaViewerDataSource.mediaViewer(
             self,
             widthToHeightOfMediaWith: mediaIdentifier
         )
@@ -640,7 +639,7 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
                 willBeginPopTransitionTo: toVC
             )
         }
-        let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource?.mediaViewer(
+        let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource.mediaViewer(
             self,
             transitionSourceViewForMediaWith: currentMediaIdentifier
         )
@@ -649,7 +648,7 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
             sourceView: sourceView,
             sourceImage: { [weak self] in
                 guard let self else { return nil }
-                return mediaViewerDataSource?.mediaViewer(
+                return mediaViewerDataSource.mediaViewer(
                     self,
                     transitionSourceImageWith: sourceView
                 )
