@@ -467,10 +467,6 @@ open class MediaViewerViewController: UIPageViewController {
         with identifier: MediaIdentifier,
         after deleteAction: () async throws -> Void
     ) async throws where MediaIdentifier: Hashable {
-        guard let mediaViewerDataSource else {
-            preconditionFailure("The media viewer requires the data source.")
-        }
-        
         try pageControlBar.beginDeletion()
         defer { pageControlBar.finishDeletion() }
         
