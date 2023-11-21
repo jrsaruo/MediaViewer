@@ -156,8 +156,7 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
         let mediaViewerPage = makeMediaViewerPage(
-            with: AnyMediaIdentifier(rawValue: mediaIdentifier),
-            dataSource: dataSource
+            with: AnyMediaIdentifier(rawValue: mediaIdentifier)
         )
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
@@ -425,9 +424,8 @@ open class MediaViewerViewController: UIPageViewController {
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) {
-        guard let mediaViewerPage = makeMediaViewerPage(with: identifier) else { return }
         setViewControllers(
-            [mediaViewerPage],
+            [makeMediaViewerPage(with: identifier)],
             direction: direction,
             animated: animated,
             completion: completion
@@ -711,15 +709,14 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
     }
     
     private func makeMediaViewerPage(
-        with identifier: AnyMediaIdentifier,
-        dataSource: some MediaViewerDataSource
+        with identifier: AnyMediaIdentifier
     ) -> MediaViewerOnePageViewController {
         let mediaViewerPage = MediaViewerOnePageViewController(
             mediaIdentifier: identifier
         )
         mediaViewerPage.delegate = self
         
-        let media = dataSource.mediaViewer(self, mediaWith: identifier)
+        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: identifier)
         switch media {
         case .image(.sync(let image)):
             mediaViewerPage.mediaViewerOnePageView.setImage(image, with: .none)
@@ -730,13 +727,6 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             }
         }
         return mediaViewerPage
-    }
-    
-    private func makeMediaViewerPage(
-        with identifier: AnyMediaIdentifier
-    ) -> MediaViewerOnePageViewController? {
-        guard let mediaViewerDataSource else { return nil }
-        return makeMediaViewerPage(with: identifier, dataSource: mediaViewerDataSource)
     }
 }
 
