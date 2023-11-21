@@ -63,16 +63,18 @@ extension MediaViewerViewModel {
         mediaIdentifiers.remove(at: page)
     }
     
+    struct PagingAnimationAfterDeletion: Hashable {
+        let destinationIdentifier: AnyMediaIdentifier
+        let direction: UIPageViewController.NavigationDirection?
+    }
+    
     func pagingAnimation(
         afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
         currentIdentifier: AnyMediaIdentifier
-    ) -> (
-        destinationIdentifier: AnyMediaIdentifier,
-        direction: UIPageViewController.NavigationDirection?
-    )? {
+    ) -> PagingAnimationAfterDeletion? {
         guard deletingIdentifiers.contains(currentIdentifier) else {
             // Stay on the current page
-            return (
+            return .init(
                 destinationIdentifier: currentIdentifier,
                 direction: nil
             )
@@ -89,11 +91,17 @@ extension MediaViewerViewModel {
         if let nearestForward = forwardIdentifiers.first(where: {
             !deletingIdentifiers.contains($0)
         }) {
-            return (destinationIdentifier: nearestForward, .forward)
+            return .init(
+                destinationIdentifier: nearestForward,
+                direction: .forward
+            )
         } else if let nearestBackward = backwardIdentifiers.last(where: {
             !deletingIdentifiers.contains($0)
         }) {
-            return (destinationIdentifier: nearestBackward, .reverse)
+            return .init(
+                destinationIdentifier: nearestBackward,
+                direction: .reverse
+            )
         }
         
         // When all pages are deleted, close the viewer and do not perform paging animation
