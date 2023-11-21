@@ -69,7 +69,12 @@ open class MediaViewerViewController: UIPageViewController {
         currentPageViewController.mediaIdentifier
     }
     
+    private var destinationPageVCAfterDeletion: MediaViewerOnePageViewController?
+    
     var currentPageViewController: MediaViewerOnePageViewController {
+        if let destinationPageVCAfterDeletion {
+            return destinationPageVCAfterDeletion
+        }
         guard let mediaViewerOnePage = viewControllers?.first as? MediaViewerOnePageViewController else {
             preconditionFailure(
                 "\(Self.self) must have only one \(MediaViewerOnePageViewController.self)."
