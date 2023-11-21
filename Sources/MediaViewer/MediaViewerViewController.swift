@@ -506,7 +506,7 @@ open class MediaViewerViewController: UIPageViewController {
         let identifier = AnyMediaIdentifier(rawValue: identifier)
         let currentPageVC = currentPageViewController
         
-        let animationAfterDeletion = mediaViewerVM.pagingAnimation(
+        let pagingAfterDeletion = mediaViewerVM.paging(
             afterDeleting: [identifier],
             currentIdentifier: currentPageVC.mediaIdentifier
         )
@@ -539,7 +539,7 @@ open class MediaViewerViewController: UIPageViewController {
         deletionAnimator.startAnimation()
         
         // If all media is deleted, close the viewer
-        guard let animationAfterDeletion else {
+        guard let pagingAfterDeletion else {
             assert(identifiersAfterDeletion.isEmpty)
             navigationController?.popViewController(animated: true)
             return
@@ -552,12 +552,12 @@ open class MediaViewerViewController: UIPageViewController {
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             self.pageControlBar.deleteItems(
                 [identifier],
-                destinationIdentifier: animationAfterDeletion.destinationIdentifier,
+                destinationIdentifier: pagingAfterDeletion.destinationIdentifier,
                 animated: true
             )
             
             // Move page if deleted an image on the current page
-            if let direction = animationAfterDeletion.direction {
+            if let direction = pagingAfterDeletion.direction {
                 /*
                  * NOTE:
                  * move(toPage:animated:) does not work here.
@@ -565,7 +565,7 @@ open class MediaViewerViewController: UIPageViewController {
                  * to reference a deleted page.
                  */
                 self.move(
-                    toMediaWith: animationAfterDeletion.destinationIdentifier,
+                    toMediaWith: pagingAfterDeletion.destinationIdentifier,
                     direction: direction,
                     animated: true
                 )

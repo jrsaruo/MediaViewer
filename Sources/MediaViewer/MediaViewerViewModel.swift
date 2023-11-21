@@ -63,15 +63,15 @@ extension MediaViewerViewModel {
         mediaIdentifiers.remove(at: page)
     }
     
-    struct PagingAnimationAfterDeletion: Hashable {
+    struct PagingAfterDeletion: Hashable {
         let destinationIdentifier: AnyMediaIdentifier
         let direction: UIPageViewController.NavigationDirection?
     }
     
-    func pagingAnimation(
+    func paging(
         afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
         currentIdentifier: AnyMediaIdentifier
-    ) -> PagingAnimationAfterDeletion? {
+    ) -> PagingAfterDeletion? {
         guard deletingIdentifiers.contains(currentIdentifier) else {
             // Stay on the current page
             return .init(
