@@ -447,6 +447,30 @@ open class MediaViewerViewController: UIPageViewController {
         case notReadyToDelete
     }
     
+    open func reloadMedia() async {
+        let newIdentifiers = mediaViewerDataSource
+            .mediaIdentifiers(for: self)
+            .map { AnyMediaIdentifier(rawValue: $0) }
+        
+        let (insertions, removals) = newIdentifiers.difference(
+            from: mediaViewerVM.mediaIdentifiers
+        ).changes
+        
+        mediaViewerVM.mediaIdentifiers = newIdentifiers
+        
+        // TODO: Run animations at the same time
+        await insertMedia(with: insertions.map(\.element))
+        await deleteMedia(with: removals.map(\.element))
+    }
+    
+    private func insertMedia(with identifiers: [AnyMediaIdentifier]) async {
+        fatalError("Not implemented.") // TODO: implement
+    }
+    
+    private func deleteMedia(with identifiers: [AnyMediaIdentifier]) async {
+        fatalError("Not implemented.") // TODO: implement
+    }
+    
     /// Deletes media with the specified identifier.
     ///
     /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation. If all media is deleted, the viewer will close.
