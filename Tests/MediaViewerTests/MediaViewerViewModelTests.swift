@@ -16,7 +16,7 @@ final class MediaViewerViewModelTests: XCTestCase {
         mediaViewerVM = .init()
     }
     
-    func testPagingAnimationAfterDeletion() throws {
+    func testPagingAnimation() throws {
         // Arrange
         let identifiers = (0..<5).map(AnyMediaIdentifier.init)
         
@@ -30,8 +30,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 mediaViewerVM.mediaIdentifiers = identifiers
                 
                 // Act
-                let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                    deletingIdentifier: identifiers[3],
+                let animation = mediaViewerVM.pagingAnimation(
+                    afterDeleting: [identifiers[3]],
                     currentIdentifier: identifiers[3]
                 )
                 
@@ -48,8 +48,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 mediaViewerVM.mediaIdentifiers = identifiers
                 
                 // Act
-                let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                    deletingIdentifier: identifiers.last!,
+                let animation = mediaViewerVM.pagingAnimation(
+                    afterDeleting: [identifiers.last!],
                     currentIdentifier: identifiers.last!
                 )
                 
@@ -66,8 +66,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 mediaViewerVM.mediaIdentifiers = [identifiers[0]]
                 
                 // Act
-                let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                    deletingIdentifier: identifiers[0],
+                let animation = mediaViewerVM.pagingAnimation(
+                    afterDeleting: [identifiers[0]],
                     currentIdentifier: identifiers[0]
                 )
                 
@@ -83,8 +83,8 @@ final class MediaViewerViewModelTests: XCTestCase {
             mediaViewerVM.mediaIdentifiers = identifiers
             
             // Act
-            let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                deletingIdentifier: identifiers[1],
+            let animation = mediaViewerVM.pagingAnimation(
+                afterDeleting: [identifiers[1]],
                 currentIdentifier: identifiers[3]
             )
             

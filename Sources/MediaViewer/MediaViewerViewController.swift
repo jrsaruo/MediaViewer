@@ -506,8 +506,8 @@ open class MediaViewerViewController: UIPageViewController {
         let identifier = AnyMediaIdentifier(rawValue: identifier)
         let currentPageVC = currentPageViewController
         
-        let animationAfterDeletion = mediaViewerVM.pagingAnimationAfterDeletion(
-            deletingIdentifier: identifier,
+        let animationAfterDeletion = mediaViewerVM.pagingAnimation(
+            afterDeleting: [identifier],
             currentIdentifier: currentPageVC.mediaIdentifier
         )
         
