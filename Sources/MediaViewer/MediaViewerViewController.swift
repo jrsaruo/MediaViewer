@@ -529,7 +529,7 @@ open class MediaViewerViewController: UIPageViewController {
                 let currentPageView = currentPageVC.mediaViewerOnePageView
                 currentPageView.performDeleteAnimationBody()
             }
-            self.pageControlBar.performDeleteAnimationBody(for: identifier)
+            self.pageControlBar.performDeleteAnimationBody(for: [identifier])
         }
         deletionAnimator.startAnimation()
         

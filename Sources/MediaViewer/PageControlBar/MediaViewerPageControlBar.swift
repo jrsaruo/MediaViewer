@@ -386,11 +386,13 @@ extension MediaViewerPageControlBar {
     /// It also does not update the data source so you have to call
     /// `deleteItems(_:animated:)` after this animation is finished.
     ///
-    /// - Parameter identifier: An identifier for media to perform delete animation.
-    func performDeleteAnimationBody(for identifier: AnyMediaIdentifier) {
+    /// - Parameter identifiers: Identifiers for media to perform delete animation.
+    func performDeleteAnimationBody(for identifiers: [AnyMediaIdentifier]) {
         assert(state == .deleting)
         
-        cell(for: identifier)?.performDeleteAnimationBody()
+        for identifier in identifiers {
+            cell(for: identifier)?.performDeleteAnimationBody()
+        }
     }
     
     /// Deletes specified items.
