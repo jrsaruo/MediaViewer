@@ -11,6 +11,12 @@ import Combine
 /// A type-erased media identifier.
 struct AnyMediaIdentifier: Hashable {
     let rawValue: AnyHashable
+    
+    init<MediaIdentifier>(
+        rawValue: MediaIdentifier
+    ) where MediaIdentifier: Hashable {
+        self.rawValue = rawValue
+    }
 }
 
 /// An media viewer.
