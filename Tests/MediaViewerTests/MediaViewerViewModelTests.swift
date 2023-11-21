@@ -19,56 +19,48 @@ final class MediaViewerViewModelTests: XCTestCase {
     func testPagingAnimation() throws {
         // Arrange
         let identifiers = (0..<5).map(AnyMediaIdentifier.init)
+        mediaViewerVM.mediaIdentifiers = identifiers
         
         try XCTContext.runActivity(
             named: "When the current page is deleted"
         ) { _ in
             try XCTContext.runActivity(
-                named: "When the non-last page is deleted, forward animation is performed"
+                named: "When the forward page still exists, the viewer should move to the nearest forward page"
             ) { _ in
-                // Arrange
-                mediaViewerVM.mediaIdentifiers = identifiers
-                
                 // Act
                 let animation = mediaViewerVM.pagingAnimation(
-                    afterDeleting: [identifiers[3]],
-                    currentIdentifier: identifiers[3]
+                    afterDeleting: Array(identifiers[2...3]),
+                    currentIdentifier: identifiers[2]
                 )
                 
                 // Assert
                 let (destination, direction) = try XCTUnwrap(animation)
-                XCTAssertEqual(destination, identifiers[4]) // Next page
+                XCTAssertEqual(destination, identifiers[4]) // Nearest forward page
                 XCTAssertEqual(direction, .forward)
             }
             
             try XCTContext.runActivity(
-                named: "When the last page is deleted, reverse animation is performed"
+                named: "When all forward pages are deleted, the viewer should move back to the new last page"
             ) { _ in
-                // Arrange
-                mediaViewerVM.mediaIdentifiers = identifiers
-                
                 // Act
                 let animation = mediaViewerVM.pagingAnimation(
-                    afterDeleting: [identifiers.last!],
-                    currentIdentifier: identifiers.last!
+                    afterDeleting: Array(identifiers[2...]),
+                    currentIdentifier: identifiers[2]
                 )
                 
                 // Assert
                 let (destination, direction) = try XCTUnwrap(animation)
-                XCTAssertEqual(destination, identifiers[3]) // Previous page
+                XCTAssertEqual(destination, identifiers[1]) // New last page
                 XCTAssertEqual(direction, .reverse)
             }
             
             XCTContext.runActivity(
                 named: "When all pages are deleted, no animation is performed"
             ) { _ in
-                // Arrange
-                mediaViewerVM.mediaIdentifiers = [identifiers[0]]
-                
                 // Act
                 let animation = mediaViewerVM.pagingAnimation(
-                    afterDeleting: [identifiers[0]],
-                    currentIdentifier: identifiers[0]
+                    afterDeleting: identifiers,
+                    currentIdentifier: identifiers[2]
                 )
                 
                 // Assert
@@ -77,20 +69,17 @@ final class MediaViewerViewModelTests: XCTestCase {
         }
         
         try XCTContext.runActivity(
-            named: "When a non-current page is deleted, the page is kept"
+            named: "When a non-current page is deleted, the viewer should stay on the current page"
         ) { _ in
-            // Arrange
-            mediaViewerVM.mediaIdentifiers = identifiers
-            
             // Act
             let animation = mediaViewerVM.pagingAnimation(
-                afterDeleting: [identifiers[1]],
-                currentIdentifier: identifiers[3]
+                afterDeleting: [identifiers[1], identifiers[4]],
+                currentIdentifier: identifiers[2]
             )
             
             // Assert
             let (destination, direction) = try XCTUnwrap(animation)
-            XCTAssertEqual(destination, identifiers[3])
+            XCTAssertEqual(destination, identifiers[2])
             XCTAssertNil(direction)
         }
     }
