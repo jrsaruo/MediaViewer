@@ -451,20 +451,90 @@ open class MediaViewerViewController: UIPageViewController {
         let (insertions, removals) = newIdentifiers.difference(
             from: mediaViewerVM.mediaIdentifiers
         ).changes
+        let deletingIdentifiers = removals.map(\.element)
+        
+        let visibleVCBeforeDeletion = currentPageViewController
+        
+        // TODO: Consider insertions
+        let pagingAfterDeletion = mediaViewerVM.paging(
+            afterDeleting: deletingIdentifiers,
+            currentIdentifier: visibleVCBeforeDeletion.mediaIdentifier
+        )
+        if let pagingAfterDeletion {
+            destinationPageVCAfterDeletion = makeMediaViewerPage(
+                with: pagingAfterDeletion.destinationIdentifier
+            )
+        }
         
         mediaViewerVM.mediaIdentifiers = newIdentifiers
         
         // TODO: Run animations at the same time
         await insertMedia(with: insertions.map(\.element))
-        await deleteMedia(with: removals.map(\.element))
+        await deleteMedia(
+            with: deletingIdentifiers,
+            visibleVCBeforeDeletion: visibleVCBeforeDeletion,
+            pagingAfterDeletion: pagingAfterDeletion
+        )
+        destinationPageVCAfterDeletion = nil
     }
     
     private func insertMedia(with identifiers: [AnyMediaIdentifier]) async {
         fatalError("Not implemented.") // TODO: implement
     }
     
-    private func deleteMedia(with identifiers: [AnyMediaIdentifier]) async {
-        fatalError("Not implemented.") // TODO: implement
+    private func deleteMedia(
+        with deletedIdentifiers: [AnyMediaIdentifier],
+        visibleVCBeforeDeletion: MediaViewerOnePageViewController,
+        pagingAfterDeletion: MediaViewerViewModel.PagingAfterDeletion?
+    ) async {
+        await pageControlBar.beginDeletion()
+        defer { pageControlBar.finishDeletion() }
+        
+        let isVisibleMediaDeleted = deletedIdentifiers.contains(
+            visibleVCBeforeDeletion.mediaIdentifier
+        )
+        let visiblePageView = visibleVCBeforeDeletion.mediaViewerOnePageView
+        
+        // MARK: Perform vanish animation
+        
+        let vanishAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
+            if isVisibleMediaDeleted {
+                visiblePageView.performDeleteAnimationBody()
+            }
+            self.pageControlBar.performDeleteAnimationBody(
+                for: deletedIdentifiers
+            )
+        }
+        vanishAnimator.startAnimation()
+        
+        // If all media is deleted, close the viewer
+        guard let pagingAfterDeletion else {
+            assert(mediaViewerVM.mediaIdentifiers.isEmpty)
+            navigationController?.popViewController(animated: true)
+            return
+        }
+        
+        await vanishAnimator.addCompletion()
+        
+        // MARK: Finalize deletion
+        
+        let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+            self.pageControlBar.deleteItems(
+                deletedIdentifiers,
+                destinationIdentifier: pagingAfterDeletion.destinationIdentifier,
+                animated: true
+            )
+            
+            if let direction = pagingAfterDeletion.direction {
+                self.move(
+                    toMediaWith: pagingAfterDeletion.destinationIdentifier,
+                    direction: direction,
+                    animated: true
+                )
+            }
+        }
+        finishAnimator.startAnimation()
+        await finishAnimator.addCompletion()
     }
     
     /// Deletes media with the specified identifier.
