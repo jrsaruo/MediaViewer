@@ -443,15 +443,6 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
-    /// An error on media deletion.
-    public enum DeletionError: Error {
-        
-        /// An error that indicates the media viewer is not ready to delete media.
-        ///
-        /// It is thrown when the viewer is unsettled, e.g. during paging or delete animation.
-        case notReadyToDelete
-    }
-    
     open func reloadMedia() async {
         let newIdentifiers = mediaViewerDataSource
             .mediaIdentifiers(for: self)
@@ -499,8 +490,8 @@ open class MediaViewerViewController: UIPageViewController {
     open func deleteMedia<MediaIdentifier>(
         with identifier: MediaIdentifier,
         after deleteAction: () async throws -> Void
-    ) async throws where MediaIdentifier: Hashable {
-        try pageControlBar.beginDeletion()
+    ) async rethrows where MediaIdentifier: Hashable {
+        await pageControlBar.beginDeletion()
         defer { pageControlBar.finishDeletion() }
         
         let identifier = AnyMediaIdentifier(rawValue: identifier)
