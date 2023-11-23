@@ -413,13 +413,13 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
-    func move(
+    private func move(
         toMediaWith identifier: AnyMediaIdentifier,
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) {
         move(
-            toMediaWith: identifier,
+            to: makeMediaViewerPage(with: identifier),
             direction: mediaViewerVM.moveDirection(
                 from: currentMediaIdentifier,
                 to: identifier
@@ -430,13 +430,13 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func move(
-        toMediaWith identifier: AnyMediaIdentifier,
+        to mediaViewerPage: MediaViewerOnePageViewController,
         direction: NavigationDirection,
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) {
         setViewControllers(
-            [makeMediaViewerPage(with: identifier)],
+            [mediaViewerPage],
             direction: direction,
             animated: animated,
             completion: completion
@@ -525,9 +525,10 @@ open class MediaViewerViewController: UIPageViewController {
                 animated: true
             )
             
-            if let direction = pagingAfterDeletion.direction {
+            if let direction = pagingAfterDeletion.direction,
+               let destination = self.destinationPageVCAfterDeletion {
                 self.move(
-                    toMediaWith: pagingAfterDeletion.destinationIdentifier,
+                    to: destination,
                     direction: direction,
                     animated: true
                 )
@@ -626,7 +627,9 @@ open class MediaViewerViewController: UIPageViewController {
                  * to reference a deleted page.
                  */
                 self.move(
-                    toMediaWith: pagingAfterDeletion.destinationIdentifier,
+                    to: self.makeMediaViewerPage(
+                        with: pagingAfterDeletion.destinationIdentifier
+                    ),
                     direction: direction,
                     animated: true
                 )
