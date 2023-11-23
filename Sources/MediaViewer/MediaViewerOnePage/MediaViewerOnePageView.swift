@@ -160,7 +160,7 @@ final class MediaViewerOnePageView: UIView {
         scrollView.zoom(to: zoomArea, animated: animated)
     }
     
-    func performDeleteAnimationBody() {
+    func performVanishAnimationBody() {
         imageView.transform = imageView.transform.scaledBy(x: 0.5, y: 0.5)
         imageView.alpha = 0
     }

@@ -497,9 +497,9 @@ open class MediaViewerViewController: UIPageViewController {
         
         let vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
             if isVisibleMediaDeleted {
-                visiblePageView.performDeleteAnimationBody()
+                visiblePageView.performVanishAnimationBody()
             }
-            self.pageControlBar.performDeleteAnimationBody(
+            self.pageControlBar.performVanishAnimationBody(
                 for: deletedIdentifiers
             )
         }
@@ -593,16 +593,16 @@ open class MediaViewerViewController: UIPageViewController {
             "You have to complete deletion in `deleteAction` closure."
         )
         
-        // MARK: Perform delete animation
+        // MARK: Perform vanish animation
         
-        let deletionAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
+        let vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
             if identifier == currentPageVC.mediaIdentifier {
                 let currentPageView = currentPageVC.mediaViewerOnePageView
-                currentPageView.performDeleteAnimationBody()
+                currentPageView.performVanishAnimationBody()
             }
-            self.pageControlBar.performDeleteAnimationBody(for: [identifier])
+            self.pageControlBar.performVanishAnimationBody(for: [identifier])
         }
-        deletionAnimator.startAnimation()
+        vanishAnimator.startAnimation()
         
         // If all media is deleted, close the viewer
         guard let pagingAfterDeletion else {
@@ -611,7 +611,7 @@ open class MediaViewerViewController: UIPageViewController {
             return
         }
         
-        await deletionAnimator.addCompletion()
+        await vanishAnimator.addCompletion()
         
         // MARK: Finalize deletion
         

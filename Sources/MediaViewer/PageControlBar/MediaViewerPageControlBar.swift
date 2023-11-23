@@ -409,14 +409,14 @@ extension MediaViewerPageControlBar {
         state = .expanded
     }
     
-    /// Performs the body of the delete animation.
+    /// Performs the body of the vanish animation.
     ///
     /// This method itself does not animate, so call it in an animation block.
     /// It also does not update the data source so you have to call
     /// `loadItems(_:expandingItemWith:animated:)` after this animation is finished.
     ///
-    /// - Parameter identifiers: Identifiers for media to perform delete animation.
-    func performDeleteAnimationBody(for identifiers: [AnyMediaIdentifier]) {
+    /// - Parameter identifiers: Identifiers for media to perform vanish animation.
+    func performVanishAnimationBody(for identifiers: [AnyMediaIdentifier]) {
         assert(state == .deleting)
         
         for identifier in identifiers {
