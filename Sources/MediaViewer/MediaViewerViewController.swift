@@ -519,9 +519,9 @@ open class MediaViewerViewController: UIPageViewController {
         // MARK: Finalize deletion
         
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            self.pageControlBar.deleteItems(
-                deletedIdentifiers,
-                destinationIdentifier: pagingAfterDeletion.destinationIdentifier,
+            self.pageControlBar.loadItems(
+                self.mediaViewerVM.mediaIdentifiers,
+                expandingItemWith: pagingAfterDeletion.destinationIdentifier,
                 animated: true
             )
             
@@ -611,9 +611,9 @@ open class MediaViewerViewController: UIPageViewController {
         // MARK: Finalize deletion
         
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            self.pageControlBar.deleteItems(
-                [identifier],
-                destinationIdentifier: pagingAfterDeletion.destinationIdentifier,
+            self.pageControlBar.loadItems(
+                self.mediaViewerVM.mediaIdentifiers,
+                expandingItemWith: pagingAfterDeletion.destinationIdentifier,
                 animated: true
             )
             
