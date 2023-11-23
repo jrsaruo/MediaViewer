@@ -398,7 +398,8 @@ final class MediaViewerPageControlBar: UIView {
 extension MediaViewerPageControlBar {
     
     func beginDeletion() async {
-        while state != .expanded {
+        let readyStates: [State] = [.expanded, .deleting]
+        while !readyStates.contains(state) {
             await Task.yield()
         }
         state = .deleting

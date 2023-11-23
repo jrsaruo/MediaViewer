@@ -475,7 +475,6 @@ open class MediaViewerViewController: UIPageViewController {
             visibleVCBeforeDeletion: visibleVCBeforeDeletion,
             pagingAfterDeletion: pagingAfterDeletion
         )
-        destinationPageVCAfterDeletion = nil
     }
     
     private func insertMedia(with identifiers: [AnyMediaIdentifier]) async {
@@ -488,7 +487,6 @@ open class MediaViewerViewController: UIPageViewController {
         pagingAfterDeletion: MediaViewerViewModel.PagingAfterDeletion?
     ) async {
         await pageControlBar.beginDeletion()
-        defer { pageControlBar.finishDeletion() }
         
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
             visibleVCBeforeDeletion.mediaIdentifier
@@ -518,15 +516,19 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Finalize deletion
         
+        guard let destination = destinationPageVCAfterDeletion,
+              pagingAfterDeletion.destinationIdentifier == destination.mediaIdentifier else {
+            return
+        }
+        
         let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
             self.pageControlBar.loadItems(
                 self.mediaViewerVM.mediaIdentifiers,
-                expandingItemWith: pagingAfterDeletion.destinationIdentifier,
+                expandingItemWith: destination.mediaIdentifier,
                 animated: true
             )
             
-            if let direction = pagingAfterDeletion.direction,
-               let destination = self.destinationPageVCAfterDeletion {
+            if let direction = pagingAfterDeletion.direction {
                 self.move(
                     to: destination,
                     direction: direction,
@@ -536,6 +538,8 @@ open class MediaViewerViewController: UIPageViewController {
         }
         finishAnimator.startAnimation()
         await finishAnimator.addCompletion()
+        pageControlBar.finishDeletion()
+        destinationPageVCAfterDeletion = nil
     }
     
     /// Deletes media with the specified identifier.
