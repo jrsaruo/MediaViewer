@@ -495,7 +495,7 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Perform vanish animation
         
-        let vanishAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
+        let vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
             if isVisibleMediaDeleted {
                 visiblePageView.performDeleteAnimationBody()
             }
@@ -595,7 +595,7 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Perform delete animation
         
-        let deletionAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
+        let deletionAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
             if identifier == currentPageVC.mediaIdentifier {
                 let currentPageView = currentPageVC.mediaViewerOnePageView
                 currentPageView.performDeleteAnimationBody()
