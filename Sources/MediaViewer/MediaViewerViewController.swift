@@ -69,12 +69,20 @@ open class MediaViewerViewController: UIPageViewController {
         currentPageViewController.mediaIdentifier
     }
     
-    private var destinationPageVCAfterDeletion: MediaViewerOnePageViewController?
-    
+    /// A view controller for the current page.
+    ///
+    /// During deletion, `visiblePageViewController` returns the page that was displayed
+    /// just before deletion, while `currentPageViewController` returns the page that will be
+    /// displayed eventually.
     var currentPageViewController: MediaViewerOnePageViewController {
         if let destinationPageVCAfterDeletion {
             return destinationPageVCAfterDeletion
         }
+        return visiblePageViewController
+    }
+    
+    /// A view controller for the currently visible page.
+    var visiblePageViewController: MediaViewerOnePageViewController {
         guard let mediaViewerOnePage = viewControllers?.first as? MediaViewerOnePageViewController else {
             preconditionFailure(
                 "\(Self.self) must have only one \(MediaViewerOnePageViewController.self)."
@@ -82,6 +90,8 @@ open class MediaViewerViewController: UIPageViewController {
         }
         return mediaViewerOnePage
     }
+    
+    private var destinationPageVCAfterDeletion: MediaViewerOnePageViewController?
     
     public var isShowingMediaOnly: Bool {
         mediaViewerVM.showsMediaOnly
