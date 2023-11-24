@@ -405,6 +405,13 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: - Methods
     
+    /// Fetches type-erased identifiers for media from the data source.
+    func fetchMediaIdentifiers() -> [AnyMediaIdentifier] {
+        mediaViewerDataSource
+            .mediaIdentifiers(for: self)
+            .map { AnyMediaIdentifier(rawValue: $0) }
+    }
+    
     /// Move to media with the specified identifier.
     /// - Parameters:
     ///   - identifier: An identifier for destination media.
@@ -454,9 +461,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     open func reloadMedia() async {
-        let newIdentifiers = mediaViewerDataSource
-            .mediaIdentifiers(for: self)
-            .map { AnyMediaIdentifier(rawValue: $0) }
+        let newIdentifiers = fetchMediaIdentifiers()
         
         let (insertions, removals) = newIdentifiers.difference(
             from: mediaViewerVM.mediaIdentifiers
