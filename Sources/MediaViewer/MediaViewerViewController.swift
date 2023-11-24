@@ -506,7 +506,10 @@ open class MediaViewerViewController: UIPageViewController {
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
     }
     
-    private func insertMedia(with identifiers: [AnyMediaIdentifier]) async {
+    private func insertMedia(
+        with insertedIdentifiers: [AnyMediaIdentifier]
+    ) async {
+        guard !insertedIdentifiers.isEmpty else { return }
         fatalError("Not implemented.") // TODO: implement
     }
     
@@ -515,6 +518,8 @@ open class MediaViewerViewController: UIPageViewController {
         visibleVCBeforeDeletion: MediaViewerOnePageViewController,
         pagingAfterDeletion: MediaViewerViewModel.PagingAfterDeletion?
     ) async {
+        guard !deletedIdentifiers.isEmpty else { return }
+        
         await pageControlBar.beginDeletion()
         
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
