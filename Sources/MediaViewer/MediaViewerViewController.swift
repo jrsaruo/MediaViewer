@@ -65,6 +65,18 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.page(with: currentMediaIdentifier)!
     }
     
+    public func currentMediaIdentifier<MediaIdentifier>(
+        as identifierType: MediaIdentifier.Type = MediaIdentifier.self
+    ) -> MediaIdentifier {
+        let rawIdentifier = currentMediaIdentifier.rawValue
+        guard let identifier = rawIdentifier as? MediaIdentifier else {
+            preconditionFailure(
+                "The type of media identifier is \(type(of: rawIdentifier.base)), not \(identifierType)."
+            )
+        }
+        return identifier
+    }
+    
     var currentMediaIdentifier: AnyMediaIdentifier {
         currentPageViewController.mediaIdentifier
     }
