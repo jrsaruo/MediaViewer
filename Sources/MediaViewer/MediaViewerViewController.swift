@@ -533,8 +533,19 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Finalize deletion
         
-        guard let destination = destinationPageVCAfterDeletion,
-              pagingAfterDeletion.destinationIdentifier == destination.mediaIdentifier else {
+        guard let destination = destinationPageVCAfterDeletion else {
+            assertionFailure(
+                "destinationPageVCAfterDeletion should not be nil until all delete transactions have completed."
+            )
+            return
+        }
+        
+        guard pagingAfterDeletion.destinationIdentifier == destination.mediaIdentifier else {
+            /*
+             * NOTE:
+             * Do not run finishAnimator because another delete transaction
+             * will follow.
+             */
             return
         }
         
