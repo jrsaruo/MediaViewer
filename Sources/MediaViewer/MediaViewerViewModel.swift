@@ -58,11 +58,6 @@ final class MediaViewerViewModel: ObservableObject {
 
 extension MediaViewerViewModel {
     
-    func deleteMediaIdentifier(_ identifier: AnyMediaIdentifier) {
-        guard let page = page(with: identifier) else { return }
-        mediaIdentifiers.remove(at: page)
-    }
-    
     struct PagingAfterDeletion: Hashable {
         let destinationIdentifier: AnyMediaIdentifier
         let direction: UIPageViewController.NavigationDirection?
