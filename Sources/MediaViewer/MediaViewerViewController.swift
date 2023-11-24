@@ -490,6 +490,8 @@ open class MediaViewerViewController: UIPageViewController {
             visibleVCBeforeDeletion: visibleVCBeforeDeletion,
             pagingAfterDeletion: pagingAfterDeletion
         )
+        
+        assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
     }
     
     private func insertMedia(with identifiers: [AnyMediaIdentifier]) async {

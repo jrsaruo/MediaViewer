@@ -406,6 +406,7 @@ extension MediaViewerPageControlBar {
     }
     
     func finishDeletion() {
+        assert(state == .deleting)
         state = .expanded
     }
     
