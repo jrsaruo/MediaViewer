@@ -566,8 +566,20 @@ open class MediaViewerViewController: UIPageViewController {
         }
         finishAnimator.startAnimation()
         await finishAnimator.addCompletion()
-        pageControlBar.finishDeletion()
-        destinationPageVCAfterDeletion = nil
+        
+        /*
+         * NOTE:
+         * If another deletion occurs while finishAnimator is running,
+         * destinationPageVCAfterDeletion is overwritten with the new value
+         * and takes a different value from visiblePageViewController.
+         */
+        let isAllDeletionCompleted = visiblePageViewController == destinationPageVCAfterDeletion
+        if isAllDeletionCompleted {
+            destinationPageVCAfterDeletion = nil
+            pageControlBar.finishDeletion()
+        } else {
+            // NOTE: Do not finish because there are still delete transactions.
+        }
     }
     
     /// Deletes media with the specified identifier.
