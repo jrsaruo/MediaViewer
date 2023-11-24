@@ -79,23 +79,47 @@ final class MediaViewerViewModelTests: XCTestCase {
         }
         
         XCTContext.runActivity(
-            named: "When a non-current page is deleted, the viewer should stay on the current page"
+            named: "When the current page is not deleted, the viewer should stay on the current page"
         ) { _ in
-            // Act
-            let pagingAfterDeletion = mediaViewerVM.paging(
-                afterDeleting: [identifiers[1], identifiers[4]],
-                currentIdentifier: identifiers[2]
-            )
-            
-            // Assert
-            XCTAssertEqual(
-                pagingAfterDeletion,
-                .init(
-                    // Current page
-                    destinationIdentifier: identifiers[2],
-                    direction: nil
+            XCTContext.runActivity(
+                named: "When some non-current pages are deleted"
+            ) { _ in
+                // Act
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: [identifiers[1], identifiers[4]],
+                    currentIdentifier: identifiers[2]
                 )
-            )
+                
+                // Assert
+                XCTAssertEqual(
+                    pagingAfterDeletion,
+                    .init(
+                        // Current page
+                        destinationIdentifier: identifiers[2],
+                        direction: nil
+                    )
+                )
+            }
+            
+            XCTContext.runActivity(
+                named: "When no pages are deleted"
+            ) { _ in
+                // Act
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: [],
+                    currentIdentifier: identifiers[2]
+                )
+                
+                // Assert
+                XCTAssertEqual(
+                    pagingAfterDeletion,
+                    .init(
+                        // Current page
+                        destinationIdentifier: identifiers[2],
+                        direction: nil
+                    )
+                )
+            }
         }
     }
 }
