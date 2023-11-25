@@ -503,8 +503,7 @@ open class MediaViewerViewController: UIPageViewController {
         
         await pageControlBar.startReloading()
         
-        // TODO: Run animations at the same time
-        await insertMedia(with: insertions.map(\.element))
+        insertMedia(with: insertions.map(\.element))
         await deleteMedia(
             with: deletingIdentifiers,
             visibleVCBeforeDeletion: visibleVCBeforeReloading,
@@ -530,9 +529,13 @@ open class MediaViewerViewController: UIPageViewController {
     
     private func insertMedia(
         with insertedIdentifiers: [AnyMediaIdentifier]
-    ) async {
+    ) {
         guard !insertedIdentifiers.isEmpty else { return }
-        fatalError("Not implemented.") // TODO: implement
+        pageControlBar.loadItems(
+            mediaViewerVM.mediaIdentifiers,
+            expandingItemWith: visiblePageViewController.mediaIdentifier,
+            animated: true
+        )
     }
     
     private func deleteMedia(
