@@ -76,6 +76,7 @@ final class MediaViewerPageControlBar: UIView {
     /// What caused the page change.
     enum PageChangeReason: Hashable {
         case configuration
+        case load
         case tapOnPageThumbnail
         case scrollingBar
         case interactivePaging
@@ -230,6 +231,7 @@ final class MediaViewerPageControlBar: UIView {
         guard let indexPath = diffableDataSource.indexPath(for: expandingIdentifier) else {
             return
         }
+        _pageDidChange.send((page: indexPath.item, reason: .load))
         updateLayout(
             expandingItemAt: indexPath,
             expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(

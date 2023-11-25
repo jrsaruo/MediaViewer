@@ -326,7 +326,7 @@ open class MediaViewerViewController: UIPageViewController {
                 case .tapOnPageThumbnail, .scrollingBar:
                     let identifier = mediaViewerVM.mediaIdentifier(forPage: page)!
                     move(toMediaWith: identifier, animated: false)
-                case .configuration, .interactivePaging:
+                case .configuration, .load, .interactivePaging:
                     // Do nothing because it has already been moved to the page.
                     break
                 }
