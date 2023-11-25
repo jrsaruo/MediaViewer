@@ -501,6 +501,8 @@ open class MediaViewerViewController: UIPageViewController {
         
         mediaViewerVM.mediaIdentifiers = newIdentifiers
         
+        await pageControlBar.beginDeletion()
+        
         // TODO: Run animations at the same time
         await insertMedia(with: insertions.map(\.element))
         await deleteMedia(
@@ -508,6 +510,20 @@ open class MediaViewerViewController: UIPageViewController {
             visibleVCBeforeDeletion: visibleVCBeforeDeletion,
             pagingAfterDeletion: pagingAfterDeletion
         )
+        
+        /*
+         * NOTE:
+         * If another deletion occurs during deletion,
+         * destinationPageVCAfterDeletion is overwritten with the new value
+         * and takes a different value from visiblePageViewController.
+         */
+        let isAllDeletionCompleted = visiblePageViewController.mediaIdentifier == destinationPageVCAfterDeletion?.mediaIdentifier
+        if isAllDeletionCompleted {
+            destinationPageVCAfterDeletion = nil
+            pageControlBar.finishDeletion()
+        } else {
+            // NOTE: Do not finish because there are still delete transactions.
+        }
         
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
     }
@@ -525,8 +541,6 @@ open class MediaViewerViewController: UIPageViewController {
         pagingAfterDeletion: MediaViewerViewModel.PagingAfterDeletion?
     ) async {
         guard !deletedIdentifiers.isEmpty else { return }
-        
-        await pageControlBar.beginDeletion()
         
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
             visibleVCBeforeDeletion.mediaIdentifier
@@ -589,20 +603,6 @@ open class MediaViewerViewController: UIPageViewController {
         }
         finishAnimator.startAnimation()
         await finishAnimator.addCompletion()
-        
-        /*
-         * NOTE:
-         * If another deletion occurs while finishAnimator is running,
-         * destinationPageVCAfterDeletion is overwritten with the new value
-         * and takes a different value from visiblePageViewController.
-         */
-        let isAllDeletionCompleted = visiblePageViewController == destinationPageVCAfterDeletion
-        if isAllDeletionCompleted {
-            destinationPageVCAfterDeletion = nil
-            pageControlBar.finishDeletion()
-        } else {
-            // NOTE: Do not finish because there are still delete transactions.
-        }
     }
     
     private func pageDidChange() {
