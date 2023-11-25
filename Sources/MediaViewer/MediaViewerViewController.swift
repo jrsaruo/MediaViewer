@@ -478,9 +478,12 @@ open class MediaViewerViewController: UIPageViewController {
     open func reloadMedia() async {
         let newIdentifiers = fetchMediaIdentifiers()
         
-        let (insertions, removals) = newIdentifiers.difference(
+        let difference = newIdentifiers.difference(
             from: mediaViewerVM.mediaIdentifiers
-        ).changes
+        )
+        guard !difference.isEmpty else { return }
+        
+        let (insertions, removals) = difference.changes
         let deletingIdentifiers = removals.map(\.element)
         
         let visibleVCBeforeDeletion = currentPageViewController
