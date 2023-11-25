@@ -86,12 +86,12 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// A view controller for the current page.
     ///
-    /// During deletion, `visiblePageViewController` returns the page that was displayed
-    /// just before deletion, while `currentPageViewController` returns the page that will be
+    /// During reloading, `visiblePageViewController` returns the page that was displayed
+    /// just before reloading, while `currentPageViewController` returns the page that will be
     /// displayed eventually.
     var currentPageViewController: MediaViewerOnePageViewController {
-        if let destinationPageVCAfterDeletion {
-            return destinationPageVCAfterDeletion
+        if let destinationPageVCAfterReloading {
+            return destinationPageVCAfterReloading
         }
         return visiblePageViewController
     }
@@ -106,7 +106,7 @@ open class MediaViewerViewController: UIPageViewController {
         return mediaViewerOnePage
     }
     
-    private var destinationPageVCAfterDeletion: MediaViewerOnePageViewController?
+    private var destinationPageVCAfterReloading: MediaViewerOnePageViewController?
     
     public var isShowingMediaOnly: Bool {
         mediaViewerVM.showsMediaOnly
@@ -486,43 +486,43 @@ open class MediaViewerViewController: UIPageViewController {
         let (insertions, removals) = difference.changes
         let deletingIdentifiers = removals.map(\.element)
         
-        let visibleVCBeforeDeletion = currentPageViewController
+        let visibleVCBeforeReloading = currentPageViewController
         
         // TODO: Consider insertions
-        let pagingAfterDeletion = mediaViewerVM.paging(
+        let pagingAfterReloading = mediaViewerVM.paging(
             afterDeleting: deletingIdentifiers,
-            currentIdentifier: visibleVCBeforeDeletion.mediaIdentifier
+            currentIdentifier: visibleVCBeforeReloading.mediaIdentifier
         )
-        if let pagingAfterDeletion {
-            destinationPageVCAfterDeletion = makeMediaViewerPage(
-                with: pagingAfterDeletion.destinationIdentifier
+        if let pagingAfterReloading {
+            destinationPageVCAfterReloading = makeMediaViewerPage(
+                with: pagingAfterReloading.destinationIdentifier
             )
         }
         
         mediaViewerVM.mediaIdentifiers = newIdentifiers
         
-        await pageControlBar.beginDeletion()
+        await pageControlBar.startReloading()
         
         // TODO: Run animations at the same time
         await insertMedia(with: insertions.map(\.element))
         await deleteMedia(
             with: deletingIdentifiers,
-            visibleVCBeforeDeletion: visibleVCBeforeDeletion,
-            pagingAfterDeletion: pagingAfterDeletion
+            visibleVCBeforeDeletion: visibleVCBeforeReloading,
+            pagingAfterDeletion: pagingAfterReloading
         )
         
         /*
          * NOTE:
-         * If another deletion occurs during deletion,
-         * destinationPageVCAfterDeletion is overwritten with the new value
+         * If another reloading occurs during the reloading,
+         * destinationPageVCAfterReloading is overwritten with the new value
          * and takes a different value from visiblePageViewController.
          */
-        let isAllDeletionCompleted = visiblePageViewController.mediaIdentifier == destinationPageVCAfterDeletion?.mediaIdentifier
-        if isAllDeletionCompleted {
-            destinationPageVCAfterDeletion = nil
-            pageControlBar.finishDeletion()
+        let isAllReloadingCompleted = visiblePageViewController.mediaIdentifier == destinationPageVCAfterReloading?.mediaIdentifier
+        if isAllReloadingCompleted {
+            destinationPageVCAfterReloading = nil
+            pageControlBar.finishReloading()
         } else {
-            // NOTE: Do not finish because there are still delete transactions.
+            // NOTE: Do not finish because there are still reload transactions.
         }
         
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
@@ -538,7 +538,7 @@ open class MediaViewerViewController: UIPageViewController {
     private func deleteMedia(
         with deletedIdentifiers: [AnyMediaIdentifier],
         visibleVCBeforeDeletion: MediaViewerOnePageViewController,
-        pagingAfterDeletion: MediaViewerViewModel.PagingAfterDeletion?
+        pagingAfterDeletion: MediaViewerViewModel.PagingAfterReloading?
     ) async {
         guard !deletedIdentifiers.isEmpty else { return }
         
@@ -570,9 +570,9 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Finalize deletion
         
-        guard let destination = destinationPageVCAfterDeletion else {
+        guard let destination = destinationPageVCAfterReloading else {
             assertionFailure(
-                "destinationPageVCAfterDeletion should not be nil until all delete transactions have completed."
+                "destinationPageVCAfterReloading should not be nil until all reloading transactions have completed."
             )
             return
         }
@@ -633,7 +633,7 @@ open class MediaViewerViewController: UIPageViewController {
             if progress != 0 {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
             }
-        case .deleting:
+        case .reloading:
             break
         }
     }
