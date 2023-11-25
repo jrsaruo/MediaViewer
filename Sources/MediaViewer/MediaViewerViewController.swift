@@ -477,14 +477,22 @@ open class MediaViewerViewController: UIPageViewController {
     
     open func reloadMedia() async {
         let newIdentifiers = fetchMediaIdentifiers()
+        if newIdentifiers.contains(currentMediaIdentifier) {
+            // Just reload pageControlBar if current media is not deleted
+            mediaViewerVM.mediaIdentifiers = newIdentifiers
+            pageControlBar.loadItems(
+                mediaViewerVM.mediaIdentifiers,
+                expandingItemWith: currentMediaIdentifier,
+                animated: true
+            )
+            return
+        }
         
         let difference = newIdentifiers.difference(
             from: mediaViewerVM.mediaIdentifiers
         )
         guard !difference.isEmpty else { return }
-        
-        let (insertions, removals) = difference.changes
-        let deletingIdentifiers = removals.map(\.element)
+        let deletingIdentifiers = difference.removals.map(\.element)
         
         let visibleVCBeforeReloading = currentPageViewController
         
@@ -503,7 +511,6 @@ open class MediaViewerViewController: UIPageViewController {
         
         await pageControlBar.startReloading()
         
-        insertMedia(with: insertions.map(\.element))
         await deleteMedia(
             with: deletingIdentifiers,
             visibleVCBeforeDeletion: visibleVCBeforeReloading,
@@ -525,17 +532,6 @@ open class MediaViewerViewController: UIPageViewController {
         }
         
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
-    }
-    
-    private func insertMedia(
-        with insertedIdentifiers: [AnyMediaIdentifier]
-    ) {
-        guard !insertedIdentifiers.isEmpty else { return }
-        pageControlBar.loadItems(
-            mediaViewerVM.mediaIdentifiers,
-            expandingItemWith: visiblePageViewController.mediaIdentifier,
-            animated: true
-        )
     }
     
     private func deleteMedia(
