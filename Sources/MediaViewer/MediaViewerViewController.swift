@@ -501,10 +501,10 @@ open class MediaViewerViewController: UIPageViewController {
         
         await pageControlBar.startReloading()
         
-        await deleteMedia(
-            with: deletingIdentifiers,
-            visibleVCBeforeDeletion: visibleVCBeforeReloading,
-            pagingAfterDeletion: pagingAfterReloading
+        await reloadMedia(
+            deleting: deletingIdentifiers,
+            visibleVCBeforeReloading: visibleVCBeforeReloading,
+            pagingAfterReloading: pagingAfterReloading
         )
         
         /*
@@ -524,15 +524,15 @@ open class MediaViewerViewController: UIPageViewController {
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
     }
     
-    private func deleteMedia(
-        with deletedIdentifiers: [AnyMediaIdentifier],
-        visibleVCBeforeDeletion: MediaViewerOnePageViewController,
-        pagingAfterDeletion: MediaViewerViewModel.PagingAfterReloading?
+    private func reloadMedia(
+        deleting deletedIdentifiers: [AnyMediaIdentifier],
+        visibleVCBeforeReloading: MediaViewerOnePageViewController,
+        pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?
     ) async {
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
-            visibleVCBeforeDeletion.mediaIdentifier
+            visibleVCBeforeReloading.mediaIdentifier
         )
-        let visiblePageView = visibleVCBeforeDeletion.mediaViewerOnePageView
+        let visiblePageView = visibleVCBeforeReloading.mediaViewerOnePageView
         
         // MARK: Perform vanish animation
         
@@ -552,7 +552,7 @@ open class MediaViewerViewController: UIPageViewController {
         vanishAnimator.startAnimation()
         
         // If all media is deleted, close the viewer
-        guard let pagingAfterDeletion else {
+        guard let pagingAfterReloading else {
             assert(mediaViewerVM.mediaIdentifiers.isEmpty)
             navigationController?.popViewController(animated: true)
             return
@@ -569,11 +569,10 @@ open class MediaViewerViewController: UIPageViewController {
             return
         }
         
-        guard pagingAfterDeletion.destinationIdentifier == destination.mediaIdentifier else {
+        guard pagingAfterReloading.destinationIdentifier == destination.mediaIdentifier else {
             /*
              * NOTE:
-             * Do not run finishAnimator because another delete transaction
-             * will follow.
+             * Do not run finishAnimator because another reloading will follow.
              */
             return
         }
@@ -585,7 +584,7 @@ open class MediaViewerViewController: UIPageViewController {
                 animated: true
             )
             
-            if let direction = pagingAfterDeletion.direction {
+            if let direction = pagingAfterReloading.direction {
                 self.move(
                     to: destination,
                     direction: direction,
