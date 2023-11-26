@@ -97,6 +97,14 @@ final class SyncImagesViewController: UIViewController {
         imageGridView.collectionView.refreshControl?.endRefreshing()
     }
     
+    private func insertNewItem(after item: Item) {
+        var snapshot = dataSource.snapshot()
+        let maxItem = snapshot.itemIdentifiers.max { $0.number < $1.number }!
+        let newItem = Item(number: maxItem.number + 1)
+        snapshot.insertItems([newItem], afterItem: item)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+    
     private func removeItem(_ item: Item) {
         var snapshot = dataSource.snapshot()
         snapshot.deleteItems([item])
@@ -112,6 +120,18 @@ extension SyncImagesViewController: UICollectionViewDelegate {
         let image = dataSource.itemIdentifier(for: indexPath)!
         let mediaViewer = MediaViewerViewController(opening: image, dataSource: self)
         mediaViewer.toolbarItems = [
+            .flexibleSpace(),
+            .init(
+                systemItem: .add,
+                primaryAction: .init { [unowned mediaViewer] _ in
+                    self.insertNewItem(
+                        after: mediaViewer.currentMediaIdentifier()
+                    )
+                    Task {
+                        await mediaViewer.reloadMedia()
+                    }
+                }
+            ),
             .flexibleSpace(),
             mediaViewer.trashButton { currentMediaIdentifier in
                 self.removeItem(currentMediaIdentifier)
