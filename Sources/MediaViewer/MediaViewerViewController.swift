@@ -665,11 +665,13 @@ extension MediaViewerViewController {
          * When pageControlToolbar.clipsToBounds is true,
          * toolbar becomes transparent so prevent it.
          */
-        let toolbar = navigationController!.toolbar!
-        toolbarScrollEdgeAppearanceBackup = toolbar.scrollEdgeAppearance
-        let appearance = UIToolbarAppearance()
-        appearance.configureWithDefaultBackground()
-        toolbar.scrollEdgeAppearance = appearance
+        if #available(iOS 15.0, *) {
+            let toolbar = navigationController!.toolbar!
+            toolbarScrollEdgeAppearanceBackup = toolbar.scrollEdgeAppearance
+            let appearance = UIToolbarAppearance()
+            appearance.configureWithDefaultBackground()
+            toolbar.scrollEdgeAppearance = appearance
+        }
     }
     
     // MARK: Push transition
@@ -686,7 +688,9 @@ extension MediaViewerViewController {
     
     func didFinishPushTransition() {
         pageControlToolbar.clipsToBounds = false
-        navigationController!.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+        if #available(iOS 15.0, *) {
+          navigationController!.toolbar.scrollEdgeAppearance = toolbarScrollEdgeAppearanceBackup
+        }
     }
     
     // MARK: Pop transition

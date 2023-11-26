@@ -98,7 +98,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         // Back up
         sourceViewHiddenBackup = sourceView?.isHidden ?? false
-        tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
+        if #available(iOS 15.0, *) {
+            tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
+        }
         tabBarAlphaBackup = tabBar?.alpha
         toolbarAlphaBackup = toolbar.alpha
         toVCToolbarItemsBackup = toVC.toolbarItems
@@ -112,7 +114,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         sourceView?.isHidden = true
         
-        if let tabBar {
+        if #available(iOS 15.0, *), let tabBar {
             // Make tabBar opaque during the transition
             let appearance = UITabBarAppearance()
             appearance.configureWithDefaultBackground()
@@ -199,8 +201,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let currentPageView = mediaViewerCurrentPageView(in: transitionContext)
         let currentPageImageView = currentPageView.imageView
         
-        tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
-        
+        if #available(iOS 15.0, *) {
+            tabBar?.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
+        }
+
         let finishAnimator = UIViewPropertyAnimator(duration: 0.35, dampingRatio: 1) {
             if let sourceView = self.sourceView {
                 let sourceFrameInViewer = mediaViewerView.convert(
@@ -234,8 +238,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
             navigationController.navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
             toolbar.alpha = self.toolbarAlphaBackup
-            toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
-            
+            if #available(iOS 15.0, *) {
+                toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
+            }
+
             // Disable the default animation applied to the toolbar
             if let animationKeys = toolbar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy { $0.starts(with: "position") })
@@ -274,7 +280,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             currentPageImageView.transform = self.initialImageTransform
             currentPageView.restoreLayoutConfigurationAfterTransition()
             
-            self.tabBar?.scrollEdgeAppearance = self.tabBarScrollEdgeAppearanceBackup
+            if #available(iOS 15.0, *) {
+                self.tabBar?.scrollEdgeAppearance = self.tabBarScrollEdgeAppearanceBackup
+            }
             if let tabBarAlphaBackup = self.tabBarAlphaBackup {
                 self.tabBar?.alpha = tabBarAlphaBackup
             }
@@ -282,9 +290,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             // Restore properties
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
-            let toolbar = toVC.navigationController!.toolbar!
-            toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
-            
+            if #available(iOS 15.0, *) {
+                let toolbar = toVC.navigationController!.toolbar!
+                toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
+            }
+
             let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
             mediaViewer.didCancelInteractivePopTransition()
