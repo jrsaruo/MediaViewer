@@ -27,13 +27,9 @@ extension MediaViewerViewController {
     ) -> UIBarButtonItem where MediaIdentifier: Hashable {
         .init(systemItem: .trash, primaryAction: .init { [weak self] action in
             guard let self else { return }
-            let button = action.sender as? UIBarButtonItem
-            button?.isEnabled = false
             Task {
-                defer { button?.isEnabled = true }
-                try await self.deleteCurrentMedia(after: { currentMediaIdentifier in
-                    try await deleteAction(currentMediaIdentifier)
-                })
+                try await deleteAction(self.currentMediaIdentifier())
+                await self.reloadMedia()
             }
         })
     }

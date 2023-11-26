@@ -16,82 +16,110 @@ final class MediaViewerViewModelTests: XCTestCase {
         mediaViewerVM = .init()
     }
     
-    func testPagingAnimationAfterDeletion() throws {
+    func testPagingAfterDeletion() {
         // Arrange
         let identifiers = (0..<5).map(AnyMediaIdentifier.init)
+        mediaViewerVM.mediaIdentifiers = identifiers
         
-        try XCTContext.runActivity(
+        XCTContext.runActivity(
             named: "When the current page is deleted"
         ) { _ in
-            try XCTContext.runActivity(
-                named: "When the non-last page is deleted, forward animation is performed"
+            XCTContext.runActivity(
+                named: "When the forward page still exists, the viewer should move to the nearest forward page"
             ) { _ in
-                // Arrange
-                mediaViewerVM.mediaIdentifiers = identifiers
-                
                 // Act
-                let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                    deletingIdentifier: identifiers[3],
-                    currentIdentifier: identifiers[3]
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: Array(identifiers[2...3]),
+                    currentIdentifier: identifiers[2]
                 )
                 
                 // Assert
-                let (destination, direction) = try XCTUnwrap(animation)
-                XCTAssertEqual(destination, identifiers[4]) // Next page
-                XCTAssertEqual(direction, .forward)
-            }
-            
-            try XCTContext.runActivity(
-                named: "When the last page is deleted, reverse animation is performed"
-            ) { _ in
-                // Arrange
-                mediaViewerVM.mediaIdentifiers = identifiers
-                
-                // Act
-                let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                    deletingIdentifier: identifiers.last!,
-                    currentIdentifier: identifiers.last!
+                XCTAssertEqual(
+                    pagingAfterDeletion,
+                    .init(
+                        // Nearest forward page
+                        destinationIdentifier: identifiers[4],
+                        direction: .forward
+                    )
                 )
-                
-                // Assert
-                let (destination, direction) = try XCTUnwrap(animation)
-                XCTAssertEqual(destination, identifiers[3]) // Previous page
-                XCTAssertEqual(direction, .reverse)
             }
             
             XCTContext.runActivity(
-                named: "When all pages are deleted, no animation is performed"
+                named: "When all forward pages are deleted, the viewer should move back to the new last page"
             ) { _ in
-                // Arrange
-                mediaViewerVM.mediaIdentifiers = [identifiers[0]]
-                
                 // Act
-                let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                    deletingIdentifier: identifiers[0],
-                    currentIdentifier: identifiers[0]
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: Array(identifiers[2...]),
+                    currentIdentifier: identifiers[2]
                 )
                 
                 // Assert
-                XCTAssertNil(animation)
+                XCTAssertEqual(
+                    pagingAfterDeletion,
+                    .init(
+                        // New last page
+                        destinationIdentifier: identifiers[1],
+                        direction: .reverse
+                    )
+                )
+            }
+            
+            XCTContext.runActivity(
+                named: "When all pages are deleted, nothing happens"
+            ) { _ in
+                // Act
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: identifiers,
+                    currentIdentifier: identifiers[2]
+                )
+                
+                // Assert
+                XCTAssertNil(pagingAfterDeletion)
             }
         }
         
-        try XCTContext.runActivity(
-            named: "When a non-current page is deleted, the page is kept"
+        XCTContext.runActivity(
+            named: "When the current page is not deleted, the viewer should stay on the current page"
         ) { _ in
-            // Arrange
-            mediaViewerVM.mediaIdentifiers = identifiers
+            XCTContext.runActivity(
+                named: "When some non-current pages are deleted"
+            ) { _ in
+                // Act
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: [identifiers[1], identifiers[4]],
+                    currentIdentifier: identifiers[2]
+                )
+                
+                // Assert
+                XCTAssertEqual(
+                    pagingAfterDeletion,
+                    .init(
+                        // Current page
+                        destinationIdentifier: identifiers[2],
+                        direction: nil
+                    )
+                )
+            }
             
-            // Act
-            let animation = mediaViewerVM.pagingAnimationAfterDeletion(
-                deletingIdentifier: identifiers[1],
-                currentIdentifier: identifiers[3]
-            )
-            
-            // Assert
-            let (destination, direction) = try XCTUnwrap(animation)
-            XCTAssertEqual(destination, identifiers[3])
-            XCTAssertNil(direction)
+            XCTContext.runActivity(
+                named: "When no pages are deleted"
+            ) { _ in
+                // Act
+                let pagingAfterDeletion = mediaViewerVM.paging(
+                    afterDeleting: [],
+                    currentIdentifier: identifiers[2]
+                )
+                
+                // Assert
+                XCTAssertEqual(
+                    pagingAfterDeletion,
+                    .init(
+                        // Current page
+                        destinationIdentifier: identifiers[2],
+                        direction: nil
+                    )
+                )
+            }
         }
     }
 }

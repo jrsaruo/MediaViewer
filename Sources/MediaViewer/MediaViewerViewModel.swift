@@ -58,38 +58,48 @@ final class MediaViewerViewModel: ObservableObject {
 
 extension MediaViewerViewModel {
     
-    func deleteMediaIdentifier(_ identifier: AnyMediaIdentifier) {
-        guard let page = page(with: identifier) else { return }
-        mediaIdentifiers.remove(at: page)
+    struct PagingAfterDeletion: Hashable {
+        let destinationIdentifier: AnyMediaIdentifier
+        let direction: UIPageViewController.NavigationDirection?
     }
     
-    func pagingAnimationAfterDeletion(
-        deletingIdentifier: AnyMediaIdentifier,
+    func paging(
+        afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
         currentIdentifier: AnyMediaIdentifier
-    ) -> (
-        destinationIdentifier: AnyMediaIdentifier,
-        direction: UIPageViewController.NavigationDirection?
-    )? {
-        guard deletingIdentifier == currentIdentifier else {
+    ) -> PagingAfterDeletion? {
+        guard deletingIdentifiers.contains(currentIdentifier) else {
             // Stay on the current page
-            return (
+            return .init(
                 destinationIdentifier: currentIdentifier,
                 direction: nil
             )
         }
         
-        let isDeletingLastPage = deletingIdentifier == mediaIdentifiers.last
-        if isDeletingLastPage {
-            guard let previousIdentifier = mediaIdentifier(before: deletingIdentifier) else {
-                // When all pages are deleted, close the viewer and do not perform paging animation
-                return nil
-            }
-            // Move back to the new last page
-            return (destinationIdentifier: previousIdentifier, .reverse)
-        } else {
-            // Move to the next page
-            guard let nextIdentifier = mediaIdentifier(after: deletingIdentifier) else { return nil }
-            return (destinationIdentifier: nextIdentifier, .forward)
+        let splitIdentifiers = mediaIdentifiers.split(
+            separator: currentIdentifier,
+            maxSplits: 2,
+            omittingEmptySubsequences: false
+        )
+        let backwardIdentifiers = splitIdentifiers[0]
+        let forwardIdentifiers = splitIdentifiers[1]
+        
+        if let nearestForward = forwardIdentifiers.first(where: {
+            !deletingIdentifiers.contains($0)
+        }) {
+            return .init(
+                destinationIdentifier: nearestForward,
+                direction: .forward
+            )
+        } else if let nearestBackward = backwardIdentifiers.last(where: {
+            !deletingIdentifiers.contains($0)
+        }) {
+            return .init(
+                destinationIdentifier: nearestBackward,
+                direction: .reverse
+            )
         }
+        
+        // When all pages are deleted, close the viewer and do not perform paging animation
+        return nil
     }
 }

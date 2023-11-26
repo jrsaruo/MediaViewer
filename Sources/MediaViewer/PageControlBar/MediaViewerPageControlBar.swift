@@ -212,6 +212,34 @@ final class MediaViewerPageControlBar: UIView {
         }
     }
     
+    /// Loads identifiers for media.
+    /// - Parameters:
+    ///   - identifiers: Identifiers for media to load.
+    ///   - expandingIdentifier: An identifier for media to expand after the loading.
+    ///   - animated: Whether to animate the loading.
+    func loadItems(
+        _ identifiers: [AnyMediaIdentifier],
+        expandingItemWith expandingIdentifier: AnyMediaIdentifier,
+        animated: Bool
+    ) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(identifiers)
+        diffableDataSource.apply(snapshot, animatingDifferences: animated)
+        
+        guard let indexPath = diffableDataSource.indexPath(for: expandingIdentifier) else {
+            return
+        }
+        updateLayout(
+            expandingItemAt: indexPath,
+            expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
+                self,
+                widthToHeightOfThumbnailWith: expandingIdentifier
+            ),
+            animated: animated
+        )
+    }
+    
     private func page(with identifier: AnyMediaIdentifier) -> Int? {
         diffableDataSource.snapshot().indexOfItem(identifier)
     }
@@ -369,60 +397,32 @@ final class MediaViewerPageControlBar: UIView {
 
 extension MediaViewerPageControlBar {
     
-    func beginDeletion() throws {
-        guard state == .expanded else {
-            throw MediaViewerViewController.DeletionError.notReadyToDelete
+    func beginDeletion() async {
+        let readyStates: [State] = [.expanded, .deleting]
+        while !readyStates.contains(state) {
+            await Task.yield()
         }
         state = .deleting
     }
     
     func finishDeletion() {
+        assert(state == .deleting)
         state = .expanded
     }
     
-    /// Performs the body of the delete animation.
+    /// Performs the body of the vanish animation.
     ///
     /// This method itself does not animate, so call it in an animation block.
     /// It also does not update the data source so you have to call
-    /// `deleteItems(_:animated:)` after this animation is finished.
+    /// `loadItems(_:expandingItemWith:animated:)` after this animation is finished.
     ///
-    /// - Parameter identifier: An identifier for media to perform delete animation.
-    func performDeleteAnimationBody(for identifier: AnyMediaIdentifier) {
+    /// - Parameter identifiers: Identifiers for media to perform vanish animation.
+    func performVanishAnimationBody(for identifiers: [AnyMediaIdentifier]) {
         assert(state == .deleting)
         
-        cell(for: identifier)?.performDeleteAnimationBody()
-    }
-    
-    /// Deletes specified items.
-    ///
-    /// This method updates the data source.
-    ///
-    /// - Parameters:
-    ///   - identifiers: Identifiers for media to delete.
-    ///   - destinationIdentifier: An identifier for media to move to after deletion.
-    ///   - animated: Whether to animate the deletion.
-    func deleteItems(
-        _ identifiers: [AnyMediaIdentifier],
-        destinationIdentifier: AnyMediaIdentifier,
-        animated: Bool
-    ) {
-        assert(state == .deleting)
-        
-        var snapshot = diffableDataSource.snapshot()
-        snapshot.deleteItems(identifiers)
-        diffableDataSource.apply(snapshot, animatingDifferences: animated)
-        
-        guard let indexPath = diffableDataSource.indexPath(for: destinationIdentifier) else {
-            return
+        for identifier in identifiers {
+            cell(for: identifier)?.performDeleteAnimationBody()
         }
-        updateLayout(
-            expandingItemAt: indexPath,
-            expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
-                self,
-                widthToHeightOfThumbnailWith: destinationIdentifier
-            ),
-            animated: animated
-        )
     }
 }
 
