@@ -477,6 +477,11 @@ open class MediaViewerViewController: UIPageViewController {
     
     private var runningReloadTransactionIDs: Set<UUID> = []
     
+    /// Reloads media.
+    ///
+    /// Updates the UI to reflect the state of the data source, animating the UI changes.
+    /// You need to call this method Immediately after `mediaIdentifiers(for:)` provided by
+    /// your `MediaViewerDataSource` changes.
     open func reloadMedia() async {
         let newIdentifiers = fetchMediaIdentifiers()
         
