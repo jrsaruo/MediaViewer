@@ -53,6 +53,13 @@ final class SyncImagesViewController: UIViewController {
         )
     }
     
+    private lazy var refreshButton = UIBarButtonItem(
+        systemItem: .refresh,
+        primaryAction: .init { [weak self] _ in
+            Task { self?.refresh() }
+        }
+    )
+    
     // MARK: - Lifecycle
     
     override func loadView() {
@@ -71,6 +78,15 @@ final class SyncImagesViewController: UIViewController {
         // Navigation
         navigationItem.title = "Sync Sample"
         navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.leftBarButtonItem = refreshButton
+        
+        // Subviews
+        imageGridView.collectionView.refreshControl = .init(
+            frame: .zero,
+            primaryAction: .init { [weak self] _ in
+                self?.refresh()
+            }
+        )
     }
     
     private func refresh() {
@@ -78,6 +94,7 @@ final class SyncImagesViewController: UIViewController {
         snapshot.appendSections([0])
         snapshot.appendItems((0...20).map(Item.init))
         dataSource.apply(snapshot)
+        imageGridView.collectionView.refreshControl?.endRefreshing()
     }
     
     private func removeItem(_ item: Item) {
