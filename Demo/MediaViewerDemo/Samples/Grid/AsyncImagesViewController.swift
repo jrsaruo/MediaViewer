@@ -182,7 +182,7 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
             .flexibleSpace(),
-            mediaViewer.trashButton { button, currentAsset in
+            mediaViewer.trashButton { mediaViewer, button, currentAsset in
                 try? await self.showConfirmationForPhotoRemoval(
                     from: button,
                     on: mediaViewer,

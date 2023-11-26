@@ -133,7 +133,7 @@ extension SyncImagesViewController: UICollectionViewDelegate {
                 }
             ),
             .flexibleSpace(),
-            mediaViewer.trashButton { _, currentMediaIdentifier in
+            mediaViewer.trashButton { _, _, currentMediaIdentifier in
                 self.removeItem(currentMediaIdentifier)
             }
         ]
