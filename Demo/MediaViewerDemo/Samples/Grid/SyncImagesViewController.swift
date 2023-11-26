@@ -79,6 +79,12 @@ final class SyncImagesViewController: UIViewController {
         snapshot.appendItems((0...20).map(Item.init))
         dataSource.apply(snapshot)
     }
+    
+    private func removeItem(_ item: Item) {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems([item])
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
@@ -88,6 +94,12 @@ extension SyncImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let image = dataSource.itemIdentifier(for: indexPath)!
         let mediaViewer = MediaViewerViewController(opening: image, dataSource: self)
+        mediaViewer.toolbarItems = [
+            .flexibleSpace(),
+            mediaViewer.trashButton { currentMediaIdentifier in
+                self.removeItem(currentMediaIdentifier)
+            }
+        ]
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
     }
