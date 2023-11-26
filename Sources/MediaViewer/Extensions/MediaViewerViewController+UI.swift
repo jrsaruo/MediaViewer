@@ -28,9 +28,7 @@ extension MediaViewerViewController {
         .init(systemItem: .trash, primaryAction: .init { [weak self] action in
             guard let self else { return }
             Task {
-                try await deleteAction(
-                    self.currentMediaIdentifier(as: MediaIdentifier.self)
-                )
+                try await deleteAction(self.currentMediaIdentifier())
                 await self.reloadMedia()
             }
         })
