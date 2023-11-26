@@ -62,16 +62,19 @@ final class SyncImagesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setUpViews()
+        refresh()
     }
     
     private func setUpViews() {
         // Navigation
         navigationItem.title = "Sync Sample"
         navigationItem.backButtonDisplayMode = .minimal
-        
-        // Subviews
-        var snapshot = dataSource.snapshot()
+    }
+    
+    private func refresh() {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
         snapshot.appendItems((0...20).map(Item.init))
         dataSource.apply(snapshot)
