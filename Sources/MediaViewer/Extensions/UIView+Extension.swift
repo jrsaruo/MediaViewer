@@ -8,7 +8,13 @@
 import UIKit
 
 extension UIView {
-    
+
+    @backDeployed(before: iOS 16.0)
+    final public var anchorPoint: CGPoint {
+        get { return layer.anchorPoint }
+        set { layer.anchorPoint = newValue }
+    }
+
     /// Update the anchor point while keeping its position fixed.
     /// - Parameter newAnchorPoint: The new anchor point.
     func updateAnchorPointWithoutMoving(_ newAnchorPoint: CGPoint) {

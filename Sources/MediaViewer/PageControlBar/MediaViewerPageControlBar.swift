@@ -51,12 +51,7 @@ final class MediaViewerPageControlBar: UIView {
         /// A layout during interactive paging transition.
         case transition(UICollectionViewTransitionLayout)
     }
-    
-    private typealias CellRegistration = UICollectionView.CellRegistration<
-        PageControlBarThumbnailCell,
-        Int // page
-    >
-    
+
     weak var dataSource: (any MediaViewerPageControlBarDataSource)?
     
     private(set) var state: State = .collapsed(indexPathForFinalDestinationItem: nil)
@@ -111,17 +106,12 @@ final class MediaViewerPageControlBar: UIView {
     
     lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(
         collectionView: collectionView
-    ) { [weak self] collectionView, indexPath, page in
-        guard let self else { return nil }
-        return collectionView.dequeueConfiguredReusableCell(
-            using: cellRegistration,
-            for: indexPath,
-            item: page
-        )
-    }
-    
-    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, page in
-        guard let self, let dataSource else { return }
+    ) { [unowned self] collectionView, indexPath, page in
+        guard let dataSource else { return nil }
+        let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: "Cell",
+            for: indexPath
+        ) as! PageControlBarThumbnailCell
         let scale = window?.screen.scale ?? 3
         let preferredSize = CGSize(
             width: cell.bounds.width * scale,
@@ -133,6 +123,7 @@ final class MediaViewerPageControlBar: UIView {
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
+        return cell
     }
     
     // MARK: - Initializers
@@ -148,9 +139,8 @@ final class MediaViewerPageControlBar: UIView {
     }
     
     private func setUpViews() {
-        // FIXME: [Workaround] Initialize cellRegistration before applying a snapshot to diffableDataSource.
-        _ = cellRegistration
-        
+        collectionView.register(PageControlBarThumbnailCell.self, forCellWithReuseIdentifier: "Cell")
+
         // Subviews
         collectionView.delegate = self
         addSubview(collectionView)

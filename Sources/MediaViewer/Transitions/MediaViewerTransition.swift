@@ -79,7 +79,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let sourceViewHiddenBackup = sourceView?.isHidden ?? false
         let tabBarSuperviewBackup = tabBar?.superview
         let tabBarHiddenBackup = tabBar?.isHidden
-        let tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
+        var tabBarScrollEdgeAppearanceBackup: UITabBarAppearance?
+        if #available(iOS 15.0, *) {
+            tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
+        }
         let navigationBarAlphaBackup = navigationBar.alpha
         
         // MARK: Prepare for the transition
@@ -133,10 +136,12 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
             
             // Make the tabBar opaque during the transition
-            let appearance = UITabBarAppearance()
-            appearance.configureWithDefaultBackground()
-            tabBar.scrollEdgeAppearance = appearance
-            
+            if #available(iOS 15.0, *) {
+                let appearance = UITabBarAppearance()
+                appearance.configureWithDefaultBackground()
+                tabBar.scrollEdgeAppearance = appearance
+            }
+
             // Disable the default animation applied to the tabBar
             if mediaViewer.hidesBottomBarWhenPushed,
                let animationKeys = tabBar.layer.animationKeys() {
@@ -201,7 +206,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 
                 if let tabBar {
                     tabBar.isHidden = tabBarHiddenBackup!
-                    tabBar.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
+                    if #available(iOS 15.0, *) {
+                        tabBar.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
+                    }
                     tabBarSuperviewBackup?.addSubview(tabBar)
                 }
             case .start, .current:
