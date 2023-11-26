@@ -10,6 +10,27 @@ import MediaViewer
 
 final class SyncImagesViewController: UIViewController {
     
+    struct Item: Hashable {
+        let number: Int
+        let image: UIImage
+        
+        @MainActor
+        init(number: Int) {
+            self.number = number
+            self.image = ImageFactory
+                .circledText("\(number)", width: 1000)
+                .withTintColor(.tintColor)
+        }
+        
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.number == rhs.number
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(number)
+        }
+    }
+    
     private typealias CellRegistration = UICollectionView.CellRegistration<
         ImageCell,
         (image: UIImage, contentMode: UIView.ContentMode)
@@ -21,14 +42,14 @@ final class SyncImagesViewController: UIViewController {
         cell.configure(with: item.image, contentMode: item.contentMode)
     }
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, Item>(
         collectionView: imageGridView.collectionView
-    ) { [weak self] collectionView, indexPath, image in
+    ) { [weak self] collectionView, indexPath, item in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: self.cellRegistration,
             for: indexPath,
-            item: (image: image, contentMode: .scaleAspectFill)
+            item: (image: item.image, contentMode: .scaleAspectFill)
         )
     }
     
@@ -52,10 +73,7 @@ final class SyncImagesViewController: UIViewController {
         // Subviews
         var snapshot = dataSource.snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems((0...20).map {
-            ImageFactory.circledText("\($0)", width: 1000)
-                .withTintColor(.tintColor)
-        })
+        snapshot.appendItems((0...20).map(Item.init))
         dataSource.apply(snapshot)
     }
 }
@@ -76,20 +94,20 @@ extension SyncImagesViewController: UICollectionViewDelegate {
 
 extension SyncImagesViewController: MediaViewerDataSource {
     
-    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [UIImage] {
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [Item] {
         dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWith mediaIdentifier: UIImage
+        mediaWith mediaIdentifier: Item
     ) -> Media {
-        .sync(mediaIdentifier)
+        .sync(mediaIdentifier.image)
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        transitionSourceViewForMediaWith mediaIdentifier: UIImage
+        transitionSourceViewForMediaWith mediaIdentifier: Item
     ) -> UIView? {
         let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         
