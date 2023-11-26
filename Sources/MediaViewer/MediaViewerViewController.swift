@@ -493,7 +493,6 @@ open class MediaViewerViewController: UIPageViewController {
         
         let visibleVCBeforeReloading = currentPageViewController
         
-        // TODO: Consider insertions
         let pagingAfterReloading = mediaViewerVM.paging(
             afterDeleting: deletingIdentifiers,
             currentIdentifier: visibleVCBeforeReloading.mediaIdentifier
