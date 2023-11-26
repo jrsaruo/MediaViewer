@@ -156,8 +156,7 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
         let mediaViewerPage = makeMediaViewerPage(
-            with: AnyMediaIdentifier(rawValue: mediaIdentifier),
-            dataSource: dataSource
+            with: AnyMediaIdentifier(rawValue: mediaIdentifier)
         )
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
@@ -408,9 +407,8 @@ open class MediaViewerViewController: UIPageViewController {
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) {
-        guard let mediaViewerPage = makeMediaViewerPage(with: identifier) else { return }
-        setViewControllers(
-            [mediaViewerPage],
+        move(
+            toMediaWith: identifier,
             direction: mediaViewerVM.moveDirection(
                 from: currentMediaIdentifier,
                 to: identifier
@@ -418,6 +416,160 @@ open class MediaViewerViewController: UIPageViewController {
             animated: animated,
             completion: completion
         )
+    }
+    
+    private func move(
+        toMediaWith identifier: AnyMediaIdentifier,
+        direction: NavigationDirection,
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        setViewControllers(
+            [makeMediaViewerPage(with: identifier)],
+            direction: direction,
+            animated: animated,
+            completion: completion
+        )
+    }
+    
+    /// An error on media deletion.
+    public enum DeletionError: Error {
+        
+        /// An error that indicates the media viewer is not ready to delete media.
+        ///
+        /// It is thrown when the viewer is unsettled, e.g. during paging or delete animation.
+        case notReadyToDelete
+    }
+    
+    /// Deletes media with the specified identifier.
+    ///
+    /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation. If all media is deleted, the viewer will close.
+    ///
+    /// ```swift
+    /// try mediaViewer.deleteMedia(with: imageIdentifier, after: {
+    ///     try await your.deleteImage(with: imageIdentifier)
+    /// })
+    /// ```
+    ///
+    /// - Note: `deleteAction` must complete deletion until it returns.
+    ///         That means the number of media must be reduced by one after the `deleteAction` is succeeded.
+    ///         If the deletion fails, `deleteAction` must throw an error.
+    /// - Parameters:
+    ///   - identifier: An identifier for media to delete.
+    ///   - deleteAction: A closure that performs the actual media deletion.
+    ///                   It must complete deletion until it returns.
+    /// - Throws: If the viewer is not ready to delete (e.g. during paging or delete animation),
+    ///           `DeletionError.notReadyToDelete` will be thrown.
+    ///           If `deleteAction` throws some error, it will be thrown.
+    open func deleteMedia<MediaIdentifier>(
+        with identifier: MediaIdentifier,
+        after deleteAction: () async throws -> Void
+    ) async throws where MediaIdentifier: Hashable {
+        try pageControlBar.beginDeletion()
+        defer { pageControlBar.finishDeletion() }
+        
+        let identifier = AnyMediaIdentifier(rawValue: identifier)
+        let currentPageVC = currentPageViewController
+        
+        let animationAfterDeletion = mediaViewerVM.pagingAnimationAfterDeletion(
+            deletingIdentifier: identifier,
+            currentIdentifier: currentPageVC.mediaIdentifier
+        )
+        
+        // MARK: Delete media
+        
+        let identifiers = mediaViewerDataSource.mediaIdentifiers(for: self)
+        precondition(
+            mediaViewerVM.mediaIdentifiers.count == identifiers.count
+        )
+        
+        try await deleteAction()
+        mediaViewerVM.deleteMediaIdentifier(identifier)
+        
+        let identifiersAfterDeletion = mediaViewerDataSource.mediaIdentifiers(for: self)
+        assert(
+            mediaViewerVM.mediaIdentifiers.count == identifiersAfterDeletion.count,
+            "You have to complete deletion in `deleteAction` closure."
+        )
+        
+        // MARK: Perform delete animation
+        
+        let deletionAnimator = UIViewPropertyAnimator(duration: 0.4, dampingRatio: 1) {
+            if identifier == currentPageVC.mediaIdentifier {
+                let currentPageView = currentPageVC.mediaViewerOnePageView
+                currentPageView.performDeleteAnimationBody()
+            }
+            self.pageControlBar.performDeleteAnimationBody(for: identifier)
+        }
+        deletionAnimator.startAnimation()
+        
+        // If all media is deleted, close the viewer
+        guard let animationAfterDeletion else {
+            assert(identifiersAfterDeletion.isEmpty)
+            navigationController?.popViewController(animated: true)
+            return
+        }
+        
+        await deletionAnimator.addCompletion()
+        
+        // MARK: Finalize deletion
+        
+        let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
+            self.pageControlBar.deleteItems(
+                [identifier],
+                destinationIdentifier: animationAfterDeletion.destinationIdentifier,
+                animated: true
+            )
+            
+            // Move page if deleted an image on the current page
+            if let direction = animationAfterDeletion.direction {
+                /*
+                 * NOTE:
+                 * move(toPage:animated:) does not work here.
+                 * That method uses currentPage, which may crash as it tries
+                 * to reference a deleted page.
+                 */
+                self.move(
+                    toMediaWith: animationAfterDeletion.destinationIdentifier,
+                    direction: direction,
+                    animated: true
+                )
+            }
+        }
+        finishAnimator.startAnimation()
+        await finishAnimator.addCompletion()
+    }
+    
+    /// Deletes media on the current page.
+    ///
+    /// This method calls the specified `deleteAction`, and if it succeeds, performs the delete animation.
+    ///
+    /// ```swift
+    /// try mediaViewer.deleteCurrentMedia(after: { currentImageIdentifier in
+    ///     try await your.deleteImage(with: currentImageIdentifier)
+    /// })
+    /// ```
+    ///
+    /// If you want to provide the deletion UI in an easy way, you can use `trashButton(deleteAction:)` instead.
+    ///
+    /// - Note: `deleteAction` must complete deletion until it returns.
+    ///         That means the number of media must be reduced by one after the `deleteAction` is succeeded.
+    ///         If the deletion fails, `deleteAction` must throw an error.
+    /// - Parameter deleteAction: A closure that takes the current media identifier and
+    ///                           performs the actual media deletion.
+    ///                           It must complete deletion until it returns.
+    /// - Throws: If the viewer is not ready to delete (e.g. during paging or delete animation),
+    ///           `DeletionError.notReadyToDelete` will be thrown.
+    ///           If `deleteAction` throws some error, it will be thrown.
+    open func deleteCurrentMedia<MediaIdentifier>(
+        after deleteAction: (
+            _ currentMediaIdentifier: MediaIdentifier
+        ) async throws -> Void
+    ) async throws where MediaIdentifier: Hashable {
+        let currentIdentifier = self.currentMediaIdentifier.rawValue as! MediaIdentifier
+        try await deleteMedia(with: currentIdentifier, after: {
+            try await deleteAction(currentIdentifier)
+        })
     }
     
     private func pageDidChange() {
@@ -448,6 +600,8 @@ open class MediaViewerViewController: UIPageViewController {
             if progress != 0 {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
             }
+        case .deleting:
+            break
         }
     }
     
@@ -455,6 +609,10 @@ open class MediaViewerViewController: UIPageViewController {
     
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
+        guard pageControlBar.state == .expanded else {
+            recognizer.state = .failed
+            return
+        }
         if recognizer.state == .began {
             // Start the interactive pop transition
             let sourceView = mediaViewerDataSource.mediaViewer(
@@ -551,15 +709,14 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
     }
     
     private func makeMediaViewerPage(
-        with identifier: AnyMediaIdentifier,
-        dataSource: some MediaViewerDataSource
+        with identifier: AnyMediaIdentifier
     ) -> MediaViewerOnePageViewController {
         let mediaViewerPage = MediaViewerOnePageViewController(
             mediaIdentifier: identifier
         )
         mediaViewerPage.delegate = self
         
-        let media = dataSource.mediaViewer(self, mediaWith: identifier)
+        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: identifier)
         switch media {
         case .image(.sync(let image)):
             mediaViewerPage.mediaViewerOnePageView.setImage(image, with: .none)
@@ -570,13 +727,6 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             }
         }
         return mediaViewerPage
-    }
-    
-    private func makeMediaViewerPage(
-        with identifier: AnyMediaIdentifier
-    ) -> MediaViewerOnePageViewController? {
-        guard let mediaViewerDataSource else { return nil }
-        return makeMediaViewerPage(with: identifier, dataSource: mediaViewerDataSource)
     }
 }
 
@@ -639,6 +789,17 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
                 willBeginPopTransitionTo: toVC
             )
         }
+        
+        if operation == .pop,
+           mediaViewerDataSource.mediaIdentifiers(for: self).isEmpty {
+            // When all media is deleted
+            return MediaViewerTransition(
+                operation: operation,
+                sourceView: nil,
+                sourceImage: { nil }
+            )
+        }
+        
         let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource.mediaViewer(
             self,
             transitionSourceViewForMediaWith: currentMediaIdentifier

@@ -47,7 +47,20 @@ final class AsyncImagesViewController: UIViewController {
         )
     }
     
-    private let toggleContentModeButton = UIBarButtonItem()
+    private lazy var refreshButton = UIBarButtonItem(
+        systemItem: .refresh,
+        primaryAction: .init { [weak self] _ in
+            Task { await self?.refresh(animated: true) }
+        }
+    )
+    
+    private lazy var toggleContentModeButton = UIBarButtonItem(
+        primaryAction: .init(
+            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
+        ) { [weak self] _ in
+            self?.toggleContentMode()
+        }
+    )
     
     private var preferredContentMode: UIView.ContentMode = .scaleAspectFill
     
@@ -72,18 +85,19 @@ final class AsyncImagesViewController: UIViewController {
         // Navigation
         navigationItem.title = "Async Sample"
         navigationItem.backButtonDisplayMode = .minimal
-        
-        toggleContentModeButton.primaryAction = UIAction(
-            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
-        ) { [weak self] _ in
-            self?.toggleContentMode()
-        }
+        navigationItem.leftBarButtonItem = refreshButton
         navigationItem.rightBarButtonItem = toggleContentModeButton
+        
+        // Subviews
+        imageGridView.collectionView.refreshControl = .init(
+            frame: .zero,
+            primaryAction: .init { [weak self] _ in
+                Task { await self?.refresh(animated: true) }
+            }
+        )
     }
     
     private func loadPhotos() async {
-        let assets = await PHImageFetcher.imageAssets()
-        
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
         defer {
@@ -96,10 +110,7 @@ final class AsyncImagesViewController: UIViewController {
             }
         }
         
-        var snapshot = dataSource.snapshot()
-        snapshot.appendSections([0])
-        snapshot.appendItems(assets)
-        await dataSource.apply(snapshot, animatingDifferences: false)
+        let assets = await refresh(animated: false)
         
         // Scroll to the bottom if needed
         if let lastAsset = assets.last {
@@ -112,6 +123,19 @@ final class AsyncImagesViewController: UIViewController {
     }
     
     // MARK: - Methods
+    
+    @discardableResult
+    private func refresh(animated: Bool) async -> [PHAsset] {
+        let assets = await PHImageFetcher.imageAssets()
+        
+        var snapshot = NSDiffableDataSourceSnapshot<Int, PHAsset>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(assets)
+        await dataSource.apply(snapshot, animatingDifferences: animated)
+        
+        imageGridView.collectionView.refreshControl?.endRefreshing()
+        return assets
+    }
     
     private func toggleContentMode() {
         let newContentMode: UIView.ContentMode
@@ -134,6 +158,13 @@ final class AsyncImagesViewController: UIViewController {
             await dataSource.apply(snapshot)
         }
     }
+    
+    // Fake removal (not actually delete photo)
+    private func removeAsset(_ asset: PHAsset) async {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems([asset])
+        await dataSource.apply(snapshot, animatingDifferences: false)
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
@@ -151,7 +182,9 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
             .flexibleSpace(),
-            .init(systemItem: .trash)
+            mediaViewer.trashButton { currentMediaIdentifier in
+                await self.removeAsset(currentMediaIdentifier)
+            }
         ]
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)

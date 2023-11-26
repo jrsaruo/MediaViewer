@@ -38,6 +38,8 @@ final class MediaViewerPageControlBar: UIView {
         /// The state of interactively transitioning between pages.
         case transitioningInteractively(UICollectionViewTransitionLayout, forwards: Bool)
         
+        case deleting
+        
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
             return indexPath
@@ -363,6 +365,67 @@ final class MediaViewerPageControlBar: UIView {
     }
 }
 
+// MARK: - Deletion -
+
+extension MediaViewerPageControlBar {
+    
+    func beginDeletion() throws {
+        guard state == .expanded else {
+            throw MediaViewerViewController.DeletionError.notReadyToDelete
+        }
+        state = .deleting
+    }
+    
+    func finishDeletion() {
+        state = .expanded
+    }
+    
+    /// Performs the body of the delete animation.
+    ///
+    /// This method itself does not animate, so call it in an animation block.
+    /// It also does not update the data source so you have to call
+    /// `deleteItems(_:animated:)` after this animation is finished.
+    ///
+    /// - Parameter identifier: An identifier for media to perform delete animation.
+    func performDeleteAnimationBody(for identifier: AnyMediaIdentifier) {
+        assert(state == .deleting)
+        
+        cell(for: identifier)?.performDeleteAnimationBody()
+    }
+    
+    /// Deletes specified items.
+    ///
+    /// This method updates the data source.
+    ///
+    /// - Parameters:
+    ///   - identifiers: Identifiers for media to delete.
+    ///   - destinationIdentifier: An identifier for media to move to after deletion.
+    ///   - animated: Whether to animate the deletion.
+    func deleteItems(
+        _ identifiers: [AnyMediaIdentifier],
+        destinationIdentifier: AnyMediaIdentifier,
+        animated: Bool
+    ) {
+        assert(state == .deleting)
+        
+        var snapshot = diffableDataSource.snapshot()
+        snapshot.deleteItems(identifiers)
+        diffableDataSource.apply(snapshot, animatingDifferences: animated)
+        
+        guard let indexPath = diffableDataSource.indexPath(for: destinationIdentifier) else {
+            return
+        }
+        updateLayout(
+            expandingItemAt: indexPath,
+            expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
+                self,
+                widthToHeightOfThumbnailWith: destinationIdentifier
+            ),
+            animated: animated
+        )
+    }
+}
+
 // MARK: - Interactive paging -
 
 extension MediaViewerPageControlBar {
@@ -442,6 +505,8 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
+        guard state != .deleting else { return }
+        
         if case .normal(let barLayout) = layout,
            barLayout.style.indexPathForExpandingItem != indexPath {
             expandAndScrollToItem(
@@ -476,7 +541,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
                 expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
             }
-        case .collapsing, .expanding, .expanded, .transitioningInteractively:
+        case .collapsing, .expanding, .expanded, .transitioningInteractively, .deleting:
             break
         }
     }
@@ -525,7 +590,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         switch state {
-        case .collapsing, .collapsed:
+        case .collapsing, .collapsed, .deleting:
             expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
         case .expanding, .expanded, .transitioningInteractively:
             break // NOP
