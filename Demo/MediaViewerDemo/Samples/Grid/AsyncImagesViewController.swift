@@ -141,7 +141,8 @@ final class AsyncImagesViewController: UIViewController {
 extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        let asset = dataSource.itemIdentifier(for: indexPath)!
+        let mediaViewer = MediaViewerViewController(opening: asset, dataSource: self)
         mediaViewer.mediaViewerDelegate = self
         mediaViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),
@@ -161,37 +162,34 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
 
 extension AsyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
-        dataSource.snapshot().numberOfItems
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [PHAsset] {
+        dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaOnPage page: Int
+        mediaWith mediaIdentifier: PHAsset
     ) -> Media {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async { await PHImageFetcher.image(for: asset) }
+        .async { await PHImageFetcher.image(for: mediaIdentifier) }
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWidthToHeightOnPage page: Int
+        widthToHeightOfMediaWith mediaIdentifier: PHAsset
     ) -> CGFloat? {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        let size = PHImageFetcher.imageSize(of: asset)
+        let size = PHImageFetcher.imageSize(of: mediaIdentifier)
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        pageThumbnailOnPage page: Int,
+        pageThumbnailForMediaWith mediaIdentifier: PHAsset,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async(transition: .fade(duration: 0.1)) {
+        .async(transition: .fade(duration: 0.1)) {
             await PHImageFetcher.image(
-                for: asset,
+                for: mediaIdentifier,
                 targetSize: preferredThumbnailSize,
                 contentMode: .aspectFill,
                 resizeMode: .fast
@@ -199,9 +197,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         }
     }
     
-    func transitionSourceView(forCurrentPageOf mediaViewer: MediaViewerViewController) -> UIView? {
-        let currentPage = mediaViewer.currentPage
-        let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: PHAsset
+    ) -> UIView? {
+        let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         
         let collectionView = imageGridView.collectionView
         
@@ -226,9 +226,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
 
 extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int) {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        let dateDescription = asset.creationDate?.formatted()
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        didMoveToMediaWith mediaIdentifier: PHAsset
+    ) {
+        let dateDescription = mediaIdentifier.creationDate?.formatted()
         mediaViewer.title = dateDescription
     }
 }

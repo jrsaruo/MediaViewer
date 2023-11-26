@@ -6,40 +6,50 @@
 //
 
 import Combine
+import class UIKit.UIPageViewController
 
 final class MediaViewerViewModel: ObservableObject {
     
     /// Page identifiers of the media viewer.
     ///
     /// The page number corresponds to the index of this array.
-    @Published var pageIDs: [MediaViewerPageID] = []
+    @Published var mediaIdentifiers: [AnyMediaIdentifier] = []
     
     @Published var showsMediaOnly = false
     
     // MARK: - Methods
     
-    func setUpPageIDs(numberOfMedia: Int) {
-        pageIDs = (0..<numberOfMedia).map { _ in .init() }
+    func mediaIdentifier(forPage page: Int) -> AnyMediaIdentifier? {
+        guard 0 <= page && page < mediaIdentifiers.endIndex else { return nil }
+        return mediaIdentifiers[page]
     }
     
-    func pageID(forPage page: Int) -> MediaViewerPageID? {
-        guard 0 <= page && page < pageIDs.endIndex else { return nil }
-        return pageIDs[page]
+    func page(with identifier: AnyMediaIdentifier) -> Int? {
+        mediaIdentifiers.firstIndex(of: identifier)
     }
     
-    func page(with pageID: MediaViewerPageID) -> Int? {
-        pageIDs.firstIndex(of: pageID)
-    }
-    
-    func previousPageID(of id: MediaViewerPageID) -> MediaViewerPageID? {
-        guard let page = page(with: id) else { return nil }
+    func mediaIdentifier(
+        before identifier: AnyMediaIdentifier
+    ) -> AnyMediaIdentifier? {
+        guard let page = page(with: identifier) else { return nil }
         let previousPage = page - 1
-        return pageID(forPage: previousPage)
+        return mediaIdentifier(forPage: previousPage)
     }
     
-    func nextPageID(of id: MediaViewerPageID) -> MediaViewerPageID? {
-        guard let page = page(with: id) else { return nil }
+    func mediaIdentifier(
+        after identifier: AnyMediaIdentifier
+    ) -> AnyMediaIdentifier? {
+        guard let page = page(with: identifier) else { return nil }
         let nextPage = page + 1
-        return pageID(forPage: nextPage)
+        return mediaIdentifier(forPage: nextPage)
+    }
+    
+    func moveDirection(
+        from currentIdentifier: AnyMediaIdentifier,
+        to destinationIdentifier: AnyMediaIdentifier
+    ) -> UIPageViewController.NavigationDirection {
+        let currentPage = page(with: currentIdentifier)!
+        let destinationPage = page(with: destinationIdentifier)!
+        return destinationPage < currentPage ? .reverse : .forward
     }
 }

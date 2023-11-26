@@ -79,8 +79,11 @@ final class CameraLikeViewController: UIViewController {
     // MARK: - Methods
     
     private func showLibrary() {
-        guard !assets.isEmpty else { return }
-        let mediaViewer = MediaViewerViewController(page: assets.count - 1, dataSource: self)
+        guard let lastAsset = assets.last else { return }
+        let mediaViewer = MediaViewerViewController(
+            opening: lastAsset,
+            dataSource: self
+        )
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
     }
@@ -115,30 +118,29 @@ final class CameraLikeViewController: UIViewController {
 
 extension CameraLikeViewController: MediaViewerDataSource {
     
-    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
-        assets.count
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [PHAsset] {
+        assets
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaOnPage page: Int
+        mediaWith mediaIdentifier: PHAsset
     ) -> Media {
-        let asset = assets[page]
-        return .async { await PHImageFetcher.image(for: asset) }
+        .async { await PHImageFetcher.image(for: mediaIdentifier) }
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWidthToHeightOnPage page: Int
+        widthToHeightOfMediaWith mediaIdentifier: PHAsset
     ) -> CGFloat? {
-        let asset = assets[page]
-        let size = PHImageFetcher.imageSize(of: asset)
+        let size = PHImageFetcher.imageSize(of: mediaIdentifier)
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }
     
-    func transitionSourceView(
-        forCurrentPageOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: PHAsset
     ) -> UIView? {
         cameraLikeView.showLibraryButton
     }

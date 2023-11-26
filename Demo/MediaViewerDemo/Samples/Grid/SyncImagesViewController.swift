@@ -65,7 +65,8 @@ final class SyncImagesViewController: UIViewController {
 extension SyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        let image = dataSource.itemIdentifier(for: indexPath)!
+        let mediaViewer = MediaViewerViewController(opening: image, dataSource: self)
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
     }
@@ -75,22 +76,22 @@ extension SyncImagesViewController: UICollectionViewDelegate {
 
 extension SyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
-        dataSource.snapshot().numberOfItems
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [UIImage] {
+        dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaOnPage page: Int
+        mediaWith mediaIdentifier: UIImage
     ) -> Media {
-        .sync(dataSource.snapshot().itemIdentifiers[page])
+        .sync(mediaIdentifier)
     }
     
-    func transitionSourceView(
-        forCurrentPageOf mediaViewer: MediaViewerViewController
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: UIImage
     ) -> UIView? {
-        let currentPage = mediaViewer.currentPage
-        let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+        let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         
         let collectionView = imageGridView.collectionView
         
