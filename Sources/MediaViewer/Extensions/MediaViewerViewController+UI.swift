@@ -20,15 +20,18 @@ extension MediaViewerViewController {
     /// - Returns: A trash button for deleting media.
     public func trashButton<MediaIdentifier>(
         deleteAction: @escaping (
+            UIBarButtonItem,
             _ currentMediaIdentifier: MediaIdentifier
         ) async -> Void
     ) -> UIBarButtonItem where MediaIdentifier: Hashable {
-        .init(systemItem: .trash, primaryAction: .init { [weak self] action in
+        let button = UIBarButtonItem(systemItem: .trash)
+        button.primaryAction = .init { [weak self] action in
             guard let self else { return }
             Task {
-                await deleteAction(self.currentMediaIdentifier())
+                await deleteAction(button, self.currentMediaIdentifier())
                 await self.reloadMedia()
             }
-        })
+        }
+        return button
     }
 }

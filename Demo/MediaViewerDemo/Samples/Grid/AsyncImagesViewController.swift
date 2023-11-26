@@ -182,7 +182,7 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
             .flexibleSpace(),
-            mediaViewer.trashButton { currentMediaIdentifier in
+            mediaViewer.trashButton { _, currentMediaIdentifier in
                 await self.removeAsset(currentMediaIdentifier)
             }
         ]
