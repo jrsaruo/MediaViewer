@@ -477,16 +477,6 @@ open class MediaViewerViewController: UIPageViewController {
     
     open func reloadMedia() async {
         let newIdentifiers = fetchMediaIdentifiers()
-        if newIdentifiers.contains(currentMediaIdentifier) {
-            // Just reload pageControlBar if current media is not deleted
-            mediaViewerVM.mediaIdentifiers = newIdentifiers
-            pageControlBar.loadItems(
-                mediaViewerVM.mediaIdentifiers,
-                expandingItemWith: currentMediaIdentifier,
-                animated: true
-            )
-            return
-        }
         
         let difference = newIdentifiers.difference(
             from: mediaViewerVM.mediaIdentifiers
@@ -539,8 +529,6 @@ open class MediaViewerViewController: UIPageViewController {
         visibleVCBeforeDeletion: MediaViewerOnePageViewController,
         pagingAfterDeletion: MediaViewerViewModel.PagingAfterReloading?
     ) async {
-        guard !deletedIdentifiers.isEmpty else { return }
-        
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
             visibleVCBeforeDeletion.mediaIdentifier
         )
@@ -548,6 +536,11 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Perform vanish animation
         
+        /*
+         * NOTE:
+         * Play an effect that causes media to disappear.
+         * This animation will not run if there is no deletion.
+         */
         let vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
             if isVisibleMediaDeleted {
                 visiblePageView.performVanishAnimationBody()
