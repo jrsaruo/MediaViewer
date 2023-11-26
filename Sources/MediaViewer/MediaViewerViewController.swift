@@ -65,6 +65,9 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.page(with: currentMediaIdentifier)!
     }
     
+    /// Returns the identifier for currently viewing media in the viewer.
+    /// - Parameter identifierType: A type of the identifier for media.
+    ///                             It must match the one provided by `mediaViewerDataSource`.
     public func currentMediaIdentifier<MediaIdentifier>(
         as identifierType: MediaIdentifier.Type = MediaIdentifier.self
     ) -> MediaIdentifier {
