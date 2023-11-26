@@ -5,28 +5,12 @@
 //  Created by Yusaku Nishi on 2023/11/21.
 //
 
-extension CollectionDifference {
+extension CollectionDifference.Change {
     
-    typealias ChangeAssociatedValues = (
-        offset: Int,
-        element: ChangeElement,
-        associatedWith: Int?
-    )
-    
-    var changes: (
-        insertions: [ChangeAssociatedValues],
-        removals: [ChangeAssociatedValues]
-    ) {
-        var insertions: [ChangeAssociatedValues] = []
-        var removals: [ChangeAssociatedValues] = []
-        for change in self {
-            switch change {
-            case .insert(let offset, let element, let associatedWith):
-                insertions.append((offset, element, associatedWith))
-            case .remove(let offset, let element, let associatedWith):
-                removals.append((offset, element, associatedWith))
-            }
+    var element: ChangeElement {
+        switch self {
+        case .insert(_, let element, _), .remove(_, let element, _):
+            return element
         }
-        return (insertions: insertions, removals: removals)
     }
 }

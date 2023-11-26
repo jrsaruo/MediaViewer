@@ -10,6 +10,27 @@ import MediaViewer
 
 final class SyncImagesViewController: UIViewController {
     
+    struct Item: Hashable {
+        let number: Int
+        let image: UIImage
+        
+        @MainActor
+        init(number: Int) {
+            self.number = number
+            self.image = ImageFactory
+                .circledText("\(number)", width: 1000)
+                .withTintColor(.tintColor)
+        }
+        
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.number == rhs.number
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(number)
+        }
+    }
+    
     private typealias CellRegistration = UICollectionView.CellRegistration<
         ImageCell,
         (image: UIImage, contentMode: UIView.ContentMode)
@@ -21,16 +42,23 @@ final class SyncImagesViewController: UIViewController {
         cell.configure(with: item.image, contentMode: item.contentMode)
     }
     
-    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, UIImage>(
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Int, Item>(
         collectionView: imageGridView.collectionView
-    ) { [weak self] collectionView, indexPath, image in
+    ) { [weak self] collectionView, indexPath, item in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: self.cellRegistration,
             for: indexPath,
-            item: (image: image, contentMode: .scaleAspectFill)
+            item: (image: item.image, contentMode: .scaleAspectFill)
         )
     }
+    
+    private lazy var refreshButton = UIBarButtonItem(
+        systemItem: .refresh,
+        primaryAction: .init { [weak self] _ in
+            Task { self?.refresh() }
+        }
+    )
     
     // MARK: - Lifecycle
     
@@ -41,22 +69,46 @@ final class SyncImagesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setUpViews()
+        refresh()
     }
     
     private func setUpViews() {
         // Navigation
         navigationItem.title = "Sync Sample"
         navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.leftBarButtonItem = refreshButton
         
         // Subviews
-        var snapshot = dataSource.snapshot()
+        imageGridView.collectionView.refreshControl = .init(
+            frame: .zero,
+            primaryAction: .init { [weak self] _ in
+                self?.refresh()
+            }
+        )
+    }
+    
+    private func refresh() {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
-        snapshot.appendItems((0...20).map {
-            ImageFactory.circledText("\($0)", width: 1000)
-                .withTintColor(.tintColor)
-        })
+        snapshot.appendItems((0...20).map(Item.init))
         dataSource.apply(snapshot)
+        imageGridView.collectionView.refreshControl?.endRefreshing()
+    }
+    
+    private func insertNewItem(after item: Item) {
+        var snapshot = dataSource.snapshot()
+        let maxItem = snapshot.itemIdentifiers.max { $0.number < $1.number }!
+        let newItem = Item(number: maxItem.number + 1)
+        snapshot.insertItems([newItem], afterItem: item)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+    
+    private func removeItem(_ item: Item) {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems([item])
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 
@@ -67,6 +119,24 @@ extension SyncImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let image = dataSource.itemIdentifier(for: indexPath)!
         let mediaViewer = MediaViewerViewController(opening: image, dataSource: self)
+        mediaViewer.toolbarItems = [
+            .flexibleSpace(),
+            .init(
+                systemItem: .add,
+                primaryAction: .init { [unowned mediaViewer] _ in
+                    self.insertNewItem(
+                        after: mediaViewer.currentMediaIdentifier()
+                    )
+                    Task {
+                        await mediaViewer.reloadMedia()
+                    }
+                }
+            ),
+            .flexibleSpace(),
+            mediaViewer.trashButton { currentMediaIdentifier in
+                self.removeItem(currentMediaIdentifier)
+            }
+        ]
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
     }
@@ -76,20 +146,20 @@ extension SyncImagesViewController: UICollectionViewDelegate {
 
 extension SyncImagesViewController: MediaViewerDataSource {
     
-    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [UIImage] {
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [Item] {
         dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWith mediaIdentifier: UIImage
+        mediaWith mediaIdentifier: Item
     ) -> Media {
-        .sync(mediaIdentifier)
+        .sync(mediaIdentifier.image)
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        transitionSourceViewForMediaWith mediaIdentifier: UIImage
+        transitionSourceViewForMediaWith mediaIdentifier: Item
     ) -> UIView? {
         let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         

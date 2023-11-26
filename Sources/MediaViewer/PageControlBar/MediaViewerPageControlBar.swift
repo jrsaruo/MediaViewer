@@ -38,7 +38,7 @@ final class MediaViewerPageControlBar: UIView {
         /// The state of interactively transitioning between pages.
         case transitioningInteractively(UICollectionViewTransitionLayout, forwards: Bool)
         
-        case deleting
+        case reloading
         
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
@@ -76,6 +76,7 @@ final class MediaViewerPageControlBar: UIView {
     /// What caused the page change.
     enum PageChangeReason: Hashable {
         case configuration
+        case load
         case tapOnPageThumbnail
         case scrollingBar
         case interactivePaging
@@ -230,6 +231,7 @@ final class MediaViewerPageControlBar: UIView {
         guard let indexPath = diffableDataSource.indexPath(for: expandingIdentifier) else {
             return
         }
+        _pageDidChange.send((page: indexPath.item, reason: .load))
         updateLayout(
             expandingItemAt: indexPath,
             expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
@@ -397,16 +399,16 @@ final class MediaViewerPageControlBar: UIView {
 
 extension MediaViewerPageControlBar {
     
-    func beginDeletion() async {
-        let readyStates: [State] = [.expanded, .deleting]
+    func startReloading() async {
+        let readyStates: [State] = [.expanded, .reloading]
         while !readyStates.contains(state) {
             await Task.yield()
         }
-        state = .deleting
+        state = .reloading
     }
     
-    func finishDeletion() {
-        assert(state == .deleting)
+    func finishReloading() {
+        assert(state == .reloading)
         state = .expanded
     }
     
@@ -418,7 +420,7 @@ extension MediaViewerPageControlBar {
     ///
     /// - Parameter identifiers: Identifiers for media to perform vanish animation.
     func performVanishAnimationBody(for identifiers: [AnyMediaIdentifier]) {
-        assert(state == .deleting)
+        assert(state == .reloading)
         
         for identifier in identifiers {
             cell(for: identifier)?.performDeleteAnimationBody()
@@ -505,7 +507,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
-        guard state != .deleting else { return }
+        guard state != .reloading else { return }
         
         if case .normal(let barLayout) = layout,
            barLayout.style.indexPathForExpandingItem != indexPath {
@@ -541,7 +543,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
                 expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
             }
-        case .collapsing, .expanding, .expanded, .transitioningInteractively, .deleting:
+        case .collapsing, .expanding, .expanded, .transitioningInteractively, .reloading:
             break
         }
     }
@@ -590,7 +592,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         switch state {
-        case .collapsing, .collapsed, .deleting:
+        case .collapsing, .collapsed, .reloading:
             expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
         case .expanding, .expanded, .transitioningInteractively:
             break // NOP

@@ -54,11 +54,11 @@ final class MediaViewerViewModel: ObservableObject {
     }
 }
 
-// MARK: - Deletion -
+// MARK: - Reloading -
 
 extension MediaViewerViewModel {
     
-    struct PagingAfterDeletion: Hashable {
+    struct PagingAfterReloading: Hashable {
         let destinationIdentifier: AnyMediaIdentifier
         let direction: UIPageViewController.NavigationDirection?
     }
@@ -66,7 +66,7 @@ extension MediaViewerViewModel {
     func paging(
         afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
         currentIdentifier: AnyMediaIdentifier
-    ) -> PagingAfterDeletion? {
+    ) -> PagingAfterReloading? {
         guard deletingIdentifiers.contains(currentIdentifier) else {
             // Stay on the current page
             return .init(

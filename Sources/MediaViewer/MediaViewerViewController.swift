@@ -86,12 +86,12 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// A view controller for the current page.
     ///
-    /// During deletion, `visiblePageViewController` returns the page that was displayed
-    /// just before deletion, while `currentPageViewController` returns the page that will be
+    /// During reloading, `visiblePageViewController` returns the page that was displayed
+    /// just before reloading, while `currentPageViewController` returns the page that will be
     /// displayed eventually.
     var currentPageViewController: MediaViewerOnePageViewController {
-        if let destinationPageVCAfterDeletion {
-            return destinationPageVCAfterDeletion
+        if let destinationPageVCAfterReloading {
+            return destinationPageVCAfterReloading
         }
         return visiblePageViewController
     }
@@ -106,7 +106,7 @@ open class MediaViewerViewController: UIPageViewController {
         return mediaViewerOnePage
     }
     
-    private var destinationPageVCAfterDeletion: MediaViewerOnePageViewController?
+    private var destinationPageVCAfterReloading: MediaViewerOnePageViewController?
     
     public var isShowingMediaOnly: Bool {
         mediaViewerVM.showsMediaOnly
@@ -326,7 +326,7 @@ open class MediaViewerViewController: UIPageViewController {
                 case .tapOnPageThumbnail, .scrollingBar:
                     let identifier = mediaViewerVM.mediaIdentifier(forPage: page)!
                     move(toMediaWith: identifier, animated: false)
-                case .configuration, .interactivePaging:
+                case .configuration, .load, .interactivePaging:
                     // Do nothing because it has already been moved to the page.
                     break
                 }
@@ -475,63 +475,73 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
+    private var runningReloadTransactionIDs: Set<UUID> = []
+    
+    /// Reloads media.
+    ///
+    /// Updates the UI to reflect the state of the data source, animating the UI changes.
+    /// You need to call this method Immediately after `mediaIdentifiers(for:)` provided by
+    /// your `MediaViewerDataSource` changes.
     open func reloadMedia() async {
         let newIdentifiers = fetchMediaIdentifiers()
         
-        let (insertions, removals) = newIdentifiers.difference(
+        let difference = newIdentifiers.difference(
             from: mediaViewerVM.mediaIdentifiers
-        ).changes
-        let deletingIdentifiers = removals.map(\.element)
-        
-        let visibleVCBeforeDeletion = currentPageViewController
-        
-        // TODO: Consider insertions
-        let pagingAfterDeletion = mediaViewerVM.paging(
-            afterDeleting: deletingIdentifiers,
-            currentIdentifier: visibleVCBeforeDeletion.mediaIdentifier
         )
-        if let pagingAfterDeletion {
-            destinationPageVCAfterDeletion = makeMediaViewerPage(
-                with: pagingAfterDeletion.destinationIdentifier
+        guard !difference.isEmpty else { return }
+        let deletingIdentifiers = difference.removals.map(\.element)
+        
+        let visibleVCBeforeReloading = currentPageViewController
+        
+        let pagingAfterReloading = mediaViewerVM.paging(
+            afterDeleting: deletingIdentifiers,
+            currentIdentifier: visibleVCBeforeReloading.mediaIdentifier
+        )
+        if let pagingAfterReloading {
+            destinationPageVCAfterReloading = makeMediaViewerPage(
+                with: pagingAfterReloading.destinationIdentifier
             )
         }
         
         mediaViewerVM.mediaIdentifiers = newIdentifiers
         
-        // TODO: Run animations at the same time
-        await insertMedia(with: insertions.map(\.element))
-        await deleteMedia(
-            with: deletingIdentifiers,
-            visibleVCBeforeDeletion: visibleVCBeforeDeletion,
-            pagingAfterDeletion: pagingAfterDeletion
+        let transactionID = UUID()
+        runningReloadTransactionIDs.insert(transactionID)
+        
+        await pageControlBar.startReloading()
+        
+        await reloadMedia(
+            deleting: deletingIdentifiers,
+            visibleVCBeforeReloading: visibleVCBeforeReloading,
+            pagingAfterReloading: pagingAfterReloading
         )
+        
+        runningReloadTransactionIDs.remove(transactionID)
+        if runningReloadTransactionIDs.isEmpty {
+            destinationPageVCAfterReloading = nil
+            pageControlBar.finishReloading()
+        }
         
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
     }
     
-    private func insertMedia(
-        with insertedIdentifiers: [AnyMediaIdentifier]
+    private func reloadMedia(
+        deleting deletedIdentifiers: [AnyMediaIdentifier],
+        visibleVCBeforeReloading: MediaViewerOnePageViewController,
+        pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?
     ) async {
-        guard !insertedIdentifiers.isEmpty else { return }
-        fatalError("Not implemented.") // TODO: implement
-    }
-    
-    private func deleteMedia(
-        with deletedIdentifiers: [AnyMediaIdentifier],
-        visibleVCBeforeDeletion: MediaViewerOnePageViewController,
-        pagingAfterDeletion: MediaViewerViewModel.PagingAfterDeletion?
-    ) async {
-        guard !deletedIdentifiers.isEmpty else { return }
-        
-        await pageControlBar.beginDeletion()
-        
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
-            visibleVCBeforeDeletion.mediaIdentifier
+            visibleVCBeforeReloading.mediaIdentifier
         )
-        let visiblePageView = visibleVCBeforeDeletion.mediaViewerOnePageView
+        let visiblePageView = visibleVCBeforeReloading.mediaViewerOnePageView
         
         // MARK: Perform vanish animation
         
+        /*
+         * NOTE:
+         * Play an effect that causes media to disappear.
+         * This animation will not run if there is no deletion.
+         */
         let vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
             if isVisibleMediaDeleted {
                 visiblePageView.performVanishAnimationBody()
@@ -543,7 +553,7 @@ open class MediaViewerViewController: UIPageViewController {
         vanishAnimator.startAnimation()
         
         // If all media is deleted, close the viewer
-        guard let pagingAfterDeletion else {
+        guard let pagingAfterReloading else {
             assert(mediaViewerVM.mediaIdentifiers.isEmpty)
             navigationController?.popViewController(animated: true)
             return
@@ -553,18 +563,17 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Finalize deletion
         
-        guard let destination = destinationPageVCAfterDeletion else {
+        guard let destination = destinationPageVCAfterReloading else {
             assertionFailure(
-                "destinationPageVCAfterDeletion should not be nil until all delete transactions have completed."
+                "destinationPageVCAfterReloading should not be nil until all reloading transactions have completed."
             )
             return
         }
         
-        guard pagingAfterDeletion.destinationIdentifier == destination.mediaIdentifier else {
+        guard pagingAfterReloading.destinationIdentifier == destination.mediaIdentifier else {
             /*
              * NOTE:
-             * Do not run finishAnimator because another delete transaction
-             * will follow.
+             * Do not run finishAnimator because another reloading will follow.
              */
             return
         }
@@ -576,7 +585,7 @@ open class MediaViewerViewController: UIPageViewController {
                 animated: true
             )
             
-            if let direction = pagingAfterDeletion.direction {
+            if let direction = pagingAfterReloading.direction {
                 self.move(
                     to: destination,
                     direction: direction,
@@ -586,20 +595,6 @@ open class MediaViewerViewController: UIPageViewController {
         }
         finishAnimator.startAnimation()
         await finishAnimator.addCompletion()
-        
-        /*
-         * NOTE:
-         * If another deletion occurs while finishAnimator is running,
-         * destinationPageVCAfterDeletion is overwritten with the new value
-         * and takes a different value from visiblePageViewController.
-         */
-        let isAllDeletionCompleted = visiblePageViewController == destinationPageVCAfterDeletion
-        if isAllDeletionCompleted {
-            destinationPageVCAfterDeletion = nil
-            pageControlBar.finishDeletion()
-        } else {
-            // NOTE: Do not finish because there are still delete transactions.
-        }
     }
     
     private func pageDidChange() {
@@ -630,7 +625,7 @@ open class MediaViewerViewController: UIPageViewController {
             if progress != 0 {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
             }
-        case .deleting:
+        case .reloading:
             break
         }
     }
