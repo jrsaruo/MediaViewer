@@ -475,6 +475,8 @@ open class MediaViewerViewController: UIPageViewController {
         )
     }
     
+    private var runningReloadTransactionIDs: Set<UUID> = []
+    
     open func reloadMedia() async {
         let newIdentifiers = fetchMediaIdentifiers()
         
@@ -499,6 +501,9 @@ open class MediaViewerViewController: UIPageViewController {
         
         mediaViewerVM.mediaIdentifiers = newIdentifiers
         
+        let transactionID = UUID()
+        runningReloadTransactionIDs.insert(transactionID)
+        
         await pageControlBar.startReloading()
         
         await reloadMedia(
@@ -507,18 +512,10 @@ open class MediaViewerViewController: UIPageViewController {
             pagingAfterReloading: pagingAfterReloading
         )
         
-        /*
-         * NOTE:
-         * If another reloading occurs during the reloading,
-         * destinationPageVCAfterReloading is overwritten with the new value
-         * and takes a different value from visiblePageViewController.
-         */
-        let isAllReloadingCompleted = visiblePageViewController.mediaIdentifier == destinationPageVCAfterReloading?.mediaIdentifier
-        if isAllReloadingCompleted {
+        runningReloadTransactionIDs.remove(transactionID)
+        if runningReloadTransactionIDs.isEmpty {
             destinationPageVCAfterReloading = nil
             pageControlBar.finishReloading()
-        } else {
-            // NOTE: Do not finish because there are still reload transactions.
         }
         
         assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
