@@ -10,12 +10,13 @@ import Combine
 
 /// A type-erased media identifier.
 struct AnyMediaIdentifier: Hashable {
-    let rawValue: AnyHashable
+    
+    let base: AnyHashable
     
     init<MediaIdentifier>(
-        rawValue: MediaIdentifier
+        _ base: MediaIdentifier
     ) where MediaIdentifier: Hashable {
-        self.rawValue = rawValue
+        self.base = base
     }
 }
 
@@ -71,10 +72,10 @@ open class MediaViewerViewController: UIPageViewController {
     public func currentMediaIdentifier<MediaIdentifier>(
         as identifierType: MediaIdentifier.Type = MediaIdentifier.self
     ) -> MediaIdentifier {
-        let rawIdentifier = currentMediaIdentifier.rawValue
-        guard let identifier = rawIdentifier as? MediaIdentifier else {
+        let baseIdentifier = currentMediaIdentifier.base
+        guard let identifier = baseIdentifier as? MediaIdentifier else {
             preconditionFailure(
-                "The type of media identifier is \(type(of: rawIdentifier.base)), not \(identifierType)."
+                "The type of media identifier is \(type(of: baseIdentifier.base)), not \(identifierType)."
             )
         }
         return identifier
@@ -192,7 +193,7 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
         let mediaViewerPage = makeMediaViewerPage(
-            with: AnyMediaIdentifier(rawValue: mediaIdentifier)
+            with: AnyMediaIdentifier(mediaIdentifier)
         )
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
@@ -424,7 +425,7 @@ open class MediaViewerViewController: UIPageViewController {
     func fetchMediaIdentifiers() -> [AnyMediaIdentifier] {
         mediaViewerDataSource
             .mediaIdentifiers(for: self)
-            .map { AnyMediaIdentifier(rawValue: $0) }
+            .map { AnyMediaIdentifier($0) }
     }
     
     /// Move to media with the specified identifier.
@@ -439,7 +440,7 @@ open class MediaViewerViewController: UIPageViewController {
         completion: ((Bool) -> Void)? = nil
     ) where MediaIdentifier: Hashable {
         self.move(
-            toMediaWith: AnyMediaIdentifier(rawValue: identifier),
+            toMediaWith: AnyMediaIdentifier(identifier),
             animated: animated,
             completion: completion
         )

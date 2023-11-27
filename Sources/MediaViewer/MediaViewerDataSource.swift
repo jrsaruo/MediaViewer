@@ -151,7 +151,7 @@ extension MediaViewerDataSource {
     ) -> Media {
         self.mediaViewer(
             mediaViewer,
-            mediaWith: mediaIdentifier.rawValue as! MediaIdentifier
+            mediaWith: mediaIdentifier.base as! MediaIdentifier
         )
     }
     
@@ -161,7 +161,7 @@ extension MediaViewerDataSource {
     ) -> CGFloat? {
         self.mediaViewer(
             mediaViewer,
-            widthToHeightOfMediaWith: mediaIdentifier.rawValue as! MediaIdentifier
+            widthToHeightOfMediaWith: mediaIdentifier.base as! MediaIdentifier
         )
     }
     
@@ -172,7 +172,7 @@ extension MediaViewerDataSource {
     ) -> Source<UIImage?> {
         self.mediaViewer(
             mediaViewer,
-            pageThumbnailForMediaWith: mediaIdentifier.rawValue as! MediaIdentifier,
+            pageThumbnailForMediaWith: mediaIdentifier.base as! MediaIdentifier,
             filling: preferredThumbnailSize
         )
     }
@@ -183,7 +183,7 @@ extension MediaViewerDataSource {
     ) -> UIView? {
         self.mediaViewer(
             mediaViewer,
-            transitionSourceViewForMediaWith: mediaIdentifier.rawValue as! MediaIdentifier
+            transitionSourceViewForMediaWith: mediaIdentifier.base as! MediaIdentifier
         )
     }
 }
