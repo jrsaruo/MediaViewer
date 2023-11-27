@@ -23,6 +23,17 @@ struct AnyMediaIdentifier: Hashable {
         }
         self.base = base
     }
+    
+    func `as`<MediaIdentifier>(
+        _ identifierType: MediaIdentifier.Type
+    ) -> MediaIdentifier {
+        guard let identifier = base as? MediaIdentifier else {
+            preconditionFailure(
+                "The type of media identifier is \(type(of: base.base)), not \(identifierType)."
+            )
+        }
+        return identifier
+    }
 }
 
 /// An media viewer.
@@ -77,13 +88,7 @@ open class MediaViewerViewController: UIPageViewController {
     public func currentMediaIdentifier<MediaIdentifier>(
         as identifierType: MediaIdentifier.Type = MediaIdentifier.self
     ) -> MediaIdentifier {
-        let baseIdentifier = currentMediaIdentifier.base
-        guard let identifier = baseIdentifier as? MediaIdentifier else {
-            preconditionFailure(
-                "The type of media identifier is \(type(of: baseIdentifier.base)), not \(identifierType)."
-            )
-        }
-        return identifier
+        currentMediaIdentifier.as(MediaIdentifier.self)
     }
     
     var currentMediaIdentifier: AnyMediaIdentifier {

@@ -65,7 +65,7 @@ extension MediaViewerDelegate {
     ) {
         self.mediaViewer(
             mediaViewer,
-            didMoveToMediaWith: mediaIdentifier.base as! MediaIdentifier
+            didMoveToMediaWith: mediaIdentifier.as(MediaIdentifier.self)
         )
     }
 }
