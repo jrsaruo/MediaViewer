@@ -421,18 +421,7 @@ open class MediaViewerViewController: UIPageViewController {
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) where MediaIdentifier: Hashable {
-        self.move(
-            toMediaWith: AnyMediaIdentifier(identifier),
-            animated: animated,
-            completion: completion
-        )
-    }
-    
-    private func move(
-        toMediaWith identifier: AnyMediaIdentifier,
-        animated: Bool,
-        completion: ((Bool) -> Void)? = nil
-    ) {
+        let identifier = AnyMediaIdentifier(identifier)
         move(
             to: makeMediaViewerPage(with: identifier),
             direction: mediaViewerVM.moveDirection(
