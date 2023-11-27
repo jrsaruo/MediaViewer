@@ -423,7 +423,7 @@ extension MediaViewerPageControlBar {
         assert(state == .reloading)
         
         for identifier in identifiers {
-            cell(for: identifier)?.performDeleteAnimationBody()
+            cell(for: identifier)?.performVanishAnimationBody()
         }
     }
 }
