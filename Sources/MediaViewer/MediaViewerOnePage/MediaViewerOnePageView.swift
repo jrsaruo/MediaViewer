@@ -161,6 +161,7 @@ final class MediaViewerOnePageView: UIView {
     }
     
     func performVanishAnimationBody() {
+        // TODO: Apply the same blur effect as standard
         imageView.transform = imageView.transform.scaledBy(x: 0.5, y: 0.5)
         imageView.alpha = 0
     }
