@@ -182,12 +182,46 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
             .flexibleSpace(),
-            mediaViewer.trashButton { currentMediaIdentifier in
-                await self.removeAsset(currentMediaIdentifier)
+            mediaViewer.trashButton { mediaViewer, button, currentAsset in
+                try? await self.showConfirmationForPhotoRemoval(
+                    from: button,
+                    on: mediaViewer,
+                    removingAsset: currentAsset
+                )
             }
         ]
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
+    }
+    
+    private func showConfirmationForPhotoRemoval(
+        from button: UIBarButtonItem,
+        on mediaViewer: MediaViewerViewController,
+        removingAsset: PHAsset
+    ) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            let actionSheet = UIAlertController(
+                title: "Do you simulate photo removal?",
+                message: "The photo won't actually be deleted.",
+                preferredStyle: .actionSheet
+            )
+            let removeAction = UIAlertAction(
+                title: "Simulate",
+                style: .default
+            ) { _ in
+                Task {
+                    await self.removeAsset(removingAsset)
+                    continuation.resume()
+                }
+            }
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                continuation.resume(throwing: CancellationError())
+            }
+            actionSheet.addAction(removeAction)
+            actionSheet.addAction(cancelAction)
+            actionSheet.popoverPresentationController?.sourceItem = button
+            mediaViewer.present(actionSheet, animated: true)
+        }
     }
 }
 

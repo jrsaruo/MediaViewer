@@ -14,21 +14,30 @@ extension MediaViewerViewController {
     /// If you want to provide your custom delete UI, you can build one with `reloadMedia()`
     /// method instead.
     ///
-    /// - Parameter deleteAction: A closure that takes the current media identifier and
-    ///                           performs the media deletion.
+    /// - Parameters:
+    ///   - deleteAction: A closure that performs the media deletion.
+    ///                   It takes the viewer, button itself and the current media identifier.
     /// - Note: `deleteAction` must complete deletion until it returns.
     /// - Returns: A trash button for deleting media.
     public func trashButton<MediaIdentifier>(
         deleteAction: @escaping (
+            _ mediaViewer: MediaViewerViewController,
+            _ trashButton: UIBarButtonItem,
             _ currentMediaIdentifier: MediaIdentifier
         ) async -> Void
     ) -> UIBarButtonItem where MediaIdentifier: Hashable {
-        .init(systemItem: .trash, primaryAction: .init { [weak self] action in
+        let button = UIBarButtonItem(systemItem: .trash)
+        button.primaryAction = .init { [weak self] action in
             guard let self else { return }
             Task {
-                await deleteAction(self.currentMediaIdentifier())
+                await deleteAction(
+                    self,
+                    button,
+                    self.currentMediaIdentifier()
+                )
                 await self.reloadMedia()
             }
-        })
+        }
+        return button
     }
 }
