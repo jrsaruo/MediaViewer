@@ -14,7 +14,7 @@ struct AnyMediaIdentifier: Hashable {
         _ base: MediaIdentifier
     ) where MediaIdentifier: Hashable {
         if let base = base as? AnyMediaIdentifier {
-            assertionFailure("The base is already type-erased.")
+            // Already type-erased
             self = base
             return
         }
