@@ -10,15 +10,16 @@ import Combine
 
 /// An media viewer.
 ///
-/// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+/// It is recommended to set your `MediaViewerViewController` instance to
+/// `navigationController?.delegate` to enable smooth transition animation.
 ///
 /// ```swift
-/// let mediaViewer = MediaViewerViewController(page: 0, dataSource: self)
+/// let mediaViewer = MediaViewerViewController(opening: 0, dataSource: self)
 /// navigationController?.delegate = mediaViewer
 /// navigationController?.pushViewController(mediaViewer, animated: true)
 /// ```
 ///
-/// You can show toolbar items by setting `toolbarItems` property on the media viewer instance.
+/// To show toolbar items in the media viewer, use `toolbarItems` property on the viewer instance.
 ///
 /// ```swift
 /// mediaViewer.toolbarItems = [
@@ -26,8 +27,12 @@ import Combine
 /// ]
 /// ```
 ///
-/// - Note: `MediaViewerViewController` must be used in `UINavigationController`.
-///         It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
+/// You can subclass `MediaViewerViewController` and customize it.
+///
+/// - Note: `MediaViewerViewController` must be embedded in
+///         `UINavigationController`.
+/// - Note: It is NOT allowed to change `dataSource` and `delegate` properties
+///         of ``UIPageViewController``.
 open class MediaViewerViewController: UIPageViewController {
     
     private var cancellables: Set<AnyCancellable> = []
