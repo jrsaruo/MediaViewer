@@ -123,7 +123,8 @@ extension SyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(
                 systemItem: .add,
-                primaryAction: .init { [unowned mediaViewer] _ in
+                primaryAction: .init { [weak mediaViewer] _ in
+                    guard let mediaViewer else { return }
                     self.insertNewItem(
                         after: mediaViewer.currentMediaIdentifier()
                     )
