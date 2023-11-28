@@ -119,7 +119,17 @@ extension SyncImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let image = dataSource.itemIdentifier(for: indexPath)!
         let mediaViewer = MediaViewerViewController(opening: image, dataSource: self)
-        
+        setUpToolbarItems(of: mediaViewer)
+        navigationController?.delegate = mediaViewer
+        navigationController?.pushViewController(mediaViewer, animated: true)
+    }
+    
+    /*
+     * NOTE:
+     * Here the instance of MediaViewerViewController is customized directly,
+     * but you can subclass MediaViewerViewController instead.
+     */
+    private func setUpToolbarItems(of mediaViewer: MediaViewerViewController) {
         // NOTE: `weak mediaViewer` captures are needed.
         mediaViewer.toolbarItems = [
             .init(
@@ -150,9 +160,6 @@ extension SyncImagesViewController: UICollectionViewDelegate {
                 self.removeItem(currentMediaIdentifier)
             }
         ]
-        
-        navigationController?.delegate = mediaViewer
-        navigationController?.pushViewController(mediaViewer, animated: true)
     }
 }
 
