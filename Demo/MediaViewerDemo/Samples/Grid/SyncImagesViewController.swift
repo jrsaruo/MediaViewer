@@ -138,7 +138,7 @@ extension SyncImagesViewController: UICollectionViewDelegate {
                     guard let mediaViewer else { return }
                     self.refresh()
                     Task {
-                        await mediaViewer.reloadMedia()
+                        await mediaViewer.reloadMedia(animated: true)
                     }
                 }
             ),
@@ -151,7 +151,7 @@ extension SyncImagesViewController: UICollectionViewDelegate {
                         after: mediaViewer.currentMediaIdentifier()
                     )
                     Task {
-                        await mediaViewer.reloadMedia()
+                        await mediaViewer.reloadMedia(animated: true)
                     }
                 }
             ),

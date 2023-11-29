@@ -456,10 +456,12 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// Reloads media.
     ///
-    /// Updates the UI to reflect the state of the data source, animating the UI changes.
+    /// Updates the UI to reflect the state of the data source, optionally animating the UI changes.
     /// You need to call this method Immediately after `mediaIdentifiers(for:)` provided by
     /// your `MediaViewerDataSource` changes.
-    open func reloadMedia() async {
+    ///
+    /// - Parameter animated: Whether to animate the reloading.
+    open func reloadMedia(animated: Bool) async {
         let newIdentifiers = fetchMediaIdentifiers()
         
         let difference = newIdentifiers.difference(
@@ -490,7 +492,8 @@ open class MediaViewerViewController: UIPageViewController {
         await reloadMedia(
             deleting: deletingIdentifiers,
             visibleVCBeforeReloading: visibleVCBeforeReloading,
-            pagingAfterReloading: pagingAfterReloading
+            pagingAfterReloading: pagingAfterReloading,
+            animated: animated
         )
         
         runningReloadTransactionIDs.remove(transactionID)
@@ -505,7 +508,8 @@ open class MediaViewerViewController: UIPageViewController {
     private func reloadMedia(
         deleting deletedIdentifiers: [AnyMediaIdentifier],
         visibleVCBeforeReloading: MediaViewerOnePageViewController,
-        pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?
+        pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?,
+        animated: Bool
     ) async {
         let isVisibleMediaDeleted = deletedIdentifiers.contains(
             visibleVCBeforeReloading.mediaIdentifier
@@ -514,20 +518,26 @@ open class MediaViewerViewController: UIPageViewController {
         
         // MARK: Perform vanish animation
         
-        /*
-         * NOTE:
-         * Play an effect that causes media to disappear.
-         * This animation will not run if there is no deletion.
-         */
-        let vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
-            if isVisibleMediaDeleted {
-                visiblePageView.performVanishAnimationBody()
+        let vanishAnimator: UIViewPropertyAnimator?
+        if animated {
+            /*
+             * NOTE:
+             * Play an effect that causes media to disappear.
+             * This animation will not run if there is no deletion.
+             */
+            vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
+                if isVisibleMediaDeleted {
+                    visiblePageView.performVanishAnimationBody()
+                }
+                self.pageControlBar.performVanishAnimationBody(
+                    for: deletedIdentifiers
+                )
             }
-            self.pageControlBar.performVanishAnimationBody(
-                for: deletedIdentifiers
-            )
+        } else {
+            // Skip vanish animation
+            vanishAnimator = nil
         }
-        vanishAnimator.startAnimation()
+        vanishAnimator?.startAnimation()
         
         // If all media is deleted, close the viewer
         guard let pagingAfterReloading else {
@@ -536,9 +546,9 @@ open class MediaViewerViewController: UIPageViewController {
             return
         }
         
-        await vanishAnimator.addCompletion()
+        await vanishAnimator?.addCompletion()
         
-        // MARK: Finalize deletion
+        // MARK: Finalize reloading
         
         guard let destination = destinationPageVCAfterReloading else {
             assertionFailure(
@@ -555,23 +565,33 @@ open class MediaViewerViewController: UIPageViewController {
             return
         }
         
-        let finishAnimator = UIViewPropertyAnimator(duration: 0.3, dampingRatio: 1) {
-            self.pageControlBar.loadItems(
-                self.mediaViewerVM.mediaIdentifiers,
+        func finalizeReloading() {
+            pageControlBar.loadItems(
+                mediaViewerVM.mediaIdentifiers,
                 expandingItemWith: destination.mediaIdentifier,
-                animated: true
+                animated: animated
             )
             
             if let direction = pagingAfterReloading.direction {
-                self.move(
+                move(
                     to: destination,
                     direction: direction,
-                    animated: true
+                    animated: animated
                 )
             }
         }
-        finishAnimator.startAnimation()
-        await finishAnimator.addCompletion()
+        
+        if animated {
+            let finishAnimator = UIViewPropertyAnimator(
+                duration: 0.3,
+                dampingRatio: 1,
+                animations: finalizeReloading
+            )
+            finishAnimator.startAnimation()
+            await finishAnimator.addCompletion()
+        } else {
+            finalizeReloading()
+        }
     }
     
     private func pageDidChange() {
