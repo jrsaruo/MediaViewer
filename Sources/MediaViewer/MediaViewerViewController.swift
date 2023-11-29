@@ -609,19 +609,29 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: - Actions
     
+    private var canTransitionWithSourceView: Bool {
+        switch pageControlBar.state {
+        case .collapsing, .collapsed, .expanding, .expanded, .transitioningInteractively:
+            return true
+        case .reloading:
+            /*
+             * FIXME: A transition with the source view does not work correctly during reloading
+             */
+            return false
+        }
+    }
+    
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
-        guard pageControlBar.state == .expanded else {
-            recognizer.state = .failed
-            return
-        }
         if recognizer.state == .began {
             // Start the interactive pop transition
-            let sourceView = mediaViewerDataSource.mediaViewer(
-                self,
-                transitionSourceViewForMediaWith: currentMediaIdentifier
-            )
-            interactivePopTransition = .init(sourceView: sourceView)
+            if canTransitionWithSourceView {
+                let sourceView = mediaViewerDataSource.mediaViewer(
+                    self,
+                    transitionSourceViewForMediaWith: currentMediaIdentifier
+                )
+                interactivePopTransition = .init(sourceView: sourceView)
+            }
             
             /*
              * [Workaround]
@@ -802,10 +812,15 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
             )
         }
         
-        let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource.mediaViewer(
-            self,
-            transitionSourceViewForMediaWith: currentMediaIdentifier
-        )
+        let sourceView: UIView?
+        if canTransitionWithSourceView {
+            sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource.mediaViewer(
+                self,
+                transitionSourceViewForMediaWith: currentMediaIdentifier
+            )
+        } else {
+            sourceView = nil
+        }
         return MediaViewerTransition(
             operation: operation,
             sourceView: sourceView,
