@@ -83,6 +83,7 @@ extension MediaViewerViewModel {
         let backwardIdentifiers = splitIdentifiers[0]
         let forwardIdentifiers = splitIdentifiers[1]
         
+        // TODO: Prefer the recent paging direction
         if let nearestForward = forwardIdentifiers.first(where: {
             !deletingIdentifiers.contains($0)
         }) {

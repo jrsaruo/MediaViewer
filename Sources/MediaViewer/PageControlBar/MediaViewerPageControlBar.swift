@@ -517,6 +517,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
+        // FIXME: Allow selection during the reloading
         guard state != .reloading else { return }
         
         if case .normal(let barLayout) = layout,
