@@ -542,7 +542,7 @@ open class MediaViewerViewController: UIPageViewController {
         // If all media is deleted, close the viewer
         guard let pagingAfterReloading else {
             assert(mediaViewerVM.mediaIdentifiers.isEmpty)
-            navigationController?.popViewController(animated: animated)
+            navigationController?.popViewController(animated: true)
             return
         }
         
