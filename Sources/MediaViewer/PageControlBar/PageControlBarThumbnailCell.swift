@@ -65,7 +65,8 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
         imageLoadingTask = imageView.load(imageSource)
     }
     
-    func performDeleteAnimationBody() {
+    func performVanishAnimationBody() {
+        // TODO: Apply the same blur effect as standard
         // NOTE: These changes are reset in prepareForReuse().
         transform = transform.scaledBy(x: 0.5, y: 0.5)
         alpha = 0

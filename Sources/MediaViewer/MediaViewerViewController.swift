@@ -8,28 +8,18 @@
 import UIKit
 import Combine
 
-/// A type-erased media identifier.
-struct AnyMediaIdentifier: Hashable {
-    let rawValue: AnyHashable
-    
-    init<MediaIdentifier>(
-        rawValue: MediaIdentifier
-    ) where MediaIdentifier: Hashable {
-        self.rawValue = rawValue
-    }
-}
-
 /// An media viewer.
 ///
-/// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+/// It is recommended to set your `MediaViewerViewController` instance to
+/// `navigationController?.delegate` to enable smooth transition animation.
 ///
 /// ```swift
-/// let mediaViewer = MediaViewerViewController(page: 0, dataSource: self)
+/// let mediaViewer = MediaViewerViewController(opening: 0, dataSource: self)
 /// navigationController?.delegate = mediaViewer
 /// navigationController?.pushViewController(mediaViewer, animated: true)
 /// ```
 ///
-/// You can show toolbar items by setting `toolbarItems` property on the media viewer instance.
+/// To show toolbar items in the media viewer, use `toolbarItems` property on the viewer instance.
 ///
 /// ```swift
 /// mediaViewer.toolbarItems = [
@@ -37,8 +27,12 @@ struct AnyMediaIdentifier: Hashable {
 /// ]
 /// ```
 ///
-/// - Note: `MediaViewerViewController` must be used in `UINavigationController`.
-///         It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
+/// You can subclass `MediaViewerViewController` and customize it.
+///
+/// - Note: `MediaViewerViewController` must be embedded in
+///         `UINavigationController`.
+/// - Note: It is NOT allowed to change `dataSource` and `delegate` properties
+///         of ``UIPageViewController``.
 open class MediaViewerViewController: UIPageViewController {
     
     private var cancellables: Set<AnyCancellable> = []
@@ -71,13 +65,7 @@ open class MediaViewerViewController: UIPageViewController {
     public func currentMediaIdentifier<MediaIdentifier>(
         as identifierType: MediaIdentifier.Type = MediaIdentifier.self
     ) -> MediaIdentifier {
-        let rawIdentifier = currentMediaIdentifier.rawValue
-        guard let identifier = rawIdentifier as? MediaIdentifier else {
-            preconditionFailure(
-                "The type of media identifier is \(type(of: rawIdentifier.base)), not \(identifierType)."
-            )
-        }
-        return identifier
+        currentMediaIdentifier.as(MediaIdentifier.self)
     }
     
     var currentMediaIdentifier: AnyMediaIdentifier {
@@ -192,7 +180,7 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
         
         let mediaViewerPage = makeMediaViewerPage(
-            with: AnyMediaIdentifier(rawValue: mediaIdentifier)
+            with: AnyMediaIdentifier(mediaIdentifier)
         )
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
@@ -424,7 +412,7 @@ open class MediaViewerViewController: UIPageViewController {
     func fetchMediaIdentifiers() -> [AnyMediaIdentifier] {
         mediaViewerDataSource
             .mediaIdentifiers(for: self)
-            .map { AnyMediaIdentifier(rawValue: $0) }
+            .map { AnyMediaIdentifier($0) }
     }
     
     /// Move to media with the specified identifier.
@@ -438,18 +426,7 @@ open class MediaViewerViewController: UIPageViewController {
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
     ) where MediaIdentifier: Hashable {
-        self.move(
-            toMediaWith: AnyMediaIdentifier(rawValue: identifier),
-            animated: animated,
-            completion: completion
-        )
-    }
-    
-    private func move(
-        toMediaWith identifier: AnyMediaIdentifier,
-        animated: Bool,
-        completion: ((Bool) -> Void)? = nil
-    ) {
+        let identifier = AnyMediaIdentifier(identifier)
         move(
             to: makeMediaViewerPage(with: identifier),
             direction: mediaViewerVM.moveDirection(

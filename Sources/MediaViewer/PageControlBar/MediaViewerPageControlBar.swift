@@ -218,10 +218,12 @@ final class MediaViewerPageControlBar: UIView {
     ///   - identifiers: Identifiers for media to load.
     ///   - expandingIdentifier: An identifier for media to expand after the loading.
     ///   - animated: Whether to animate the loading.
+    ///   - completion: A closure to execute when the loading completes.
     func loadItems(
         _ identifiers: [AnyMediaIdentifier],
         expandingItemWith expandingIdentifier: AnyMediaIdentifier,
-        animated: Bool
+        animated: Bool,
+        completion: (() -> Void)? = nil
     ) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
         snapshot.appendSections([0])
@@ -229,6 +231,7 @@ final class MediaViewerPageControlBar: UIView {
         diffableDataSource.apply(snapshot, animatingDifferences: animated)
         
         guard let indexPath = diffableDataSource.indexPath(for: expandingIdentifier) else {
+            completion?()
             return
         }
         _pageDidChange.send((page: indexPath.item, reason: .load))
@@ -239,7 +242,9 @@ final class MediaViewerPageControlBar: UIView {
                 widthToHeightOfThumbnailWith: expandingIdentifier
             ),
             animated: animated
-        )
+        ) { _ in
+            completion?()
+        }
     }
     
     private func page(with identifier: AnyMediaIdentifier) -> Int? {
@@ -265,7 +270,8 @@ final class MediaViewerPageControlBar: UIView {
     private func updateLayout(
         expandingItemAt indexPath: IndexPath?,
         expandingThumbnailWidthToHeight: CGFloat? = nil,
-        animated: Bool
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
     ) {
         let style: MediaViewerPageControlBarLayout.Style
         if let indexPath {
@@ -277,7 +283,11 @@ final class MediaViewerPageControlBar: UIView {
             style = .collapsed
         }
         let layout = MediaViewerPageControlBarLayout(style: style)
-        collectionView.setCollectionViewLayout(layout, animated: animated)
+        collectionView.setCollectionViewLayout(
+            layout,
+            animated: animated,
+            completion: completion
+        )
     }
     
     /// Expand an item and scroll there.
@@ -395,7 +405,7 @@ final class MediaViewerPageControlBar: UIView {
     }
 }
 
-// MARK: - Deletion -
+// MARK: - Reloading -
 
 extension MediaViewerPageControlBar {
     
@@ -423,7 +433,7 @@ extension MediaViewerPageControlBar {
         assert(state == .reloading)
         
         for identifier in identifiers {
-            cell(for: identifier)?.performDeleteAnimationBody()
+            cell(for: identifier)?.performVanishAnimationBody()
         }
     }
 }
@@ -507,6 +517,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
+        // FIXME: Allow selection during the reloading
         guard state != .reloading else { return }
         
         if case .normal(let barLayout) = layout,
