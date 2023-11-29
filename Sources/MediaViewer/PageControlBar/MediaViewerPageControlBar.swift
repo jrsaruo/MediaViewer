@@ -405,7 +405,7 @@ final class MediaViewerPageControlBar: UIView {
     }
 }
 
-// MARK: - Deletion -
+// MARK: - Reloading -
 
 extension MediaViewerPageControlBar {
     
