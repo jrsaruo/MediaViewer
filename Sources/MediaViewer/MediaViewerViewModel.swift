@@ -53,3 +53,54 @@ final class MediaViewerViewModel: ObservableObject {
         return destinationPage < currentPage ? .reverse : .forward
     }
 }
+
+// MARK: - Reloading -
+
+extension MediaViewerViewModel {
+    
+    struct PagingAfterReloading: Hashable {
+        let destinationIdentifier: AnyMediaIdentifier
+        let direction: UIPageViewController.NavigationDirection?
+    }
+    
+    func paging(
+        afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
+        currentIdentifier: AnyMediaIdentifier
+    ) -> PagingAfterReloading? {
+        guard deletingIdentifiers.contains(currentIdentifier) else {
+            // Stay on the current page
+            return .init(
+                destinationIdentifier: currentIdentifier,
+                direction: nil
+            )
+        }
+        
+        let splitIdentifiers = mediaIdentifiers.split(
+            separator: currentIdentifier,
+            maxSplits: 2,
+            omittingEmptySubsequences: false
+        )
+        let backwardIdentifiers = splitIdentifiers[0]
+        let forwardIdentifiers = splitIdentifiers[1]
+        
+        // TODO: Prefer the recent paging direction
+        if let nearestForward = forwardIdentifiers.first(where: {
+            !deletingIdentifiers.contains($0)
+        }) {
+            return .init(
+                destinationIdentifier: nearestForward,
+                direction: .forward
+            )
+        } else if let nearestBackward = backwardIdentifiers.last(where: {
+            !deletingIdentifiers.contains($0)
+        }) {
+            return .init(
+                destinationIdentifier: nearestBackward,
+                direction: .reverse
+            )
+        }
+        
+        // When all pages are deleted, close the viewer and do not perform paging animation
+        return nil
+    }
+}

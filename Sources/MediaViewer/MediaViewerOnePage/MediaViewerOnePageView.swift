@@ -160,6 +160,12 @@ final class MediaViewerOnePageView: UIView {
         scrollView.zoom(to: zoomArea, animated: animated)
     }
     
+    func performVanishAnimationBody() {
+        // TODO: Apply the same blur effect as standard
+        imageView.transform = imageView.transform.scaledBy(x: 0.5, y: 0.5)
+        imageView.alpha = 0
+    }
+    
     func destroyLayoutConfigurationBeforeTransition() {
         NSLayoutConstraint.deactivate(constraintsBasedOnImageSize)
         imageView.translatesAutoresizingMaskIntoConstraints = true
