@@ -2,7 +2,7 @@
 
 A comfortable media viewer like the iOS standard.
 
-![MediaViewerDemo](https://github.com/jrsaruo/MediaViewer/assets/23174349/6181382d-7b1f-4d79-8752-5ee9727fdef9)
+![MediaViewerDemo](https://github.com/jrsaruo/MediaViewer/assets/23174349/6181382d-7b1f-4d79-8752-5ee9727fdef9) ![MediaViewerDemo _camera](https://github.com/jrsaruo/MediaViewer/assets/23174349/efc2b713-ac2f-4c36-8e9f-69b612281e0c)
 
 ## Requirements
 
