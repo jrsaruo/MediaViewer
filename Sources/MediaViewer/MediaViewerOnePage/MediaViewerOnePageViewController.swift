@@ -19,7 +19,7 @@ protocol MediaViewerOnePageViewControllerDelegate: AnyObject {
 
 final class MediaViewerOnePageViewController: UIViewController {
     
-    let page: Int
+    let mediaIdentifier: AnyMediaIdentifier
     
     weak var delegate: (any MediaViewerOnePageViewControllerDelegate)?
     
@@ -35,15 +35,14 @@ final class MediaViewerOnePageViewController: UIViewController {
     
     // MARK: - Initializers
     
-    init(page: Int) {
-        self.page = page
+    init(mediaIdentifier: AnyMediaIdentifier) {
+        self.mediaIdentifier = mediaIdentifier
         super.init(nibName: nil, bundle: nil)
     }
     
     @available(*, unavailable, message: "init(coder:) is not supported.")
     required init?(coder: NSCoder) {
-        self.page = 0
-        super.init(coder: coder)
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Lifecycle

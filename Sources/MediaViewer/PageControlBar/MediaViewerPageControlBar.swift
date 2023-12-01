@@ -12,13 +12,13 @@ import Combine
 protocol MediaViewerPageControlBarDataSource: AnyObject {
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailOnPage page: Int,
+        thumbnailWith mediaIdentifier: AnyMediaIdentifier,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?>
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailWidthToHeightOnPage page: Int
+        widthToHeightOfThumbnailWith mediaIdentifier: AnyMediaIdentifier
     ) -> CGFloat?
 }
 
@@ -38,6 +38,8 @@ final class MediaViewerPageControlBar: UIView {
         /// The state of interactively transitioning between pages.
         case transitioningInteractively(UICollectionViewTransitionLayout, forwards: Bool)
         
+        case reloading
+        
         var indexPathForFinalDestinationItem: IndexPath? {
             guard case .collapsed(let indexPath) = self else { return nil }
             return indexPath
@@ -54,7 +56,7 @@ final class MediaViewerPageControlBar: UIView {
     
     private typealias CellRegistration = UICollectionView.CellRegistration<
         PageControlBarThumbnailCell,
-        Int // page
+        AnyMediaIdentifier
     >
     
     weak var dataSource: (any MediaViewerPageControlBarDataSource)?
@@ -74,6 +76,7 @@ final class MediaViewerPageControlBar: UIView {
     /// What caused the page change.
     enum PageChangeReason: Hashable {
         case configuration
+        case load
         case tapOnPageThumbnail
         case scrollingBar
         case interactivePaging
@@ -109,18 +112,18 @@ final class MediaViewerPageControlBar: UIView {
         return collectionView
     }()
     
-    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, Int>(
+    lazy var diffableDataSource = UICollectionViewDiffableDataSource<Int, AnyMediaIdentifier>(
         collectionView: collectionView
-    ) { [weak self] collectionView, indexPath, page in
+    ) { [weak self] collectionView, indexPath, mediaIdentifier in
         guard let self else { return nil }
         return collectionView.dequeueConfiguredReusableCell(
             using: cellRegistration,
             for: indexPath,
-            item: page
+            item: mediaIdentifier
         )
     }
     
-    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, page in
+    private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, mediaIdentifier in
         guard let self, let dataSource else { return }
         let scale = window?.screen.scale ?? 3
         let preferredSize = CGSize(
@@ -129,7 +132,7 @@ final class MediaViewerPageControlBar: UIView {
         )
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: page,
+            thumbnailWith: mediaIdentifier,
             filling: preferredSize
         )
         cell.configure(with: thumbnailSource)
@@ -191,11 +194,15 @@ final class MediaViewerPageControlBar: UIView {
     
     // MARK: - Methods
     
-    func configure(numberOfPages: Int, currentPage: Int) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
+    func configure(
+        mediaIdentifiers: [AnyMediaIdentifier],
+        currentIdentifier: AnyMediaIdentifier
+    ) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
         snapshot.appendSections([0])
-        snapshot.appendItems(Array(0..<numberOfPages))
+        snapshot.appendItems(mediaIdentifiers)
         
+        let currentPage = snapshot.indexOfItem(currentIdentifier)!
         diffableDataSource.apply(snapshot) {
             let indexPath = IndexPath(item: currentPage, section: 0)
             self.expandAndScrollToItem(
@@ -206,10 +213,65 @@ final class MediaViewerPageControlBar: UIView {
         }
     }
     
+    /// Loads identifiers for media.
+    /// - Parameters:
+    ///   - identifiers: Identifiers for media to load.
+    ///   - expandingIdentifier: An identifier for media to expand after the loading.
+    ///   - animated: Whether to animate the loading.
+    ///   - completion: A closure to execute when the loading completes.
+    func loadItems(
+        _ identifiers: [AnyMediaIdentifier],
+        expandingItemWith expandingIdentifier: AnyMediaIdentifier,
+        animated: Bool,
+        completion: (() -> Void)? = nil
+    ) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(identifiers)
+        diffableDataSource.apply(snapshot, animatingDifferences: animated)
+        
+        guard let indexPath = diffableDataSource.indexPath(for: expandingIdentifier) else {
+            completion?()
+            return
+        }
+        _pageDidChange.send((page: indexPath.item, reason: .load))
+        updateLayout(
+            expandingItemAt: indexPath,
+            expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
+                self,
+                widthToHeightOfThumbnailWith: expandingIdentifier
+            ),
+            animated: animated
+        ) { _ in
+            completion?()
+        }
+    }
+    
+    private func page(with identifier: AnyMediaIdentifier) -> Int? {
+        diffableDataSource.snapshot().indexOfItem(identifier)
+    }
+    
+    private func mediaIdentifier(forPage page: Int) -> AnyMediaIdentifier {
+        diffableDataSource.snapshot().itemIdentifiers[page]
+    }
+    
+    private func cell(for identifier: AnyMediaIdentifier) -> PageControlBarThumbnailCell? {
+        guard let indexPath = diffableDataSource.indexPath(for: identifier),
+              let cell = collectionView.cellForItem(at: indexPath) else {
+            return nil
+        }
+        guard let cell = cell as? PageControlBarThumbnailCell else {
+            assertionFailure("Unexpected cell: \(cell)")
+            return nil
+        }
+        return cell
+    }
+    
     private func updateLayout(
         expandingItemAt indexPath: IndexPath?,
         expandingThumbnailWidthToHeight: CGFloat? = nil,
-        animated: Bool
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
     ) {
         let style: MediaViewerPageControlBarLayout.Style
         if let indexPath {
@@ -221,7 +283,11 @@ final class MediaViewerPageControlBar: UIView {
             style = .collapsed
         }
         let layout = MediaViewerPageControlBarLayout(style: style)
-        collectionView.setCollectionViewLayout(layout, animated: animated)
+        collectionView.setCollectionViewLayout(
+            layout,
+            animated: animated,
+            completion: completion
+        )
     }
     
     /// Expand an item and scroll there.
@@ -273,8 +339,9 @@ final class MediaViewerPageControlBar: UIView {
     private func correctExpandingItemAspectRatioIfNeeded() {
         guard let indexPathForCurrentCenterItem, let dataSource else { return }
         let page = indexPathForCurrentCenterItem.item
+        let identifier = mediaIdentifier(forPage: page)
         
-        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, thumbnailWidthToHeightOnPage: page) {
+        if let thumbnailWidthToHeight = dataSource.mediaViewerPageControlBar(self, widthToHeightOfThumbnailWith: identifier) {
             expandAndScrollToItem(
                 at: indexPathForCurrentCenterItem,
                 causingBy: nil,
@@ -286,7 +353,7 @@ final class MediaViewerPageControlBar: UIView {
         
         let thumbnailSource = dataSource.mediaViewerPageControlBar(
             self,
-            thumbnailOnPage: page,
+            thumbnailWith: identifier,
             filling: .init(width: 100, height: 100)
         )
         switch thumbnailSource {
@@ -338,6 +405,39 @@ final class MediaViewerPageControlBar: UIView {
     }
 }
 
+// MARK: - Reloading -
+
+extension MediaViewerPageControlBar {
+    
+    func startReloading() async {
+        let readyStates: [State] = [.expanded, .reloading]
+        while !readyStates.contains(state) {
+            await Task.yield()
+        }
+        state = .reloading
+    }
+    
+    func finishReloading() {
+        assert(state == .reloading)
+        state = .expanded
+    }
+    
+    /// Performs the body of the vanish animation.
+    ///
+    /// This method itself does not animate, so call it in an animation block.
+    /// It also does not update the data source so you have to call
+    /// `loadItems(_:expandingItemWith:animated:)` after this animation is finished.
+    ///
+    /// - Parameter identifiers: Identifiers for media to perform vanish animation.
+    func performVanishAnimationBody(for identifiers: [AnyMediaIdentifier]) {
+        assert(state == .reloading)
+        
+        for identifier in identifiers {
+            cell(for: identifier)?.performVanishAnimationBody()
+        }
+    }
+}
+
 // MARK: - Interactive paging -
 
 extension MediaViewerPageControlBar {
@@ -355,9 +455,12 @@ extension MediaViewerPageControlBar {
             return
         }
         
+        let destinationIdentifier = mediaIdentifier(
+            forPage: destinationPage
+        )
         let expandingThumbnailWidthToHeight = dataSource?.mediaViewerPageControlBar(
             self,
-            thumbnailWidthToHeightOnPage: destinationPage
+            widthToHeightOfThumbnailWith: destinationIdentifier
         )
         let style: MediaViewerPageControlBarLayout.Style = .expanded(
             IndexPath(item: destinationPage, section: 0),
@@ -414,6 +517,9 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         
+        // FIXME: Allow selection during the reloading
+        guard state != .reloading else { return }
+        
         if case .normal(let barLayout) = layout,
            barLayout.style.indexPathForExpandingItem != indexPath {
             expandAndScrollToItem(
@@ -448,7 +554,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
                 expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
             }
-        case .collapsing, .expanding, .expanded, .transitioningInteractively:
+        case .collapsing, .expanding, .expanded, .transitioningInteractively, .reloading:
             break
         }
     }
@@ -497,7 +603,7 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         switch state {
-        case .collapsing, .collapsed:
+        case .collapsing, .collapsed, .reloading:
             expandAndScrollToCenterItem(animated: true, causingBy: .scrollingBar)
         case .expanding, .expanded, .transitioningInteractively:
             break // NOP

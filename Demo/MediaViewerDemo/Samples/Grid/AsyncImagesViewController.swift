@@ -47,7 +47,20 @@ final class AsyncImagesViewController: UIViewController {
         )
     }
     
-    private let toggleContentModeButton = UIBarButtonItem()
+    private lazy var refreshButton = UIBarButtonItem(
+        systemItem: .refresh,
+        primaryAction: .init { [weak self] _ in
+            Task { await self?.refresh(animated: true) }
+        }
+    )
+    
+    private lazy var toggleContentModeButton = UIBarButtonItem(
+        primaryAction: .init(
+            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
+        ) { [weak self] _ in
+            self?.toggleContentMode()
+        }
+    )
     
     private var preferredContentMode: UIView.ContentMode = .scaleAspectFill
     
@@ -72,18 +85,19 @@ final class AsyncImagesViewController: UIViewController {
         // Navigation
         navigationItem.title = "Async Sample"
         navigationItem.backButtonDisplayMode = .minimal
-        
-        toggleContentModeButton.primaryAction = UIAction(
-            image: .init(systemName: "rectangle.arrowtriangle.2.inward")
-        ) { [weak self] _ in
-            self?.toggleContentMode()
-        }
+        navigationItem.leftBarButtonItem = refreshButton
         navigationItem.rightBarButtonItem = toggleContentModeButton
+        
+        // Subviews
+        imageGridView.collectionView.refreshControl = .init(
+            frame: .zero,
+            primaryAction: .init { [weak self] _ in
+                Task { await self?.refresh(animated: true) }
+            }
+        )
     }
     
     private func loadPhotos() async {
-        let assets = await PHImageFetcher.imageAssets()
-        
         // Hide the collection view until ready
         imageGridView.collectionView.isHidden = true
         defer {
@@ -96,10 +110,7 @@ final class AsyncImagesViewController: UIViewController {
             }
         }
         
-        var snapshot = dataSource.snapshot()
-        snapshot.appendSections([0])
-        snapshot.appendItems(assets)
-        await dataSource.apply(snapshot, animatingDifferences: false)
+        let assets = await refresh(animated: false)
         
         // Scroll to the bottom if needed
         if let lastAsset = assets.last {
@@ -112,6 +123,19 @@ final class AsyncImagesViewController: UIViewController {
     }
     
     // MARK: - Methods
+    
+    @discardableResult
+    private func refresh(animated: Bool) async -> [PHAsset] {
+        let assets = await PHImageFetcher.imageAssets()
+        
+        var snapshot = NSDiffableDataSourceSnapshot<Int, PHAsset>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(assets)
+        await dataSource.apply(snapshot, animatingDifferences: animated)
+        
+        imageGridView.collectionView.refreshControl?.endRefreshing()
+        return assets
+    }
     
     private func toggleContentMode() {
         let newContentMode: UIView.ContentMode
@@ -134,6 +158,13 @@ final class AsyncImagesViewController: UIViewController {
             await dataSource.apply(snapshot)
         }
     }
+    
+    // Fake removal (not actually delete photo)
+    private func removeAsset(_ asset: PHAsset) async {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems([asset])
+        await dataSource.apply(snapshot, animatingDifferences: false)
+    }
 }
 
 // MARK: - UICollectionViewDelegate -
@@ -141,7 +172,8 @@ final class AsyncImagesViewController: UIViewController {
 extension AsyncImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let mediaViewer = MediaViewerViewController(page: indexPath.item, dataSource: self)
+        let asset = dataSource.itemIdentifier(for: indexPath)!
+        let mediaViewer = MediaViewerViewController(opening: asset, dataSource: self)
         mediaViewer.mediaViewerDelegate = self
         mediaViewer.toolbarItems = [
             .init(image: .init(systemName: "square.and.arrow.up")),
@@ -150,10 +182,46 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
             .flexibleSpace(),
-            .init(systemItem: .trash)
+            mediaViewer.trashButton { mediaViewer, button, currentAsset in
+                try? await self.showConfirmationForPhotoRemoval(
+                    from: button,
+                    on: mediaViewer,
+                    removingAsset: currentAsset
+                )
+            }
         ]
         navigationController?.delegate = mediaViewer
         navigationController?.pushViewController(mediaViewer, animated: true)
+    }
+    
+    private func showConfirmationForPhotoRemoval(
+        from button: UIBarButtonItem,
+        on mediaViewer: MediaViewerViewController,
+        removingAsset: PHAsset
+    ) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            let actionSheet = UIAlertController(
+                title: "Do you simulate photo removal?",
+                message: "The photo won't actually be deleted.",
+                preferredStyle: .actionSheet
+            )
+            let removeAction = UIAlertAction(
+                title: "Simulate",
+                style: .default
+            ) { _ in
+                Task {
+                    await self.removeAsset(removingAsset)
+                    continuation.resume()
+                }
+            }
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                continuation.resume(throwing: CancellationError())
+            }
+            actionSheet.addAction(removeAction)
+            actionSheet.addAction(cancelAction)
+            actionSheet.popoverPresentationController?.sourceItem = button
+            mediaViewer.present(actionSheet, animated: true)
+        }
     }
 }
 
@@ -161,37 +229,34 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
 
 extension AsyncImagesViewController: MediaViewerDataSource {
     
-    func numberOfMedia(in mediaViewer: MediaViewerViewController) -> Int {
-        dataSource.snapshot().numberOfItems
+    func mediaIdentifiers(for mediaViewer: MediaViewerViewController) -> [PHAsset] {
+        dataSource.snapshot().itemIdentifiers
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaOnPage page: Int
+        mediaWith mediaIdentifier: PHAsset
     ) -> Media {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async { await PHImageFetcher.image(for: asset) }
+        .async { await PHImageFetcher.image(for: mediaIdentifier) }
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        mediaWidthToHeightOnPage page: Int
+        widthToHeightOfMediaWith mediaIdentifier: PHAsset
     ) -> CGFloat? {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        let size = PHImageFetcher.imageSize(of: asset)
+        let size = PHImageFetcher.imageSize(of: mediaIdentifier)
         guard let size, size.height > 0 else { return nil }
         return size.width / size.height
     }
     
     func mediaViewer(
         _ mediaViewer: MediaViewerViewController,
-        pageThumbnailOnPage page: Int,
+        pageThumbnailForMediaWith mediaIdentifier: PHAsset,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        return .async(transition: .fade(duration: 0.1)) {
+        .async(transition: .fade(duration: 0.1)) {
             await PHImageFetcher.image(
-                for: asset,
+                for: mediaIdentifier,
                 targetSize: preferredThumbnailSize,
                 contentMode: .aspectFill,
                 resizeMode: .fast
@@ -199,9 +264,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
         }
     }
     
-    func transitionSourceView(forCurrentPageOf mediaViewer: MediaViewerViewController) -> UIView? {
-        let currentPage = mediaViewer.currentPage
-        let indexPathForCurrentImage = IndexPath(item: currentPage, section: 0)
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        transitionSourceViewForMediaWith mediaIdentifier: PHAsset
+    ) -> UIView? {
+        let indexPathForCurrentImage = dataSource.indexPath(for: mediaIdentifier)!
         
         let collectionView = imageGridView.collectionView
         
@@ -226,9 +293,11 @@ extension AsyncImagesViewController: MediaViewerDataSource {
 
 extension AsyncImagesViewController: MediaViewerDelegate {
     
-    func mediaViewer(_ mediaViewer: MediaViewerViewController, didMoveToPage page: Int) {
-        let asset = dataSource.snapshot().itemIdentifiers[page]
-        let dateDescription = asset.creationDate?.formatted()
+    func mediaViewer(
+        _ mediaViewer: MediaViewerViewController,
+        didMoveToMediaWith mediaIdentifier: PHAsset
+    ) {
+        let dateDescription = mediaIdentifier.creationDate?.formatted()
         mediaViewer.title = dateDescription
     }
 }

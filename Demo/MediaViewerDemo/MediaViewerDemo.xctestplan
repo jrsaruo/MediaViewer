@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "AB7B7AB7-CBF9-4FE7-BCC6-08C2C775A839",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:..",
+          "identifier" : "MediaViewer",
+          "name" : "MediaViewer"
+        }
+      ]
+    },
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:MediaViewerDemo.xcodeproj",
+      "identifier" : "5A54612529A2594700F16456",
+      "name" : "MediaViewerDemo"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:..",
+        "identifier" : "MediaViewerTests",
+        "name" : "MediaViewerTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -10,15 +10,16 @@ import Combine
 
 /// An media viewer.
 ///
-/// It is recommended to set your `MediaViewerViewController` instance to `navigationController?.delegate` to enable smooth transition animation.
+/// It is recommended to set your `MediaViewerViewController` instance to
+/// `navigationController?.delegate` to enable smooth transition animation.
 ///
 /// ```swift
-/// let mediaViewer = MediaViewerViewController(page: 0, dataSource: self)
+/// let mediaViewer = MediaViewerViewController(opening: 0, dataSource: self)
 /// navigationController?.delegate = mediaViewer
 /// navigationController?.pushViewController(mediaViewer, animated: true)
 /// ```
 ///
-/// You can show toolbar items by setting `toolbarItems` property on the media viewer instance.
+/// To show toolbar items in the media viewer, use `toolbarItems` property on the viewer instance.
 ///
 /// ```swift
 /// mediaViewer.toolbarItems = [
@@ -26,24 +27,65 @@ import Combine
 /// ]
 /// ```
 ///
-/// - Note: `MediaViewerViewController` must be used in `UINavigationController`.
-///         It is NOT allowed to change `dataSource` and `delegate` properties of ``UIPageViewController``.
+/// You can subclass `MediaViewerViewController` and customize it.
+///
+/// - Note: `MediaViewerViewController` must be embedded in
+///         `UINavigationController`.
+/// - Note: It is NOT allowed to change `dataSource` and `delegate` properties
+///         of ``UIPageViewController``.
 open class MediaViewerViewController: UIPageViewController {
     
     private var cancellables: Set<AnyCancellable> = []
     
     /// The data source of the media viewer object.
-    open weak var mediaViewerDataSource: (any MediaViewerDataSource)?
+    ///
+    /// - Note: This data source object must be set at object creation time and may not be changed.
+    open private(set) weak var mediaViewerDataSource: (any MediaViewerDataSource)!
     
     /// The object that acts as the delegate of the media viewer.
-    open weak var mediaViewerDelegate: (any MediaViewerDelegate)?
-    
-    /// The current page of the media viewer.
-    public var currentPage: Int {
-        currentPageViewController.page
+    ///
+    /// - Precondition: The associated type `MediaIdentifier` must be the same as
+    ///                 the one of `mediaViewerDataSource`.
+    open weak var mediaViewerDelegate: (any MediaViewerDelegate)? {
+        willSet {
+            guard let mediaViewerDataSource else { return }
+            newValue?.verifyMediaIdentifierTypeIsSame(as: mediaViewerDataSource)
+        }
     }
     
+    /// The current page of the media viewer.
+    @available(*, deprecated)
+    public var currentPage: Int {
+        mediaViewerVM.page(with: currentMediaIdentifier)!
+    }
+    
+    /// Returns the identifier for currently viewing media in the viewer.
+    /// - Parameter identifierType: A type of the identifier for media.
+    ///                             It must match the one provided by `mediaViewerDataSource`.
+    public func currentMediaIdentifier<MediaIdentifier>(
+        as identifierType: MediaIdentifier.Type = MediaIdentifier.self
+    ) -> MediaIdentifier {
+        currentMediaIdentifier.as(MediaIdentifier.self)
+    }
+    
+    var currentMediaIdentifier: AnyMediaIdentifier {
+        currentPageViewController.mediaIdentifier
+    }
+    
+    /// A view controller for the current page.
+    ///
+    /// During reloading, `visiblePageViewController` returns the page that was displayed
+    /// just before reloading, while `currentPageViewController` returns the page that will be
+    /// displayed eventually.
     var currentPageViewController: MediaViewerOnePageViewController {
+        if let destinationPageVCAfterReloading {
+            return destinationPageVCAfterReloading
+        }
+        return visiblePageViewController
+    }
+    
+    /// A view controller for the currently visible page.
+    var visiblePageViewController: MediaViewerOnePageViewController {
         guard let mediaViewerOnePage = viewControllers?.first as? MediaViewerOnePageViewController else {
             preconditionFailure(
                 "\(Self.self) must have only one \(MediaViewerOnePageViewController.self)."
@@ -51,6 +93,8 @@ open class MediaViewerViewController: UIPageViewController {
         }
         return mediaViewerOnePage
     }
+    
+    private var destinationPageVCAfterReloading: MediaViewerOnePageViewController?
     
     public var isShowingMediaOnly: Bool {
         mediaViewerVM.showsMediaOnly
@@ -111,9 +155,12 @@ open class MediaViewerViewController: UIPageViewController {
     
     /// Creates a new viewer.
     /// - Parameters:
-    ///   - page: The page number of the media.
+    ///   - mediaIdentifier: An identifier for media to view first.
     ///   - dataSource: The data source for the viewer.
-    public init(page: Int, dataSource: some MediaViewerDataSource) {
+    public init<MediaIdentifier>(
+        opening mediaIdentifier: MediaIdentifier,
+        dataSource: some MediaViewerDataSource<MediaIdentifier>
+    ) {
         super.init(
             transitionStyle: .scroll,
             navigationOrientation: .horizontal,
@@ -124,16 +171,25 @@ open class MediaViewerViewController: UIPageViewController {
         )
         mediaViewerDataSource = dataSource
         
-        guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else {
-            preconditionFailure("Page \(page) out of range.")
-        }
+        let identifiers = dataSource.mediaIdentifiers(for: self)
+        precondition(
+            identifiers.contains(mediaIdentifier),
+            "mediaIdentifier \(mediaIdentifier) must be included in identifiers returned by dataSource.mediaIdentifiers(for:)."
+        )
+        
+        mediaViewerVM.mediaIdentifiers = identifiers.map(AnyMediaIdentifier.init)
+        
+        let mediaViewerPage = makeMediaViewerPage(
+            with: AnyMediaIdentifier(mediaIdentifier)
+        )
         setViewControllers([mediaViewerPage], direction: .forward, animated: false)
         
         hidesBottomBarWhenPushed = true
     }
     
-    required public init?(coder: NSCoder) {
-        super.init(coder: coder)
+    @available(*, unavailable, message: "init(coder:) is not supported.")
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Lifecycle
@@ -166,7 +222,10 @@ open class MediaViewerViewController: UIPageViewController {
          * but since the delegate has not yet been set by the caller,
          * it needs to be told to the caller again at this time.
          */
-        mediaViewerDelegate?.mediaViewer(self, didMoveToPage: currentPage)
+        mediaViewerDelegate?.mediaViewer(
+            self,
+            didMoveToMediaWith: currentMediaIdentifier
+        )
     }
     
     private func setUpViews() {
@@ -179,10 +238,10 @@ open class MediaViewerViewController: UIPageViewController {
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
-        if let mediaViewerDataSource {
-            let numberOfPages = mediaViewerDataSource.numberOfMedia(in: self)
-            pageControlBar.configure(numberOfPages: numberOfPages, currentPage: currentPage)
-        }
+        pageControlBar.configure(
+            mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
+            currentIdentifier: currentMediaIdentifier
+        )
         pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
@@ -250,10 +309,12 @@ open class MediaViewerViewController: UIPageViewController {
         
         pageControlBar.pageDidChange
             .sink { [weak self] page, reason in
+                guard let self else { return }
                 switch reason {
                 case .tapOnPageThumbnail, .scrollingBar:
-                    self?.move(toPage: page, animated: false)
-                case .configuration, .interactivePaging:
+                    let identifier = mediaViewerVM.mediaIdentifier(forPage: page)!
+                    move(toMediaWith: identifier, animated: false)
+                case .configuration, .load, .interactivePaging:
                     // Do nothing because it has already been moved to the page.
                     break
                 }
@@ -347,19 +408,197 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: - Methods
     
-    /// Move to show media on the specified page.
-    /// - Parameter page: The destination page.
-    open func move(toPage page: Int, animated: Bool) {
-        guard let mediaViewerPage = makeMediaViewerPage(forPage: page) else { return }
-        setViewControllers(
-            [mediaViewerPage],
-            direction: page < currentPage ? .reverse : .forward,
-            animated: animated
+    /// Fetches type-erased identifiers for media from the data source.
+    func fetchMediaIdentifiers() -> [AnyMediaIdentifier] {
+        mediaViewerDataSource
+            .mediaIdentifiers(for: self)
+            .map { AnyMediaIdentifier($0) }
+    }
+    
+    /// Move to media with the specified identifier.
+    /// - Parameters:
+    ///   - identifier: An identifier for destination media.
+    ///   - animated: A Boolean value that indicates whether the transition is to be animated.
+    ///   - completion: A closure to be called when the animation completes.
+    ///                 It takes a boolean value whether the transition is finished or not.
+    open func move<MediaIdentifier>(
+        toMediaWith identifier: MediaIdentifier,
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
+    ) where MediaIdentifier: Hashable {
+        let identifier = AnyMediaIdentifier(identifier)
+        move(
+            to: makeMediaViewerPage(with: identifier),
+            direction: mediaViewerVM.moveDirection(
+                from: currentMediaIdentifier,
+                to: identifier
+            ),
+            animated: animated,
+            completion: completion
         )
     }
     
+    private func move(
+        to mediaViewerPage: MediaViewerOnePageViewController,
+        direction: NavigationDirection,
+        animated: Bool,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        setViewControllers(
+            [mediaViewerPage],
+            direction: direction,
+            animated: animated,
+            completion: completion
+        )
+    }
+    
+    private var runningReloadTransactionIDs: Set<UUID> = []
+    
+    /// Reloads media.
+    ///
+    /// Updates the UI to reflect the state of the data source, optionally animating the UI changes.
+    /// You need to call this method Immediately after `mediaIdentifiers(for:)` provided by
+    /// your `MediaViewerDataSource` changes.
+    ///
+    /// - Parameter animated: Whether to animate the reloading.
+    open func reloadMedia(animated: Bool) async {
+        let newIdentifiers = fetchMediaIdentifiers()
+        
+        let difference = newIdentifiers.difference(
+            from: mediaViewerVM.mediaIdentifiers
+        )
+        guard !difference.isEmpty else { return }
+        let deletingIdentifiers = difference.removals.map(\.element)
+        
+        let visibleVCBeforeReloading = currentPageViewController
+        
+        let pagingAfterReloading = mediaViewerVM.paging(
+            afterDeleting: deletingIdentifiers,
+            currentIdentifier: visibleVCBeforeReloading.mediaIdentifier
+        )
+        if let pagingAfterReloading {
+            destinationPageVCAfterReloading = makeMediaViewerPage(
+                with: pagingAfterReloading.destinationIdentifier
+            )
+        }
+        
+        mediaViewerVM.mediaIdentifiers = newIdentifiers
+        
+        let transactionID = UUID()
+        runningReloadTransactionIDs.insert(transactionID)
+        
+        await pageControlBar.startReloading()
+        
+        await reloadMedia(
+            deleting: deletingIdentifiers,
+            visibleVCBeforeReloading: visibleVCBeforeReloading,
+            pagingAfterReloading: pagingAfterReloading,
+            animated: animated
+        )
+        
+        runningReloadTransactionIDs.remove(transactionID)
+        if runningReloadTransactionIDs.isEmpty {
+            destinationPageVCAfterReloading = nil
+            pageControlBar.finishReloading()
+        }
+        
+        assert(mediaViewerVM.mediaIdentifiers == fetchMediaIdentifiers())
+    }
+    
+    private func reloadMedia(
+        deleting deletedIdentifiers: [AnyMediaIdentifier],
+        visibleVCBeforeReloading: MediaViewerOnePageViewController,
+        pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?,
+        animated: Bool
+    ) async {
+        let isVisibleMediaDeleted = deletedIdentifiers.contains(
+            visibleVCBeforeReloading.mediaIdentifier
+        )
+        let visiblePageView = visibleVCBeforeReloading.mediaViewerOnePageView
+        
+        // MARK: Perform vanish animation
+        
+        let vanishAnimator: UIViewPropertyAnimator?
+        if animated {
+            /*
+             * NOTE:
+             * Play an effect that causes media to disappear.
+             * This animation will not run if there is no deletion.
+             */
+            vanishAnimator = UIViewPropertyAnimator(duration: 0.2, curve: .easeOut) {
+                if isVisibleMediaDeleted {
+                    visiblePageView.performVanishAnimationBody()
+                }
+                self.pageControlBar.performVanishAnimationBody(
+                    for: deletedIdentifiers
+                )
+            }
+        } else {
+            // Skip vanish animation
+            vanishAnimator = nil
+        }
+        vanishAnimator?.startAnimation()
+        
+        // If all media is deleted, close the viewer
+        guard let pagingAfterReloading else {
+            assert(mediaViewerVM.mediaIdentifiers.isEmpty)
+            navigationController?.popViewController(animated: true)
+            return
+        }
+        
+        await vanishAnimator?.addCompletion()
+        
+        // MARK: Finalize reloading
+        
+        guard let destination = destinationPageVCAfterReloading else {
+            assertionFailure(
+                "destinationPageVCAfterReloading should not be nil until all reloading transactions have completed."
+            )
+            return
+        }
+        
+        guard pagingAfterReloading.destinationIdentifier == destination.mediaIdentifier else {
+            /*
+             * NOTE:
+             * Do not run finishAnimator because another reloading will follow.
+             */
+            return
+        }
+        
+        func finalizeReloading() {
+            pageControlBar.loadItems(
+                mediaViewerVM.mediaIdentifiers,
+                expandingItemWith: destination.mediaIdentifier,
+                animated: animated
+            )
+            
+            if let direction = pagingAfterReloading.direction {
+                move(
+                    to: destination,
+                    direction: direction,
+                    animated: animated
+                )
+            }
+        }
+        
+        if animated {
+            let finishAnimator = UIViewPropertyAnimator(
+                duration: 0.3,
+                dampingRatio: 1,
+                animations: finalizeReloading
+            )
+            finishAnimator.startAnimation()
+            await finishAnimator.addCompletion()
+        } else {
+            finalizeReloading()
+        }
+    }
+    
     private func pageDidChange() {
-        mediaViewerDelegate?.mediaViewer(self, didMoveToPage: currentPage)
+        mediaViewerDelegate?.mediaViewer(
+            self,
+            didMoveToMediaWith: currentMediaIdentifier
+        )
     }
     
     private func handleContentOffsetChange() {
@@ -383,19 +622,36 @@ open class MediaViewerViewController: UIPageViewController {
             if progress != 0 {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
             }
+        case .reloading:
+            break
         }
     }
     
     // MARK: - Actions
     
+    private var canTransitionWithSourceView: Bool {
+        switch pageControlBar.state {
+        case .collapsing, .collapsed, .expanding, .expanded, .transitioningInteractively:
+            return true
+        case .reloading:
+            /*
+             * FIXME: A transition with the source view does not work correctly during reloading
+             */
+            return false
+        }
+    }
+    
     @objc
     private func panned(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .began {
             // Start the interactive pop transition
-            let sourceView = mediaViewerDataSource?.transitionSourceView(
-                forCurrentPageOf: self
-            )
-            interactivePopTransition = .init(sourceView: sourceView)
+            if canTransitionWithSourceView {
+                let sourceView = mediaViewerDataSource.mediaViewer(
+                    self,
+                    transitionSourceViewForMediaWith: currentMediaIdentifier
+                )
+                interactivePopTransition = .init(sourceView: sourceView)
+            }
             
             /*
              * [Workaround]
@@ -453,7 +709,7 @@ extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
 extension MediaViewerViewController: UIPageViewControllerDataSource {
     
     open func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        mediaViewerDataSource?.numberOfMedia(in: self) ?? 0
+        mediaViewerVM.mediaIdentifiers.count
     }
     
     open func pageViewController(
@@ -464,11 +720,10 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        let previousPage = mediaViewerPageVC.page - 1
-        if let previousPageVC = makeMediaViewerPage(forPage: previousPage) {
-            return previousPageVC
+        guard let previousIdentifier = mediaViewerVM.mediaIdentifier(before: mediaViewerPageVC.mediaIdentifier) else {
+            return nil
         }
-        return nil
+        return makeMediaViewerPage(with: previousIdentifier)
     }
     
     open func pageViewController(
@@ -479,23 +734,21 @@ extension MediaViewerViewController: UIPageViewControllerDataSource {
             assertionFailure("Unknown view controller: \(viewController)")
             return nil
         }
-        let nextPage = mediaViewerPageVC.page + 1
-        if let nextPageVC = makeMediaViewerPage(forPage: nextPage) {
-            return nextPageVC
+        guard let nextIdentifier = mediaViewerVM.mediaIdentifier(after: mediaViewerPageVC.mediaIdentifier) else {
+            return nil
         }
-        return nil
+        return makeMediaViewerPage(with: nextIdentifier)
     }
     
     private func makeMediaViewerPage(
-        forPage page: Int
-    ) -> MediaViewerOnePageViewController? {
-        guard let mediaViewerDataSource,
-              0 <= page,
-              page < mediaViewerDataSource.numberOfMedia(in: self) else { return nil }
-        let media = mediaViewerDataSource.mediaViewer(self, mediaOnPage: page)
-        
-        let mediaViewerPage = MediaViewerOnePageViewController(page: page)
+        with identifier: AnyMediaIdentifier
+    ) -> MediaViewerOnePageViewController {
+        let mediaViewerPage = MediaViewerOnePageViewController(
+            mediaIdentifier: identifier
+        )
         mediaViewerPage.delegate = self
+        
+        let media = mediaViewerDataSource.mediaViewer(self, mediaWith: identifier)
         switch media {
         case .image(.sync(let image)):
             mediaViewerPage.mediaViewerOnePageView.setImage(image, with: .none)
@@ -515,22 +768,24 @@ extension MediaViewerViewController: MediaViewerPageControlBarDataSource {
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailOnPage page: Int,
+        thumbnailWith mediaIdentifier: AnyMediaIdentifier,
         filling preferredThumbnailSize: CGSize
     ) -> Source<UIImage?> {
-        guard let mediaViewerDataSource else { return .none }
-        return mediaViewerDataSource.mediaViewer(
+        mediaViewerDataSource.mediaViewer(
             self,
-            pageThumbnailOnPage: page,
+            pageThumbnailForMediaWith: mediaIdentifier,
             filling: preferredThumbnailSize
         )
     }
     
     func mediaViewerPageControlBar(
         _ pageControlBar: MediaViewerPageControlBar,
-        thumbnailWidthToHeightOnPage page: Int
+        widthToHeightOfThumbnailWith mediaIdentifier: AnyMediaIdentifier
     ) -> CGFloat? {
-        mediaViewerDataSource?.mediaViewer(self, mediaWidthToHeightOnPage: page)
+        mediaViewerDataSource.mediaViewer(
+            self,
+            widthToHeightOfMediaWith: mediaIdentifier
+        )
     }
 }
 
@@ -566,15 +821,32 @@ extension MediaViewerViewController: UINavigationControllerDelegate {
                 willBeginPopTransitionTo: toVC
             )
         }
-        let sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource?.transitionSourceView(
-            forCurrentPageOf: self
-        )
+        
+        if operation == .pop,
+           mediaViewerDataSource.mediaIdentifiers(for: self).isEmpty {
+            // When all media is deleted
+            return MediaViewerTransition(
+                operation: operation,
+                sourceView: nil,
+                sourceImage: { nil }
+            )
+        }
+        
+        let sourceView: UIView?
+        if canTransitionWithSourceView {
+            sourceView = interactivePopTransition?.sourceView ?? mediaViewerDataSource.mediaViewer(
+                self,
+                transitionSourceViewForMediaWith: currentMediaIdentifier
+            )
+        } else {
+            sourceView = nil
+        }
         return MediaViewerTransition(
             operation: operation,
             sourceView: sourceView,
             sourceImage: { [weak self] in
                 guard let self else { return nil }
-                return mediaViewerDataSource?.mediaViewer(
+                return mediaViewerDataSource.mediaViewer(
                     self,
                     transitionSourceImageWith: sourceView
                 )
