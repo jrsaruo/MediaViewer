@@ -65,16 +65,9 @@ extension MediaViewerViewModel {
     
     func paging(
         afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
-        currentIdentifier: AnyMediaIdentifier,
-        finalIdentifiers: [AnyMediaIdentifier]
+        currentIdentifier: AnyMediaIdentifier
     ) -> PagingAfterReloading? {
-        /*
-         * NOTE:
-         * finalIdentifiers should be checked instead of deletingIdentifiers
-         * because deletingIdentifiers may contain currentIdentifiers
-         * even if items are just reordered.
-         */
-        guard !finalIdentifiers.contains(currentIdentifier) else {
+        guard deletingIdentifiers.contains(currentIdentifier) else {
             // Stay on the current page
             return .init(
                 destinationIdentifier: currentIdentifier,
@@ -108,7 +101,6 @@ extension MediaViewerViewModel {
         }
         
         // When all pages are deleted, close the viewer and do not perform paging animation
-        assert(finalIdentifiers.isEmpty)
         return nil
     }
 }
