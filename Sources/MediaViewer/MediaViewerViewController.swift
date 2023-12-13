@@ -474,7 +474,8 @@ open class MediaViewerViewController: UIPageViewController {
         
         let pagingAfterReloading = mediaViewerVM.paging(
             afterDeleting: deletingIdentifiers,
-            currentIdentifier: visibleVCBeforeReloading.mediaIdentifier
+            currentIdentifier: visibleVCBeforeReloading.mediaIdentifier,
+            finalIdentifiers: newIdentifiers
         )
         if let pagingAfterReloading {
             destinationPageVCAfterReloading = makeMediaViewerPage(

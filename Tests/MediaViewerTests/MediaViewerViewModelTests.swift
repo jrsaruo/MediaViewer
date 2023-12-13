@@ -30,7 +30,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 // Act
                 let pagingAfterReloading = mediaViewerVM.paging(
                     afterDeleting: Array(identifiers[2...3]),
-                    currentIdentifier: identifiers[2]
+                    currentIdentifier: identifiers[2],
+                    finalIdentifiers: [identifiers[0], identifiers[1], identifiers[4]]
                 )
                 
                 // Assert
@@ -50,7 +51,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 // Act
                 let pagingAfterReloading = mediaViewerVM.paging(
                     afterDeleting: Array(identifiers[2...]),
-                    currentIdentifier: identifiers[2]
+                    currentIdentifier: identifiers[2],
+                    finalIdentifiers: [identifiers[0], identifiers[1]]
                 )
                 
                 // Assert
@@ -70,7 +72,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 // Act
                 let pagingAfterReloading = mediaViewerVM.paging(
                     afterDeleting: identifiers,
-                    currentIdentifier: identifiers[2]
+                    currentIdentifier: identifiers[2],
+                    finalIdentifiers: []
                 )
                 
                 // Assert
@@ -87,7 +90,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 // Act
                 let pagingAfterReloading = mediaViewerVM.paging(
                     afterDeleting: [identifiers[1], identifiers[4]],
-                    currentIdentifier: identifiers[2]
+                    currentIdentifier: identifiers[2],
+                    finalIdentifiers: [identifiers[0], identifiers[2], identifiers[3]]
                 )
                 
                 // Assert
@@ -107,7 +111,8 @@ final class MediaViewerViewModelTests: XCTestCase {
                 // Act
                 let pagingAfterReloading = mediaViewerVM.paging(
                     afterDeleting: [],
-                    currentIdentifier: identifiers[2]
+                    currentIdentifier: identifiers[2],
+                    finalIdentifiers: identifiers.reversed()
                 )
                 
                 // Assert
