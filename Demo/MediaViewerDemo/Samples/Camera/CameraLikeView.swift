@@ -41,7 +41,11 @@ final class CameraLikeView: UIView {
         return button
     }()
     
-    private let bottomAreaLayoutGuide = UILayoutGuide()
+    private let buttonArea: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black.withAlphaComponent(0.1)
+        return view
+    }()
     
     private let shutterButtonWidth = 68.0
     
@@ -62,24 +66,23 @@ final class CameraLikeView: UIView {
         
         // Subviews
         addSubview(previewView)
-        addSubview(shutterButton)
-        addSubview(showLibraryButton)
-        addSubview(toggleTabBarHiddenButton)
-        
-        addLayoutGuide(bottomAreaLayoutGuide)
+        addSubview(buttonArea)
+        buttonArea.addSubview(shutterButton)
+        buttonArea.addSubview(showLibraryButton)
+        buttonArea.addSubview(toggleTabBarHiddenButton)
         
         shutterButton.layer.cornerRadius = shutterButtonWidth / 2
         
         // Layout
         showLibraryButton.autoLayout { item in
             item.leading.equal(to: layoutMarginsGuide)
-            item.centerY.equal(to: bottomAreaLayoutGuide)
+            item.centerY.equal(to: shutterButton)
             item.size.equal(toSquare: 48)
         }
         
         toggleTabBarHiddenButton.autoLayout { item in
             item.trailing.equal(to: layoutMarginsGuide)
-            item.centerY.equal(to: bottomAreaLayoutGuide)
+            item.centerY.equal(to: shutterButton)
         }
         
         switch traitCollection.horizontalSizeClass {
@@ -99,14 +102,14 @@ final class CameraLikeView: UIView {
             item.leadingTrailing.equalToSuperview()
         }
         
-        bottomAreaLayoutGuide.autoLayout { item in
+        buttonArea.autoLayout { item in
             item.top.equal(to: previewView.bottomAnchor)
             item.leadingTrailing.equalToSuperview()
             item.bottom.equal(to: safeAreaLayoutGuide)
         }
         
         shutterButton.autoLayout { item in
-            item.center.equal(to: bottomAreaLayoutGuide)
+            item.center.equalToSuperview()
             item.size.equal(toSquare: shutterButtonWidth)
         }
     }
@@ -116,14 +119,15 @@ final class CameraLikeView: UIView {
             item.edges.equalToSuperview()
         }
         
-        bottomAreaLayoutGuide.autoLayout { item in
+        buttonArea.autoLayout { item in
             item.leadingTrailing.equalToSuperview()
-            item.bottom.equal(to: safeAreaLayoutGuide)
+            item.bottom.equalToSuperview()
         }
         
         shutterButton.autoLayout { item in
-            item.centerX.equal(to: bottomAreaLayoutGuide)
-            item.topBottom.equal(to: bottomAreaLayoutGuide, insetBy: 16)
+            item.centerX.equalToSuperview()
+            item.top.equalToSuperview(plus: 16)
+            item.bottom.equal(to: safeAreaLayoutGuide, plus: -16)
             item.size.equal(toSquare: shutterButtonWidth)
         }
     }
