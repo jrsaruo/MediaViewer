@@ -1,0 +1,24 @@
+name: Test
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  package: MediaViewer
+
+jobs:
+  test:
+    runs-on: macos-latest
+    
+    env:
+      IOS_SIMULATOR: "iPhone 17"
+    
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Build
+        run: xcodebuild build -scheme ${{ env.package }} -destination "name=${{ env.IOS_SIMULATOR }}"
+        
+      - name: Run tests
+        run: xcodebuild test -scheme ${{ env.package }} -destination "name=${{ env.IOS_SIMULATOR }}"
