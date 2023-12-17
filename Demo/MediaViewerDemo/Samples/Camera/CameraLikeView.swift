@@ -41,6 +41,10 @@ final class CameraLikeView: UIView {
         return button
     }()
     
+    private let bottomAreaLayoutGuide = UILayoutGuide()
+    
+    private let shutterButtonWidth = 68.0
+    
     // MARK: - Initializers
     
     override init(frame: CGRect) {
@@ -62,10 +66,33 @@ final class CameraLikeView: UIView {
         addSubview(showLibraryButton)
         addSubview(toggleTabBarHiddenButton)
         
-        let bottomAreaLayoutGuide = UILayoutGuide()
         addLayoutGuide(bottomAreaLayoutGuide)
         
+        shutterButton.layer.cornerRadius = shutterButtonWidth / 2
+        
         // Layout
+        showLibraryButton.autoLayout { item in
+            item.leading.equal(to: layoutMarginsGuide)
+            item.centerY.equal(to: bottomAreaLayoutGuide)
+            item.size.equal(toSquare: 48)
+        }
+        
+        toggleTabBarHiddenButton.autoLayout { item in
+            item.trailing.equal(to: layoutMarginsGuide)
+            item.centerY.equal(to: bottomAreaLayoutGuide)
+        }
+        
+        switch traitCollection.horizontalSizeClass {
+        case .unspecified, .compact:
+            layoutForCompactScreen()
+        case .regular:
+            layoutForRegularScreen()
+        @unknown default:
+            fatalError()
+        }
+    }
+    
+    private func layoutForCompactScreen() {
         previewView.autoLayout { item in
             item.top.equal(to: safeAreaLayoutGuide, plus: 44)
             item.width.equal(to: item.height, multipliedBy: 3.0 / 4)
@@ -78,22 +105,26 @@ final class CameraLikeView: UIView {
             item.bottom.equal(to: safeAreaLayoutGuide)
         }
         
-        let shutterButtonWidth = 68.0
-        shutterButton.layer.cornerRadius = shutterButtonWidth / 2
         shutterButton.autoLayout { item in
             item.center.equal(to: bottomAreaLayoutGuide)
             item.size.equal(toSquare: shutterButtonWidth)
         }
-        
-        showLibraryButton.autoLayout { item in
-            item.leading.equal(to: layoutMarginsGuide)
-            item.centerY.equal(to: bottomAreaLayoutGuide)
-            item.size.equal(toSquare: 48)
+    }
+    
+    private func layoutForRegularScreen() {
+        previewView.autoLayout { item in
+            item.edges.equalToSuperview()
         }
         
-        toggleTabBarHiddenButton.autoLayout { item in
-            item.trailing.equal(to: layoutMarginsGuide)
-            item.centerY.equal(to: bottomAreaLayoutGuide)
+        bottomAreaLayoutGuide.autoLayout { item in
+            item.leadingTrailing.equalToSuperview()
+            item.bottom.equal(to: safeAreaLayoutGuide)
+        }
+        
+        shutterButton.autoLayout { item in
+            item.centerX.equal(to: bottomAreaLayoutGuide)
+            item.topBottom.equal(to: bottomAreaLayoutGuide, insetBy: 16)
+            item.size.equal(toSquare: shutterButtonWidth)
         }
     }
 }
