@@ -105,6 +105,23 @@ final class SyncImagesViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
+    private func moveItemToNext(_ item: Item) {
+        var snapshot = dataSource.snapshot()
+        let nextItemIndex = snapshot.indexOfItem(item)! + 1
+        guard nextItemIndex < snapshot.numberOfItems else { return }
+        let nextItem = snapshot.itemIdentifiers[nextItemIndex]
+        snapshot.moveItem(item, afterItem: nextItem)
+        dataSource.apply(snapshot)
+    }
+    
+    private func shuffleItems() {
+        let snapshot = dataSource.snapshot()
+        var newSnapshot = NSDiffableDataSourceSnapshot<Int, Item>()
+        newSnapshot.appendSections([0])
+        newSnapshot.appendItems(snapshot.itemIdentifiers.shuffled())
+        dataSource.apply(newSnapshot)
+    }
+    
     private func removeItem(_ item: Item) {
         var snapshot = dataSource.snapshot()
         snapshot.deleteItems([item])
@@ -150,6 +167,28 @@ extension SyncImagesViewController: UICollectionViewDelegate {
                     self.insertNewItem(
                         after: mediaViewer.currentMediaIdentifier()
                     )
+                    Task {
+                        await mediaViewer.reloadMedia(animated: true)
+                    }
+                }
+            ),
+            .flexibleSpace(),
+            .init(
+                image: .init(systemName: "arrowshape.turn.up.right"),
+                primaryAction: .init { [weak mediaViewer] _ in
+                    guard let mediaViewer else { return }
+                    self.moveItemToNext(mediaViewer.currentMediaIdentifier())
+                    Task {
+                        await mediaViewer.reloadMedia(animated: true)
+                    }
+                }
+            ),
+            .flexibleSpace(),
+            .init(
+                image: .init(systemName: "shuffle"),
+                primaryAction: .init { [weak mediaViewer] _ in
+                    guard let mediaViewer else { return }
+                    self.shuffleItems()
                     Task {
                         await mediaViewer.reloadMedia(animated: true)
                     }
