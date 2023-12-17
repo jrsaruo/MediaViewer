@@ -18,4 +18,28 @@ final class SequenceExtensionTests: XCTestCase {
         XCTAssertEqual([0, 1, 2].subtracting([]), [0, 1, 2])
         XCTAssertEqual([0, 1, 2].subtracting([100]), [0, 1, 2])
     }
+    
+    func testMeasureSubtracting() {
+        measure {
+            _ = (0..<3000).subtracting(
+                stride(from: 0, to: 3000, by: 1)
+            )
+        }
+    }
+    
+    func testMeasureSubtracting2() {
+        measure {
+            _ = (0..<3000).subtracting2(
+                stride(from: 0, to: 3000, by: 1)
+            )
+        }
+    }
+    
+    func testMeasureSubtracting3() {
+        measure {
+            _ = (0..<3000).subtracting3(
+                stride(from: 0, to: 3000, by: 1)
+            )
+        }
+    }
 }
