@@ -429,7 +429,9 @@ extension MediaViewerPageControlBar {
     /// `loadItems(_:expandingItemWith:animated:)` after this animation is finished.
     ///
     /// - Parameter identifiers: Identifiers for media to perform vanish animation.
-    func performVanishAnimationBody(for identifiers: [AnyMediaIdentifier]) {
+    func performVanishAnimationBody(
+        for identifiers: some Sequence<AnyMediaIdentifier>
+    ) {
         assert(state == .reloading)
         
         for identifier in identifiers {

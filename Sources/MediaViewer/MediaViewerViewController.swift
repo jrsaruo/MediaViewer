@@ -506,7 +506,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func reloadMedia(
-        deleting deletedIdentifiers: [AnyMediaIdentifier],
+        deleting deletedIdentifiers: some Sequence<AnyMediaIdentifier>,
         visibleVCBeforeReloading: MediaViewerOnePageViewController,
         pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?,
         animated: Bool
