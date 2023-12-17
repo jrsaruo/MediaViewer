@@ -19,4 +19,16 @@ extension Sequence {
         }
         return subtracted
     }
+    
+    func subtracting2(
+        _ other: some Sequence<Element>
+    ) -> [Element] where Element: Hashable {
+        Set(self).subtracting(Set(other))
+    }
+    
+    func subtracting3(
+        _ other: some Sequence<Element>
+    ) -> [Element] where Element: Hashable {
+        Set(self).subtracting(other)
+    }
 }
