@@ -7,7 +7,9 @@
 
 extension Sequence {
     
-    func subtracting(_ other: Self) -> [Element] where Element: Equatable {
+    func subtracting(
+        _ other: some Sequence<Element>
+    ) -> [Element] where Element: Equatable {
         // TODO: Improve subtraction algorithm
         var subtracted: [Element] = []
         for element in self {
