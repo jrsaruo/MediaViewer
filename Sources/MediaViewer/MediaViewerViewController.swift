@@ -463,12 +463,12 @@ open class MediaViewerViewController: UIPageViewController {
     /// - Parameter animated: Whether to animate the reloading.
     open func reloadMedia(animated: Bool) async {
         let newIdentifiers = fetchMediaIdentifiers()
+        let currentIdentifiers = mediaViewerVM.mediaIdentifiers
+        guard newIdentifiers != currentIdentifiers else { return }
         
-        let difference = newIdentifiers.difference(
-            from: mediaViewerVM.mediaIdentifiers
+        let deletingIdentifiers = currentIdentifiers.subtracting(
+            newIdentifiers
         )
-        guard !difference.isEmpty else { return }
-        let deletingIdentifiers = difference.removals.map(\.element)
         
         let visibleVCBeforeReloading = currentPageViewController
         
@@ -506,7 +506,7 @@ open class MediaViewerViewController: UIPageViewController {
     }
     
     private func reloadMedia(
-        deleting deletedIdentifiers: [AnyMediaIdentifier],
+        deleting deletedIdentifiers: some Sequence<AnyMediaIdentifier>,
         visibleVCBeforeReloading: MediaViewerOnePageViewController,
         pagingAfterReloading: MediaViewerViewModel.PagingAfterReloading?,
         animated: Bool

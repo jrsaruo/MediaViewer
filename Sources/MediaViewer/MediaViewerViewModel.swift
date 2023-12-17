@@ -64,7 +64,7 @@ extension MediaViewerViewModel {
     }
     
     func paging(
-        afterDeleting deletingIdentifiers: [AnyMediaIdentifier],
+        afterDeleting deletingIdentifiers: some Sequence<AnyMediaIdentifier>,
         currentIdentifier: AnyMediaIdentifier
     ) -> PagingAfterReloading? {
         guard deletingIdentifiers.contains(currentIdentifier) else {
