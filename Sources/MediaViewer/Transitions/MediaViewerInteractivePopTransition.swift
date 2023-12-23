@@ -131,7 +131,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         : 1
         
         // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
-        toVC.toolbarItems = nil
+        if mediaViewer.toolbarHiddenBackup {
+            toVC.toolbarItems = nil
+        }
         
         /*
          * [Workaround]
@@ -152,10 +154,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         let isTabBarHidden = tabBar?.isHidden ?? true
         if isTabBarHidden {
-            viewsToFadeDuringTransition.append(contentsOf: [
-                toolbar,
-                mediaViewer.pageControlToolbar
-            ])
+            if mediaViewer.toolbarHiddenBackup {
+                viewsToFadeDuringTransition.append(toolbar)
+            }
+            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         
         mediaViewer.willStartInteractivePopTransition()
@@ -186,6 +188,15 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 width: pageControlToolbarFrame.width,
                 height: 0
             )
+            
+            /*
+             * [Workaround]
+             * If the tabBar becomes visible and the toolbar remains visible,
+             * move it manually because repositioning is not animated.
+             */
+            if !mediaViewer.toolbarHiddenBackup, let tabBar = self.tabBar {
+                toolbar.frame.origin.y = tabBar.frame.origin.y - toolbar.bounds.height
+            }
         }
     }
     
