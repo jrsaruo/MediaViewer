@@ -60,6 +60,17 @@ final class SyncImagesViewController: UIViewController {
         }
     )
     
+    private lazy var toggleToolbarButton = UIBarButtonItem(
+        title: "Toggle Toolbar",
+        primaryAction: .init { [weak self] _ in
+            guard let self, let navigationController else { return }
+            navigationController.setToolbarHidden(
+                !navigationController.isToolbarHidden,
+                animated: true
+            )
+        }
+    )
+    
     // MARK: - Lifecycle
     
     override func loadView() {
@@ -79,6 +90,14 @@ final class SyncImagesViewController: UIViewController {
         navigationItem.title = "Sync Sample"
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.leftBarButtonItem = refreshButton
+        navigationItem.rightBarButtonItem = toggleToolbarButton
+        
+        // Toolbar
+        toolbarItems = [
+            .flexibleSpace(),
+            .init(title: "Toolbar"),
+            .flexibleSpace()
+        ]
         
         // Subviews
         imageGridView.collectionView.refreshControl = .init(
