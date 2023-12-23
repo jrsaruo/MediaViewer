@@ -12,10 +12,24 @@ final class ImageGridView: UIView {
     
     let collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { _, layoutEnvironment in
-            let columnCount = 3
-            let itemSpacing = 2.0
+            let minimumItemWidth: CGFloat
+            let itemSpacing: CGFloat
+            let contentInsetsReference: UIContentInsetsReference
+            switch layoutEnvironment.traitCollection.horizontalSizeClass {
+            case .unspecified, .compact:
+                minimumItemWidth = 130
+                itemSpacing = 2
+                contentInsetsReference = .automatic
+            case .regular:
+                minimumItemWidth = 160
+                itemSpacing = 16
+                contentInsetsReference = .layoutMargins
+            @unknown default:
+                fatalError()
+            }
             
             let effectiveFullWidth = layoutEnvironment.container.effectiveContentSize.width
+            let columnCount = Int(effectiveFullWidth / minimumItemWidth)
             let totalSpacing = itemSpacing * CGFloat(columnCount - 1)
             let estimatedItemWidth = (effectiveFullWidth - totalSpacing) / CGFloat(columnCount)
             let group = NSCollectionLayoutGroup.horizontal(
@@ -33,10 +47,16 @@ final class ImageGridView: UIView {
             
             let section = NSCollectionLayoutSection(group: group)
             section.interGroupSpacing = itemSpacing
+            section.contentInsetsReference = contentInsetsReference
             return section
         }
         
-        return UICollectionView(frame: .zero, collectionViewLayout: layout)
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: layout
+        )
+        collectionView.preservesSuperviewLayoutMargins = true
+        return collectionView
     }()
     
     // MARK: - Initializers
@@ -52,6 +72,7 @@ final class ImageGridView: UIView {
     }
     
     private func setUpViews() {
+        preservesSuperviewLayoutMargins = true
         backgroundColor = .systemBackground
         
         // Subviews
