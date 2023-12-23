@@ -157,9 +157,11 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
-        viewsToFadeDuringTransition.append(toolbar)
         if wasTabBarHidden {
             viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+        }
+        if mediaViewer.toolbarHiddenBackup {
+            viewsToFadeDuringTransition.append(toolbar)
         }
         for view in viewsToFadeDuringTransition {
             view.alpha = 0
@@ -188,6 +190,17 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 currentPageImageView.contentMode = sourceView.contentMode
             }
             currentPageImageView.layer.masksToBounds = true
+            
+            /*
+             * [Workaround]
+             * If the tabBar becomes hidden and the toolbar remains visible,
+             * move it manually because repositioning is not animated.
+             */
+            if !mediaViewer.toolbarHiddenBackup,
+               let tabBar,
+               tabBarHiddenBackup! {
+                toolbar.frame.origin.y = tabBar.frame.origin.y
+            }
         }
         animator.addCompletion { position in
             defer { transitionContext.completeTransition() }
