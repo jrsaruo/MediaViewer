@@ -146,9 +146,10 @@ open class MediaViewerViewController: UIPageViewController {
     // MARK: Backups
     
     private(set) var tabBarHiddenBackup: Bool?
-    private(set) var navigationBarAlphaBackup = 1.0
     private(set) var navigationBarHiddenBackup = false
+    private(set) var navigationBarAlphaBackup = 1.0
     private(set) var toolbarHiddenBackup = true
+    private(set) var toolbarAlphaBackup = 1.0
     private(set) var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
     
     // MARK: - Initializers
@@ -208,9 +209,10 @@ open class MediaViewerViewController: UIPageViewController {
         }
         
         tabBarHiddenBackup = tabBarController?.tabBar.isHidden
-        navigationBarAlphaBackup = navigationController.navigationBar.alpha
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
+        navigationBarAlphaBackup = navigationController.navigationBar.alpha
         toolbarHiddenBackup = navigationController.isToolbarHidden
+        toolbarAlphaBackup = navigationController.toolbar.alpha
         
         setUpViews()
         setUpGestureRecognizers()

@@ -243,16 +243,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         containerView.addSubview(toView)
         containerView.addSubview(mediaViewerView)
         
-        let toolbar = navigationController.toolbar!
-        
         // Back up
         let sourceViewHiddenBackup = sourceView?.isHidden ?? false
-        let toolbarAlphaBackup = toolbar.alpha
         let toVCToolbarItemsBackup = toVC.toolbarItems
         let toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
         
         // MARK: Prepare for the transition
         
+        let toolbar = navigationController.toolbar!
         assert(toolbar.layer.animationKeys() == nil)
         
         // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
@@ -369,7 +367,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 toVC.toolbarItems = toVCToolbarItemsBackup
                 toVC.additionalSafeAreaInsets = toVCAdditionalSafeAreaInsetsBackup
                 navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
-                toolbar.alpha = toolbarAlphaBackup
+                toolbar.alpha = mediaViewer.toolbarAlphaBackup
                 
                 // Disable the default animation applied to the toolbar
                 if let animationKeys = toolbar.layer.animationKeys() {

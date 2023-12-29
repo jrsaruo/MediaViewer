@@ -180,7 +180,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             for view in viewsToFadeDuringTransition {
                 view.alpha = 0
             }
-            toolbar.alpha = 1
+            toolbar.alpha = mediaViewer.toolbarAlphaBackup
             
             /*
              * [Workaround]
@@ -253,7 +253,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             navigationController.navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
             toolbar.isHidden = mediaViewer.toolbarHiddenBackup
-            toolbar.alpha = self.toolbarAlphaBackup
+            toolbar.alpha = mediaViewer.toolbarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             // Disable the default animation applied to the toolbar
