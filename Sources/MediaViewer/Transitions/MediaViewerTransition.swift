@@ -156,14 +156,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             toolbar.layer.removeAllAnimations()
         }
         
-        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        var viewsToFadeInDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         if wasTabBarHidden {
-            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+            viewsToFadeInDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         if mediaViewer.toolbarHiddenBackup {
-            viewsToFadeDuringTransition.append(toolbar)
+            viewsToFadeInDuringTransition.append(toolbar)
         }
-        for view in viewsToFadeDuringTransition {
+        for view in viewsToFadeInDuringTransition {
             view.alpha = 0
         }
         
@@ -179,7 +179,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             navigationBar.alpha = navigationBarAlphaBackup
-            for view in viewsToFadeDuringTransition {
+            for view in viewsToFadeInDuringTransition {
                 view.alpha = 1
             }
             currentPageImageView.frame = currentPageImageFrameInViewer
@@ -291,14 +291,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         mediaViewer.willStartPopTransition()
         
-        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        var viewsToFadeOutDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         let tabBar = toVC.tabBarController?.tabBar
         let isTabBarHidden = tabBar?.isHidden ?? true
         if isTabBarHidden {
             if mediaViewer.toolbarHiddenBackup {
-                viewsToFadeDuringTransition.append(toolbar)
+                viewsToFadeOutDuringTransition.append(toolbar)
             }
-            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+            viewsToFadeOutDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         
         // MARK: Animation
@@ -310,7 +310,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            for view in viewsToFadeDuringTransition {
+            for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
             }
             if let sourceFrameInViewer {

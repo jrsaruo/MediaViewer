@@ -153,13 +153,13 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         // Disable AutoLayout
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = true
         
-        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        var viewsToFadeOutDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         let isTabBarHidden = tabBar?.isHidden ?? true
         if isTabBarHidden {
             if mediaViewer.toolbarHiddenBackup {
-                viewsToFadeDuringTransition.append(toolbar)
+                viewsToFadeOutDuringTransition.append(toolbar)
             }
-            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+            viewsToFadeOutDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         
         if toolbar.isHidden, !mediaViewer.toolbarHiddenBackup {
@@ -177,7 +177,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         : mediaViewer.navigationBarAlphaBackup
         animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
             navigationBar.alpha = navigationBarAlpha
-            for view in viewsToFadeDuringTransition {
+            for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
             }
             if !mediaViewer.toolbarHiddenBackup {
