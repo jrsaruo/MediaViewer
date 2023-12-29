@@ -180,7 +180,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             for view in viewsToFadeDuringTransition {
                 view.alpha = 0
             }
-            toolbar.alpha = mediaViewer.toolbarAlphaBackup
+            if !mediaViewer.toolbarHiddenBackup {
+                toolbar.alpha = mediaViewer.toolbarAlphaBackup
+            }
             
             /*
              * [Workaround]
