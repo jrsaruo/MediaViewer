@@ -211,7 +211,13 @@ open class MediaViewerViewController: UIPageViewController {
         tabBarHiddenBackup = tabBarController?.tabBar.isHidden
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
         navigationBarAlphaBackup = navigationController.navigationBar.alpha
-        toolbarHiddenBackup = navigationController.isToolbarHidden
+        
+        /*
+         * [Workaround]
+         * isToolbarHidden returns an incorrect value when the toolbar was
+         * displayed on a previous screen embedded in UITabBarController.
+         */
+        toolbarHiddenBackup = navigationController.toolbar.isHidden
         toolbarAlphaBackup = navigationController.toolbar.alpha
         
         setUpViews()

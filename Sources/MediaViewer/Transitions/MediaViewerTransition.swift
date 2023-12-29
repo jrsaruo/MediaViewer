@@ -366,7 +366,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 self.sourceView?.isHidden = sourceViewHiddenBackup
                 toVC.toolbarItems = toVCToolbarItemsBackup
                 toVC.additionalSafeAreaInsets = toVCAdditionalSafeAreaInsetsBackup
-                navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
+                navigationController.toolbar.isHidden = mediaViewer.toolbarHiddenBackup
                 toolbar.alpha = mediaViewer.toolbarAlphaBackup
                 
                 // Disable the default animation applied to the toolbar
