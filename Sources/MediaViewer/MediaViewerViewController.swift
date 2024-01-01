@@ -243,6 +243,7 @@ open class MediaViewerViewController: UIPageViewController {
         navigationItem.scrollEdgeAppearance = appearance
         
         // Subviews
+        configureBackground(showingMediaOnly: false)
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
@@ -280,6 +281,7 @@ open class MediaViewerViewController: UIPageViewController {
     
     private func setUpSubscriptions() {
         mediaViewerVM.$showsMediaOnly
+            .dropFirst() // Skip initial
             .sink { [weak self] showsMediaOnly in
                 guard let self else { return }
                 shouldHideHomeIndicator = showsMediaOnly
@@ -290,7 +292,7 @@ open class MediaViewerViewController: UIPageViewController {
                 ) {
                     self.tabBarController?.tabBar.isHidden = showsMediaOnly || self.hidesBottomBarWhenPushed
                     self.navigationController?.navigationBar.alpha = showsMediaOnly ? 0 : 1
-                    self.backgroundView.backgroundColor = showsMediaOnly ? .black : .systemBackground
+                    self.configureBackground(showingMediaOnly: showsMediaOnly)
                     self.navigationController?.toolbar.isHidden = showsMediaOnly
                     self.pageControlToolbar.isHidden = showsMediaOnly
                 }
@@ -607,6 +609,10 @@ open class MediaViewerViewController: UIPageViewController {
             self,
             didMoveToMediaWith: currentMediaIdentifier
         )
+    }
+    
+    private func configureBackground(showingMediaOnly: Bool) {
+        backgroundView.backgroundColor = showingMediaOnly ? .black : .systemBackground
     }
     
     private func handleContentOffsetChange() {
