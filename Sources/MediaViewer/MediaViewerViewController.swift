@@ -340,6 +340,21 @@ open class MediaViewerViewController: UIPageViewController {
             .store(in: &cancellables)
     }
     
+    open override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        
+        guard let navigationController else {
+            preconditionFailure(
+                "\(Self.self) must be embedded in UINavigationController."
+            )
+        }
+        
+        if navigationController.isToolbarHidden,
+           !mediaViewerVM.showsMediaOnly {
+            navigationController.setToolbarHidden(false, animated: true)
+        }
+    }
+    
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
@@ -379,15 +394,6 @@ open class MediaViewerViewController: UIPageViewController {
                 navigationController.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
                 navigationController.isNavigationBarHidden = self.isShowingMediaOnly
             }
-        }
-    }
-    
-    open override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        // NOTE: navigationController is nil on pop.
-        if let navigationController, navigationController.isToolbarHidden {
-            navigationController.setToolbarHidden(false, animated: true)
         }
     }
     
