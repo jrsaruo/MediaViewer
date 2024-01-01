@@ -217,7 +217,7 @@ open class MediaViewerViewController: UIPageViewController {
          * isToolbarHidden returns an incorrect value when the toolbar was
          * displayed on a previous screen embedded in UITabBarController.
          */
-        toolbarHiddenBackup = navigationController.toolbar.isHidden
+        toolbarHiddenBackup = navigationController.isToolbarHidden
         toolbarAlphaBackup = navigationController.toolbar.alpha
         
         setUpViews()
@@ -283,7 +283,7 @@ open class MediaViewerViewController: UIPageViewController {
         mediaViewerVM.$showsMediaOnly
             .dropFirst() // Skip initial
             .sink { [weak self] showsMediaOnly in
-                guard let self else { return }
+                guard let self, let navigationController else { return }
                 shouldHideHomeIndicator = showsMediaOnly
                 
                 let animator = UIViewPropertyAnimator(
@@ -291,19 +291,21 @@ open class MediaViewerViewController: UIPageViewController {
                     dampingRatio: 1
                 ) {
                     self.tabBarController?.tabBar.isHidden = showsMediaOnly || self.hidesBottomBarWhenPushed
-                    self.navigationController?.navigationBar.alpha = showsMediaOnly ? 0 : 1
+                    navigationController.navigationBar.alpha = showsMediaOnly ? 0 : 1
+                    navigationController.toolbar.alpha = showsMediaOnly ? 0 : 1
                     self.configureBackground(showingMediaOnly: showsMediaOnly)
-                    self.navigationController?.toolbar.isHidden = showsMediaOnly
                     self.pageControlToolbar.isHidden = showsMediaOnly
                 }
                 if showsMediaOnly {
                     animator.addCompletion { position in
                         if position == .end {
-                            self.navigationController?.isNavigationBarHidden = true
+                            navigationController.isNavigationBarHidden = true
+                            navigationController.isToolbarHidden = true
                         }
                     }
                 } else {
-                    navigationController?.isNavigationBarHidden = false
+                    navigationController.isNavigationBarHidden = false
+                    navigationController.isToolbarHidden = false
                 }
                 
                 // Ignore single tap during animation

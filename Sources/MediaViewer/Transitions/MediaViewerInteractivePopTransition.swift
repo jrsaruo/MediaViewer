@@ -101,7 +101,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         sourceViewHiddenBackup = sourceView?.isHidden ?? false
         tabBarScrollEdgeAppearanceBackup = tabBar?.scrollEdgeAppearance
         tabBarAlphaBackup = tabBar?.alpha
-        toolbarHiddenBackup = toolbar.isHidden
+        toolbarHiddenBackup = navigationController.isToolbarHidden
         toolbarAlphaBackup = toolbar.alpha
         toVCToolbarItemsBackup = toVC.toolbarItems
         toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
@@ -162,9 +162,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             viewsToFadeOutDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         
-        if toolbar.isHidden, !mediaViewer.toolbarHiddenBackup {
+        if toolbarHiddenBackup, !mediaViewer.toolbarHiddenBackup {
             // Show the toolbar to animate it.
-            toolbar.isHidden = false
+            navigationController.isToolbarHidden = false
             toolbar.alpha = 0
         }
         
@@ -254,7 +254,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             navigationController.navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
-            toolbar.isHidden = mediaViewer.toolbarHiddenBackup
+            navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
             toolbar.alpha = mediaViewer.toolbarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
@@ -306,7 +306,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
             let toolbar = toVC.navigationController!.toolbar!
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
-            toolbar.isHidden = self.toolbarHiddenBackup
+            toVC.navigationController!.isToolbarHidden = self.toolbarHiddenBackup
             
             let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
