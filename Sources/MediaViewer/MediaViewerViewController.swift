@@ -351,9 +351,13 @@ open class MediaViewerViewController: UIPageViewController {
             )
         }
         
-        if navigationController.isToolbarHidden,
-           !mediaViewerVM.showsMediaOnly {
-            navigationController.setToolbarHidden(false, animated: true)
+        if !mediaViewerVM.showsMediaOnly {
+            if navigationController.isNavigationBarHidden {
+                navigationController.setNavigationBarHidden(false, animated: animated)
+            }
+            if navigationController.isToolbarHidden {
+                navigationController.setToolbarHidden(false, animated: animated)
+            }
         }
     }
     
