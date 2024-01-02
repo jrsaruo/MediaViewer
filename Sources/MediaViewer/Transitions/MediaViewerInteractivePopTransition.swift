@@ -67,10 +67,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         // MARK: Prepare for the transition
         
         /*
-         * NOTE:
-         * The main purpose of prepareForInteractiveTransition(for:) is
-         * to destroy the layout.
-         * For more information, check the caller.
+         NOTE:
+         The main purpose of prepareForInteractiveTransition(for:) is
+         to destroy the layout.
+         For more information, check the caller.
          */
         currentPageView.destroyLayoutConfigurationBeforeTransition()
         currentPageImageView.frame = initialImageFrameInViewer
@@ -122,10 +122,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         
         /*
-         * [Workaround]
-         * If the navigation bar is hidden on transition start, some animations
-         * are applied by system and the bar remains hidden after the transition.
-         * Specifying alpha solved this problem.
+         [Workaround]
+         If the navigation bar is hidden on transition start, some animations
+         are applied by system and the bar remains hidden after the transition.
+         Specifying alpha solved this problem.
          */
         let navigationBar = navigationController.navigationBar
         navigationBar.alpha = mediaViewer.isShowingMediaOnly 
@@ -134,17 +134,17 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         
         if mediaViewer.toolbarHiddenBackup {
             /*
-             * [Workaround]
-             * Prevent toVC.toolbarItems from showing up during transition.
+             [Workaround]
+             Prevent toVC.toolbarItems from showing up during transition.
              */
             toVC.toolbarItems = nil
             
             /*
-             * [Workaround]
-             * Even if toVC hides the toolbar, the bottom of the safe area will
-             * shift during the transition as if the toolbar were visible, and
-             * the layout will be corrupted.
-             * To avoid this, adjust the safe area only during the transition.
+             [Workaround]
+             Even if toVC hides the toolbar, the bottom of the safe area will
+             shift during the transition as if the toolbar were visible, and
+             the layout will be corrupted.
+             To avoid this, adjust the safe area only during the transition.
              */
             toVC.additionalSafeAreaInsets.bottom = -toolbar.bounds.height
         }
@@ -196,13 +196,13 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             }
             
             /*
-             * [Workaround]
-             * AutoLayout didn't work. If changed layout constraints before animation,
-             * they are applied at a moment because animator doesn't start immediately.
-             *
-             * NOTE:
-             * Changing frame.origin.y and frame.size.height separately causes
-             * animation bug so frame should be updated at once.
+             [Workaround]
+             AutoLayout didn't work. If changed layout constraints before animation,
+             they are applied at a moment because animator doesn't start immediately.
+             
+             NOTE:
+             Changing frame.origin.y and frame.size.height separately causes
+             animation bug so frame should be updated at once.
              */
             pageControlToolbar.frame = CGRect(
                 x: pageControlToolbarFrame.minX,
@@ -212,9 +212,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             )
             
             /*
-             * [Workaround]
-             * If the tabBar becomes visible and the toolbar remains visible,
-             * move it manually because repositioning is not animated.
+             [Workaround]
+             If the tabBar becomes visible and the toolbar remains visible,
+             move it manually because repositioning is not animated.
              */
             if !mediaViewer.toolbarHiddenBackup, let tabBar = self.tabBar {
                 toolbar.frame.origin.y = tabBar.frame.origin.y - toolbar.bounds.height
@@ -271,9 +271,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             /*
-             * [Workaround]
-             * Prevent navigationBar from getting unresponsive after
-             * interactive pop with hidden navigationBar.
+             [Workaround]
+             Prevent navigationBar from getting unresponsive after
+             interactive pop with hidden navigationBar.
              */
             // Disable the default animation applied to the navigationBar
             if let animationKeys = navigationBar.layer.animationKeys() {
@@ -368,9 +368,9 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             tabBar.layer.removeAllAnimations()
             
             /*
-             * NOTE:
-             * If the animation is applied to the tabBar by system,
-             * it should be animated.
+             NOTE:
+             If the animation is applied to the tabBar by system,
+             it should be animated.
              */
             shouldAnimateTabBar = true
         }

@@ -93,9 +93,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let currentPageImageView = currentPageView.imageView
         
         /*
-         * NOTE:
-         * If the image has not yet been fetched asynchronously,
-         * animate the source image instead.
+         NOTE:
+         If the image has not yet been fetched asynchronously,
+         animate the source image instead.
          */
         if currentPageImageView.image == nil,
            let sourceImage = sourceImage() {
@@ -192,9 +192,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.layer.masksToBounds = true
             
             /*
-             * [Workaround]
-             * If the tabBar becomes hidden and the toolbar remains visible,
-             * move it manually because repositioning is not animated.
+             [Workaround]
+             If the tabBar becomes hidden and the toolbar remains visible,
+             move it manually because repositioning is not animated.
              */
             if !mediaViewer.toolbarHiddenBackup,
                let tabBar,
@@ -259,11 +259,11 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         }
         
         /*
-         * [Workaround]
-         * Even if toVC hides the toolbar, the bottom of the safe area will
-         * shift during the transition as if the toolbar were visible, and
-         * the layout will be corrupted.
-         * To avoid this, adjust the safe area only during the transition.
+         [Workaround]
+         Even if toVC hides the toolbar, the bottom of the safe area will
+         shift during the transition as if the toolbar were visible, and
+         the layout will be corrupted.
+         To avoid this, adjust the safe area only during the transition.
          */
         if mediaViewer.toolbarHiddenBackup {
             toVC.additionalSafeAreaInsets.bottom = -toolbar.bounds.height
@@ -325,9 +325,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             currentPageImageView.clipsToBounds = true // TODO: Change according to the source configuration
             
             /*
-             * [Workaround]
-             * If the tabBar becomes visible and the toolbar remains visible,
-             * move it manually because repositioning is not animated.
+             [Workaround]
+             If the tabBar becomes visible and the toolbar remains visible,
+             move it manually because repositioning is not animated.
              */
             if !mediaViewer.toolbarHiddenBackup, let tabBar {
                 toolbar.frame.origin.y = tabBar.frame.origin.y - toolbar.bounds.height
