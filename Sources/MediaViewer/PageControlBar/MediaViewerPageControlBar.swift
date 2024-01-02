@@ -471,10 +471,10 @@ extension MediaViewerPageControlBar {
         let newLayout = MediaViewerPageControlBarLayout(style: style)
         
         /*
-         * NOTE:
-         * Using UICollectionView.startInteractiveTransition(to:completion:),
-         * there is a lag from the end of the transition
-         * until (completion is called and) the next transition can be started.
+         NOTE:
+         Using UICollectionView.startInteractiveTransition(to:completion:),
+         there is a lag from the end of the transition
+         until (completion is called and) the next transition can be started.
          */
         let transitionLayout = UICollectionViewTransitionLayout(
             currentLayout: barLayout,
@@ -546,11 +546,11 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
             )
             
             /*
-             * NOTE:
-             * Start expanding when the final destination approaches.
-             * However, if the destination is the first or last item,
-             * ignore it and wait until the scroll is done
-             * because the scroll may bounce on the edge.
+             NOTE:
+             Start expanding when the final destination approaches.
+             However, if the destination is the first or last item,
+             ignore it and wait until the scroll is done because
+             the scroll may bounce on the edge.
              */
             if indexPathForCurrentCenterItem == indexPathForFinalDestinationItem,
                !isEdgeIndexPath(indexPathForCurrentCenterItem) {
@@ -587,9 +587,9 @@ extension MediaViewerPageControlBar: UICollectionViewDelegate {
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         /*
-         * When the finger is released with the finger stopped
-         * or
-         * when the finger is released at the point where it exceeds the limit of left and right edges.
+         When the finger is released with the finger stopped
+         or
+         when the finger is released at the point where it exceeds the limit of left and right edges.
          */
         if !scrollView.isDragging {
             guard let indexPath = indexPathForCurrentCenterItem ?? state.indexPathForFinalDestinationItem else {
