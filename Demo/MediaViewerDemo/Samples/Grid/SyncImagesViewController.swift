@@ -108,6 +108,8 @@ final class SyncImagesViewController: UIViewController {
         )
     }
     
+    // MARK: - Methods
+    
     private func refresh() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])

@@ -156,14 +156,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             toolbar.layer.removeAllAnimations()
         }
         
-        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        var viewsToFadeInDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         if wasTabBarHidden {
-            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+            viewsToFadeInDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         if mediaViewer.toolbarHiddenBackup {
-            viewsToFadeDuringTransition.append(toolbar)
+            viewsToFadeInDuringTransition.append(toolbar)
         }
-        for view in viewsToFadeDuringTransition {
+        for view in viewsToFadeInDuringTransition {
             view.alpha = 0
         }
         
@@ -179,7 +179,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.7) {
             navigationBar.alpha = navigationBarAlphaBackup
-            for view in viewsToFadeDuringTransition {
+            for view in viewsToFadeInDuringTransition {
                 view.alpha = 1
             }
             currentPageImageView.frame = currentPageImageFrameInViewer
@@ -198,7 +198,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
              */
             if !mediaViewer.toolbarHiddenBackup,
                let tabBar,
-               tabBarHiddenBackup! {
+               mediaViewer.hidesBottomBarWhenPushed {
                 toolbar.frame.origin.y = tabBar.frame.origin.y
             }
         }
@@ -243,16 +243,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         containerView.addSubview(toView)
         containerView.addSubview(mediaViewerView)
         
-        let toolbar = navigationController.toolbar!
-        
         // Back up
         let sourceViewHiddenBackup = sourceView?.isHidden ?? false
-        let toolbarAlphaBackup = toolbar.alpha
         let toVCToolbarItemsBackup = toVC.toolbarItems
         let toVCAdditionalSafeAreaInsetsBackup = toVC.additionalSafeAreaInsets
         
         // MARK: Prepare for the transition
         
+        let toolbar = navigationController.toolbar!
         assert(toolbar.layer.animationKeys() == nil)
         
         // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
@@ -293,14 +291,14 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         mediaViewer.willStartPopTransition()
         
-        var viewsToFadeDuringTransition = mediaViewer.subviewsToFadeDuringTransition
+        var viewsToFadeOutDuringTransition = mediaViewer.subviewsToFadeDuringTransition
         let tabBar = toVC.tabBarController?.tabBar
         let isTabBarHidden = tabBar?.isHidden ?? true
         if isTabBarHidden {
             if mediaViewer.toolbarHiddenBackup {
-                viewsToFadeDuringTransition.append(toolbar)
+                viewsToFadeOutDuringTransition.append(toolbar)
             }
-            viewsToFadeDuringTransition.append(mediaViewer.pageControlToolbar)
+            viewsToFadeOutDuringTransition.append(mediaViewer.pageControlToolbar)
         }
         
         // MARK: Animation
@@ -312,8 +310,11 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         
         let duration = transitionDuration(using: transitionContext)
         let animator = UIViewPropertyAnimator(duration: duration, dampingRatio: 1) {
-            for view in viewsToFadeDuringTransition {
+            for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
+            }
+            if !mediaViewer.toolbarHiddenBackup {
+                toolbar.alpha = mediaViewer.toolbarAlphaBackup
             }
             if let sourceFrameInViewer {
                 currentPageImageView.frame = sourceFrameInViewer
@@ -369,7 +370,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 toVC.toolbarItems = toVCToolbarItemsBackup
                 toVC.additionalSafeAreaInsets = toVCAdditionalSafeAreaInsetsBackup
                 navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
-                toolbar.alpha = toolbarAlphaBackup
+                toolbar.alpha = mediaViewer.toolbarAlphaBackup
                 
                 // Disable the default animation applied to the toolbar
                 if let animationKeys = toolbar.layer.animationKeys() {

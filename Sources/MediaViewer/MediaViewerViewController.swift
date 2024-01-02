@@ -146,9 +146,10 @@ open class MediaViewerViewController: UIPageViewController {
     // MARK: Backups
     
     private(set) var tabBarHiddenBackup: Bool?
-    private(set) var navigationBarAlphaBackup = 1.0
     private(set) var navigationBarHiddenBackup = false
+    private(set) var navigationBarAlphaBackup = 1.0
     private(set) var toolbarHiddenBackup = true
+    private(set) var toolbarAlphaBackup = 1.0
     private(set) var toolbarScrollEdgeAppearanceBackup: UIToolbarAppearance?
     
     // MARK: - Initializers
@@ -208,9 +209,16 @@ open class MediaViewerViewController: UIPageViewController {
         }
         
         tabBarHiddenBackup = tabBarController?.tabBar.isHidden
-        navigationBarAlphaBackup = navigationController.navigationBar.alpha
         navigationBarHiddenBackup = navigationController.isNavigationBarHidden
+        navigationBarAlphaBackup = navigationController.navigationBar.alpha
+        
+        /*
+         * [Workaround]
+         * isToolbarHidden returns an incorrect value when the toolbar was
+         * displayed on a previous screen embedded in UITabBarController.
+         */
         toolbarHiddenBackup = navigationController.isToolbarHidden
+        toolbarAlphaBackup = navigationController.toolbar.alpha
         
         setUpViews()
         setUpGestureRecognizers()
@@ -235,6 +243,7 @@ open class MediaViewerViewController: UIPageViewController {
         navigationItem.scrollEdgeAppearance = appearance
         
         // Subviews
+        configureBackground(showingMediaOnly: false)
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
@@ -272,8 +281,9 @@ open class MediaViewerViewController: UIPageViewController {
     
     private func setUpSubscriptions() {
         mediaViewerVM.$showsMediaOnly
+            .dropFirst() // Skip initial
             .sink { [weak self] showsMediaOnly in
-                guard let self else { return }
+                guard let self, let navigationController else { return }
                 shouldHideHomeIndicator = showsMediaOnly
                 
                 let animator = UIViewPropertyAnimator(
@@ -281,19 +291,21 @@ open class MediaViewerViewController: UIPageViewController {
                     dampingRatio: 1
                 ) {
                     self.tabBarController?.tabBar.isHidden = showsMediaOnly || self.hidesBottomBarWhenPushed
-                    self.navigationController?.navigationBar.alpha = showsMediaOnly ? 0 : 1
-                    self.backgroundView.backgroundColor = showsMediaOnly ? .black : .systemBackground
-                    self.navigationController?.toolbar.isHidden = showsMediaOnly
+                    navigationController.navigationBar.alpha = showsMediaOnly ? 0 : 1
+                    navigationController.toolbar.alpha = showsMediaOnly ? 0 : 1
+                    self.configureBackground(showingMediaOnly: showsMediaOnly)
                     self.pageControlToolbar.isHidden = showsMediaOnly
                 }
                 if showsMediaOnly {
                     animator.addCompletion { position in
                         if position == .end {
-                            self.navigationController?.isNavigationBarHidden = true
+                            navigationController.isNavigationBarHidden = true
+                            navigationController.isToolbarHidden = true
                         }
                     }
                 } else {
-                    navigationController?.isNavigationBarHidden = false
+                    navigationController.isNavigationBarHidden = false
+                    navigationController.isToolbarHidden = false
                 }
                 
                 // Ignore single tap during animation
@@ -328,6 +340,25 @@ open class MediaViewerViewController: UIPageViewController {
                 self?.handleContentOffsetChange()
             }
             .store(in: &cancellables)
+    }
+    
+    open override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+        
+        guard let navigationController else {
+            preconditionFailure(
+                "\(Self.self) must be embedded in UINavigationController."
+            )
+        }
+        
+        if !mediaViewerVM.showsMediaOnly {
+            if navigationController.isNavigationBarHidden {
+                navigationController.setNavigationBarHidden(false, animated: animated)
+            }
+            if navigationController.isToolbarHidden {
+                navigationController.setToolbarHidden(false, animated: animated)
+            }
+        }
     }
     
     open override func viewWillDisappear(_ animated: Bool) {
@@ -369,15 +400,6 @@ open class MediaViewerViewController: UIPageViewController {
                 navigationController.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
                 navigationController.isNavigationBarHidden = self.isShowingMediaOnly
             }
-        }
-    }
-    
-    open override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        // NOTE: navigationController is nil on pop.
-        if let navigationController, navigationController.isToolbarHidden {
-            navigationController.setToolbarHidden(false, animated: true)
         }
     }
     
@@ -599,6 +621,10 @@ open class MediaViewerViewController: UIPageViewController {
             self,
             didMoveToMediaWith: currentMediaIdentifier
         )
+    }
+    
+    private func configureBackground(showingMediaOnly: Bool) {
+        backgroundView.backgroundColor = showingMediaOnly ? .black : .systemBackground
     }
     
     private func handleContentOffsetChange() {
