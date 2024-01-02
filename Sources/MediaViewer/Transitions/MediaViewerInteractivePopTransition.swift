@@ -175,6 +175,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 $0.starts(with: "UIPacingAnimationForAnimatorsKey")
                 || $0.starts(with: "position")
                 || $0.starts(with: "bounds.size")
+                || $0.starts(with: "opacity")
             })
             toolbar.layer.removeAllAnimations()
         }
