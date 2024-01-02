@@ -198,7 +198,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
              */
             if !mediaViewer.toolbarHiddenBackup,
                let tabBar,
-               tabBarHiddenBackup! {
+               mediaViewer.hidesBottomBarWhenPushed {
                 toolbar.frame.origin.y = tabBar.frame.origin.y
             }
         }

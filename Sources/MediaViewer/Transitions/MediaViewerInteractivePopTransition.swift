@@ -168,6 +168,16 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toolbar.alpha = 0
         }
         
+        // Disable the default animation applied to the toolbar
+        if let animationKeys = toolbar.layer.animationKeys() {
+            assert(animationKeys.allSatisfy {
+                $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+                || $0.starts(with: "position")
+                || $0.starts(with: "bounds.size")
+            })
+            toolbar.layer.removeAllAnimations()
+        }
+        
         mediaViewer.willStartInteractivePopTransition()
         
         // MARK: Animation
