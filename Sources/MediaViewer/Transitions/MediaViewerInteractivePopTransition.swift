@@ -270,6 +270,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toolbar.alpha = mediaViewer.toolbarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
+            /*
+             * [Workaround]
+             * Prevent navigationBar from getting unresponsive after
+             * interactive pop with hidden navigationBar.
+             */
             // Disable the default animation applied to the navigationBar
             if let animationKeys = navigationBar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy {
