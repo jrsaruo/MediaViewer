@@ -313,6 +313,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
             }
+            if !mediaViewer.toolbarHiddenBackup {
+                toolbar.alpha = mediaViewer.toolbarAlphaBackup
+            }
             if let sourceFrameInViewer {
                 currentPageImageView.frame = sourceFrameInViewer
                 currentPageImageView.transitioningConfiguration = self.sourceView!.transitioningConfiguration
