@@ -268,6 +268,15 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             toolbar.alpha = mediaViewer.toolbarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
+            // Disable the default animation applied to the navigationBar
+            let navigationBar = navigationController.navigationBar
+            if let animationKeys = navigationBar.layer.animationKeys() {
+                assert(animationKeys.allSatisfy {
+                    $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+                })
+                navigationBar.layer.removeAllAnimations()
+            }
+            
             // Disable the default animation applied to the toolbar
             if let animationKeys = toolbar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy { $0.starts(with: "position") })
