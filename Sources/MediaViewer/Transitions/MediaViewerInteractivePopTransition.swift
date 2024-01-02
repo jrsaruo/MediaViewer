@@ -132,19 +132,20 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
         : 1
         
-        // [Workaround] Prevent toVC.toolbarItems from showing up during transition.
         if mediaViewer.toolbarHiddenBackup {
+            /*
+             * [Workaround]
+             * Prevent toVC.toolbarItems from showing up during transition.
+             */
             toVC.toolbarItems = nil
-        }
-        
-        /*
-         * [Workaround]
-         * Even if toVC hides the toolbar, the bottom of the safe area will
-         * shift during the transition as if the toolbar were visible, and
-         * the layout will be corrupted.
-         * To avoid this, adjust the safe area only during the transition.
-         */
-        if mediaViewer.toolbarHiddenBackup {
+            
+            /*
+             * [Workaround]
+             * Even if toVC hides the toolbar, the bottom of the safe area will
+             * shift during the transition as if the toolbar were visible, and
+             * the layout will be corrupted.
+             * To avoid this, adjust the safe area only during the transition.
+             */
             toVC.additionalSafeAreaInsets.bottom = -toolbar.bounds.height
         }
         
@@ -254,6 +255,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let mediaViewer = transitionContext.viewController(forKey: .from) as! MediaViewerViewController
         let toVC = transitionContext.viewController(forKey: .to)!
         let navigationController = toVC.navigationController!
+        let navigationBar = navigationController.navigationBar
         let toolbar = navigationController.toolbar!
         
         finishAnimator.addCompletion { _ in
@@ -263,13 +265,12 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             self.sourceView?.isHidden = self.sourceViewHiddenBackup
             toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
-            navigationController.navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
+            navigationBar.alpha = mediaViewer.navigationBarAlphaBackup
             navigationController.isToolbarHidden = mediaViewer.toolbarHiddenBackup
             toolbar.alpha = mediaViewer.toolbarAlphaBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
             
             // Disable the default animation applied to the navigationBar
-            let navigationBar = navigationController.navigationBar
             if let animationKeys = navigationBar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy {
                     $0.starts(with: "UIPacingAnimationForAnimatorsKey")
@@ -308,6 +309,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
                 self.tabBar?.alpha = 0
             }
         }
+        
+        let navigationController = toVC.navigationController!
+        let toolbar = navigationController.toolbar!
+        
         cancelAnimator.addCompletion { _ in
             // Restore to pre-transition state
             self.sourceView?.isHidden = self.sourceViewHiddenBackup
@@ -321,11 +326,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             }
             
             // Restore properties
-            toVC.toolbarItems = self.toVCToolbarItemsBackup
             toVC.additionalSafeAreaInsets = self.toVCAdditionalSafeAreaInsetsBackup
-            let toolbar = toVC.navigationController!.toolbar!
+            toVC.toolbarItems = self.toVCToolbarItemsBackup
             toolbar.scrollEdgeAppearance = mediaViewer.toolbarScrollEdgeAppearanceBackup
-            toVC.navigationController!.isToolbarHidden = self.toolbarHiddenBackup
+            navigationController.isToolbarHidden = self.toolbarHiddenBackup
             
             let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
