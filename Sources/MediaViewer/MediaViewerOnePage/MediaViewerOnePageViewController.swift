@@ -11,9 +11,8 @@ import UIKit
 protocol MediaViewerOnePageViewControllerDelegate: AnyObject {
     func mediaViewerPageTapped(_ mediaViewerPage: MediaViewerOnePageViewController)
     
-    func mediaViewerPage(
-        _ mediaViewerPage: MediaViewerOnePageViewController,
-        didDoubleTap imageView: UIImageView
+    func mediaViewerPageDidZoom(
+        _ mediaViewerPage: MediaViewerOnePageViewController
     )
 }
 
@@ -48,6 +47,7 @@ final class MediaViewerOnePageViewController: UIViewController {
     // MARK: - Lifecycle
     
     override func loadView() {
+        mediaViewerOnePageView.delegate = self
         view = mediaViewerOnePageView
     }
     
@@ -93,7 +93,15 @@ final class MediaViewerOnePageViewController: UIViewController {
     
     @objc
     private func imageDoubleTapped(recognizer: UITapGestureRecognizer) {
-        delegate?.mediaViewerPage(self, didDoubleTap: mediaViewerOnePageView.imageView)
         mediaViewerOnePageView.updateZoomScaleOnDoubleTap(recognizedBy: recognizer)
+    }
+}
+
+// MARK: - MediaViewerOnePageViewDelegate -
+
+extension MediaViewerOnePageViewController: MediaViewerOnePageViewDelegate {
+    
+    func mediaViewerOnePageViewDidZoom(_ onePageView: MediaViewerOnePageView) {
+        delegate?.mediaViewerPageDidZoom(self)
     }
 }

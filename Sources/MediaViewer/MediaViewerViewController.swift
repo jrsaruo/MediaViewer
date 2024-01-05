@@ -718,13 +718,14 @@ open class MediaViewerViewController: UIPageViewController {
 
 extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
     
-    func mediaViewerPageTapped(_ mediaViewerPage: MediaViewerOnePageViewController) {
+    func mediaViewerPageTapped(
+        _ mediaViewerPage: MediaViewerOnePageViewController
+    ) {
         mediaViewerVM.showsMediaOnly.toggle()
     }
     
-    func mediaViewerPage(
-        _ mediaViewerPage: MediaViewerOnePageViewController,
-        didDoubleTap imageView: UIImageView
+    func mediaViewerPageDidZoom(
+        _ mediaViewerPage: MediaViewerOnePageViewController
     ) {
         mediaViewerVM.showsMediaOnly = true
     }
