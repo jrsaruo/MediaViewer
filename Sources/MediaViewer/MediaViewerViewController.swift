@@ -722,9 +722,8 @@ extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
         mediaViewerVM.showsMediaOnly.toggle()
     }
     
-    func mediaViewerPage(
-        _ mediaViewerPage: MediaViewerOnePageViewController,
-        didDoubleTap imageView: UIImageView
+    func mediaViewerPageDidZoom(
+        _ mediaViewerPage: MediaViewerOnePageViewController
     ) {
         mediaViewerVM.showsMediaOnly = true
     }
