@@ -727,6 +727,10 @@ extension MediaViewerViewController: MediaViewerOnePageViewControllerDelegate {
     func mediaViewerPageDidZoom(
         _ mediaViewerPage: MediaViewerOnePageViewController
     ) {
+        guard mediaViewerPage == visiblePageViewController else {
+            // NOTE: Comes here when the delete animation is complete.
+            return
+        }
         mediaViewerVM.showsMediaOnly = true
     }
 }
