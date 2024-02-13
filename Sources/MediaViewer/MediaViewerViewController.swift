@@ -635,18 +635,24 @@ open class MediaViewerViewController: UIPageViewController {
         let progress = min(max(rawProgress, 0), 1)
         
         switch pageControlBar.state {
-        case .transitioningInteractively(_, let forwards):
-            if progress == 1 {
-                pageControlBar.finishInteractivePaging()
-            } else if forwards == isMovingToNextPage {
-                pageControlBar.updatePagingProgress(progress)
-            } else {
-                pageControlBar.cancelInteractivePaging()
-            }
         case .collapsing, .collapsed, .expanding, .expanded:
             // Prevent start when paging is finished and progress is reset to 0.
             if progress != 0 {
                 pageControlBar.startInteractivePaging(forwards: isMovingToNextPage)
+            }
+        case .transitioningInteractively(_, let forwards):
+            if progress == 1 {
+                pageControlBar.finishInteractivePaging()
+            } else if progress == 0 || forwards != isMovingToNextPage {
+                // progress is 0 or direction is changed
+                /*
+                 NOTE:
+                 Since the progress value sometimes jumps over zero,
+                 the direction change is also checked.
+                 */
+                pageControlBar.cancelInteractivePaging()
+            } else {
+                pageControlBar.updatePagingProgress(progress)
             }
         case .reloading:
             break
