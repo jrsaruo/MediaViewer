@@ -16,6 +16,8 @@ final class MediaViewerViewModelTests: XCTestCase {
         mediaViewerVM = .init()
     }
     
+    // MARK: Reloading tests
+    
     func testPagingAfterReloading() {
         // Arrange
         let identifiers = (0..<5).map(AnyMediaIdentifier.init)
@@ -120,6 +122,187 @@ final class MediaViewerViewModelTests: XCTestCase {
                     )
                 )
             }
+        }
+    }
+    
+    // MARK: Page control bar interactive paging tests
+    
+    private typealias InteractivePagingTestCase = (
+        scrollOffsetX: Double,
+        scrollAreaWidth: Double,
+        expected: MediaViewerViewModel.PageControlBarInteractivePagingAction?,
+        line: UInt
+    )
+    
+    func testInteractivePagingOnExpanded() {
+        // Arrange
+        let testCases: [InteractivePagingTestCase] = [
+            (
+                scrollOffsetX: 400.1,
+                scrollAreaWidth: 400,
+                expected: .start(forwards: true),
+                line: #line
+            ),
+            (
+                scrollOffsetX: 399.9,
+                scrollAreaWidth: 400,
+                expected: .start(forwards: false),
+                line: #line
+            ),
+            (
+                scrollOffsetX: 400,
+                scrollAreaWidth: 400,
+                expected: nil,
+                line: #line
+            )
+        ]
+        
+        for testCase in testCases {
+            // Act
+            let action = mediaViewerVM.pageControlBarInteractivePagingAction(
+                on: .expanded,
+                scrollOffsetX: testCase.scrollOffsetX,
+                scrollAreaWidth: testCase.scrollAreaWidth
+            )
+            
+            // Assert
+            XCTAssertEqual(action, testCase.expected, line: testCase.line)
+        }
+    }
+    
+    func testInteractivePagingOnTransitioningToNextPage() {
+        // Arrange
+        let testCases: [InteractivePagingTestCase] = [
+            (
+                // In progress
+                scrollOffsetX: 500,
+                scrollAreaWidth: 400,
+                expected: .update(progress: 0.25),
+                line: #line
+            ),
+            (
+                // Reached the next page
+                scrollOffsetX: 800,
+                scrollAreaWidth: 400,
+                expected: .finish,
+                line: #line
+            ),
+            (
+                // Came back to the current page
+                scrollOffsetX: 400,
+                scrollAreaWidth: 400,
+                expected: .cancel,
+                line: #line
+            ),
+            (
+                // Changed the paging direction
+                scrollOffsetX: 399.9,
+                scrollAreaWidth: 400,
+                expected: .cancel,
+                line: #line
+            )
+        ]
+        let dummyLayout = UICollectionViewTransitionLayout(
+            currentLayout: .init(),
+            nextLayout: .init()
+        )
+        
+        for testCase in testCases {
+            // Act
+            let action = mediaViewerVM.pageControlBarInteractivePagingAction(
+                on: .transitioningInteractively(dummyLayout, forwards: true),
+                scrollOffsetX: testCase.scrollOffsetX,
+                scrollAreaWidth: testCase.scrollAreaWidth
+            )
+            
+            // Assert
+            XCTAssertEqual(action, testCase.expected, line: testCase.line)
+        }
+    }
+    
+    func testInteractivePagingOnTransitioningToPreviousPage() {
+        // Arrange
+        let testCases: [InteractivePagingTestCase] = [
+            (
+                // In progress
+                scrollOffsetX: 300,
+                scrollAreaWidth: 400,
+                expected: .update(progress: 0.25),
+                line: #line
+            ),
+            (
+                // Reached the previous page
+                scrollOffsetX: 0,
+                scrollAreaWidth: 400,
+                expected: .finish,
+                line: #line
+            ),
+            (
+                // Came back to the current page
+                scrollOffsetX: 400,
+                scrollAreaWidth: 400,
+                expected: .cancel,
+                line: #line
+            ),
+            (
+                // Changed the paging direction
+                scrollOffsetX: 400.1,
+                scrollAreaWidth: 400,
+                expected: .cancel,
+                line: #line
+            )
+        ]
+        let dummyLayout = UICollectionViewTransitionLayout(
+            currentLayout: .init(),
+            nextLayout: .init()
+        )
+        
+        for testCase in testCases {
+            // Act
+            let action = mediaViewerVM.pageControlBarInteractivePagingAction(
+                on: .transitioningInteractively(dummyLayout, forwards: false),
+                scrollOffsetX: testCase.scrollOffsetX,
+                scrollAreaWidth: testCase.scrollAreaWidth
+            )
+            
+            // Assert
+            XCTAssertEqual(action, testCase.expected, line: testCase.line)
+        }
+    }
+    
+    func testInteractivePagingOnReloading() {
+        // Arrange
+        let testCases: [InteractivePagingTestCase] = [
+            (
+                scrollOffsetX: 0,
+                scrollAreaWidth: 400,
+                expected: nil,
+                line: #line
+            ),
+            (
+                scrollOffsetX: 400,
+                scrollAreaWidth: 400,
+                expected: nil,
+                line: #line
+            ),
+            (
+                scrollOffsetX: 800,
+                scrollAreaWidth: 400,
+                expected: nil,
+                line: #line
+            )
+        ]
+        
+        for testCase in testCases {
+            // Act
+            let action = mediaViewerVM.pageControlBarInteractivePagingAction(
+                on: .reloading,
+                scrollOffsetX: testCase.scrollOffsetX,
+                scrollAreaWidth: testCase.scrollAreaWidth
+            )
+            
+            // Assert
+            XCTAssertEqual(action, testCase.expected, line: testCase.line)
         }
     }
 }

@@ -7,6 +7,11 @@
 
 import UIKit
 
+@MainActor
+protocol MediaViewerOnePageViewDelegate: AnyObject {
+    func mediaViewerOnePageViewDidZoom(_ onePageView: MediaViewerOnePageView)
+}
+
 final class MediaViewerOnePageView: UIView {
     
     private enum LayoutState {
@@ -19,6 +24,8 @@ final class MediaViewerOnePageView: UIView {
         case laidOut
         case destroyedForTransition
     }
+    
+    weak var delegate: (any MediaViewerOnePageViewDelegate)?
     
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -242,5 +249,6 @@ extension MediaViewerOnePageView: UIScrollViewDelegate {
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         adjustContentInset()
+        delegate?.mediaViewerOnePageViewDidZoom(self)
     }
 }

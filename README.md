@@ -60,7 +60,7 @@ See demo for more detailed usage.
 To use the `MediaViewer` library in a SwiftPM project, add the following line to the dependencies in your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/jrsaruo/MediaViewer", from: "0.1.2"),
+.package(url: "https://github.com/jrsaruo/MediaViewer", from: "0.1.3"),
 ```
 
 and add `MediaViewer` as a dependency for your target:
