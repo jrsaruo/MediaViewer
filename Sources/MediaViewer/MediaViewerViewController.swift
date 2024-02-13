@@ -639,6 +639,12 @@ open class MediaViewerViewController: UIPageViewController {
             if progress == 1 {
                 pageControlBar.finishInteractivePaging()
             } else if progress == 0 || forwards != isMovingToNextPage {
+                // progress is 0 or direction is changed
+                /*
+                 NOTE:
+                 Since the progress value sometimes jumps over zero,
+                 the direction change is also checked.
+                 */
                 pageControlBar.cancelInteractivePaging()
             } else {
                 pageControlBar.updatePagingProgress(progress)
