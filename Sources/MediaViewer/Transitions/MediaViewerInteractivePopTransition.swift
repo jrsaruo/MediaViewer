@@ -198,7 +198,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let navigationBarAlpha = mediaViewer.navigationBarHiddenBackup
         ? 0
         : mediaViewer.navigationBarAlphaBackup
-        animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
+        animator = UIViewPropertyAnimator(
+            duration: 0.25,
+            dampingRatio: 1
+        ) { [weak self] in
+            guard let self else { return }
             navigationBar.alpha = navigationBarAlpha
             for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
@@ -228,7 +232,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
              If the tabBar becomes visible and the toolbar remains visible,
              move it manually because repositioning is not animated.
              */
-            if !mediaViewer.toolbarHiddenBackup, let tabBar = self.tabBar {
+            if !mediaViewer.toolbarHiddenBackup, let tabBar {
                 toolbar.frame.origin.y = tabBar.frame.origin.y - toolbar.bounds.height
             }
         }
