@@ -298,6 +298,14 @@ open class MediaViewerViewController: UIPageViewController {
                 }
                 if showsMediaOnly {
                     animator.addCompletion { position in
+                        guard self.navigationController == navigationController else {
+                            /*
+                             NOTE:
+                             Prevent hiding bars after restored their visibility
+                             by interactive pop.
+                             */
+                            return
+                        }
                         if position == .end {
                             navigationController.isNavigationBarHidden = true
                             navigationController.isToolbarHidden = true
