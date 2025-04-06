@@ -198,7 +198,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let navigationBarAlpha = mediaViewer.navigationBarHiddenBackup
         ? 0
         : mediaViewer.navigationBarAlphaBackup
-        animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
+        animator = UIViewPropertyAnimator(
+            duration: 0.25,
+            dampingRatio: 1
+        ) { [weak self] in
+            guard let self else { return }
             navigationBar.alpha = navigationBarAlpha
             for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
