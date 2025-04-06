@@ -240,8 +240,10 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         // Retry skipped ending action
         switch skippedEndingActionBeforeStart {
         case .finish:
+            animator?.startAnimation()
             finishInteractiveTransition()
         case .cancel:
+            animator?.startAnimation()
             cancelInteractiveTransition()
         case nil:
             break // NOP
