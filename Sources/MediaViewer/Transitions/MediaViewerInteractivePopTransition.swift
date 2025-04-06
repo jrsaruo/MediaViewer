@@ -238,15 +238,16 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         }
         
         // Retry skipped ending action
-        switch skippedEndingActionBeforeStart {
-        case .finish:
+        if let skippedEndingActionBeforeStart {
             animator?.startAnimation()
-            finishInteractiveTransition()
-        case .cancel:
-            animator?.startAnimation()
-            cancelInteractiveTransition()
-        case nil:
-            break // NOP
+            Task {
+                switch skippedEndingActionBeforeStart {
+                case .finish:
+                    finishInteractiveTransition()
+                case .cancel:
+                    cancelInteractiveTransition()
+                }
+            }
         }
     }
     
