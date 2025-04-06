@@ -232,7 +232,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
              If the tabBar becomes visible and the toolbar remains visible,
              move it manually because repositioning is not animated.
              */
-            if !mediaViewer.toolbarHiddenBackup, let tabBar = self.tabBar {
+            if !mediaViewer.toolbarHiddenBackup, let tabBar {
                 toolbar.frame.origin.y = tabBar.frame.origin.y - toolbar.bounds.height
             }
         }
