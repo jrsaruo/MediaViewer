@@ -219,6 +219,7 @@ final class MediaViewerOnePageView: UIView {
         NSLayoutConstraint.activate(constraintsBasedOnImageSize)
         
         layoutIfNeeded()
+        imageView.layoutIfNeeded()
         adjustContentInset()
         
         layoutState = .laidOut
