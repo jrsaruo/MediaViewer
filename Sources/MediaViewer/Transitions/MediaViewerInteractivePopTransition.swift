@@ -132,16 +132,19 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             tabBar.scrollEdgeAppearance = appearance
         }
         
-        /*
-         [Workaround]
-         If the navigation bar is hidden on transition start, some animations
-         are applied by system and the bar remains hidden after the transition.
-         Specifying alpha solved this problem.
-         */
         let navigationBar = navigationController.navigationBar
-        navigationBar.alpha = mediaViewer.isShowingMediaOnly 
-        ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
-        : 1
+        
+        if #unavailable(iOS 26) {
+            /*
+             [Workaround]
+             If the navigation bar is hidden on transition start, some animations
+             are applied by system and the bar remains hidden after the transition.
+             Specifying alpha solved this problem.
+             */
+            navigationBar.alpha = mediaViewer.isShowingMediaOnly
+            ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
+            : 1
+        }
         
         if mediaViewer.toolbarHiddenBackup {
             /*
@@ -321,6 +324,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             if let animationKeys = navigationBar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy {
                     $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+                    || $0.starts(with: "opacity")
                 })
                 navigationBar.layer.removeAllAnimations()
             }

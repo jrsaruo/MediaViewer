@@ -26,7 +26,10 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     let style: Style
     
     var expandedItemWidth: CGFloat?
-    static let collapsedItemWidth: CGFloat = 21
+    
+    static var collapsedItemWidth: CGFloat {
+        if #available(iOS 26, *) { 20 } else { 21 }
+    }
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
@@ -62,8 +65,15 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
         self.expandedItemWidth = expandedItemWidth
         
-        let collapsedItemSpacing = 1.0
-        let expandedItemSpacing = 12.0
+        let collapsedItemSpacing: CGFloat
+        let expandedItemSpacing: CGFloat
+        if #available(iOS 26, *) {
+            collapsedItemSpacing = 3
+            expandedItemSpacing = 13
+        } else {
+            collapsedItemSpacing = 1
+            expandedItemSpacing = 12
+        }
         
         // Calculate frames for each item
         var frames: [IndexPath: CGRect] = [:]

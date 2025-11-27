@@ -171,7 +171,8 @@ final class MediaViewerPageControlBar: UIView {
     // MARK: - Override
     
     override var intrinsicContentSize: CGSize {
-        CGSize(width: super.intrinsicContentSize.width, height: 42)
+        let height = if #available(iOS 26, *) { 30.0 } else { 42.0 }
+        return CGSize(width: super.intrinsicContentSize.width, height: height)
     }
     
     // MARK: - Lifecycle

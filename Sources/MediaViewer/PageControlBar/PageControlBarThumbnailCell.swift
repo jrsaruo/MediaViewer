@@ -32,6 +32,10 @@ final class PageControlBarThumbnailCell: UICollectionViewCell {
     private func setUpViews() {
         clipsToBounds = true
         
+        if #available(iOS 26, *) {
+            layer.cornerRadius = 3
+        }
+        
         // Subviews
         contentView.addSubview(imageView)
         
