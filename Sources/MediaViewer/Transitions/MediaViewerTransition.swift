@@ -140,7 +140,12 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             // Disable the default animation applied to the tabBar
             if mediaViewer.hidesBottomBarWhenPushed,
                let animationKeys = tabBar.layer.animationKeys() {
-                assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                assert(
+                    animationKeys.allSatisfy {
+                        $0.starts(with: "position")
+                        || $0.starts(with: "opacity")
+                    }
+                )
                 tabBar.layer.removeAllAnimations()
             }
         }
@@ -337,7 +342,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Customize the tabBar animation
         if let tabBar = toVC.tabBarController?.tabBar,
            let animationKeys = tabBar.layer.animationKeys() {
-            assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+            assert(animationKeys.allSatisfy {
+                $0.starts(with: "position")
+                || $0.starts(with: "opacity")
+            })
             tabBar.layer.removeAllAnimations()
             
             if toVC.hidesBottomBarWhenPushed {

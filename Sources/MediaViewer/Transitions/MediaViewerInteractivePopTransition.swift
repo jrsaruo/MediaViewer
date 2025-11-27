@@ -321,6 +321,7 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             if let animationKeys = navigationBar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy {
                     $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+                    || $0.starts(with: "opacity")
                 })
                 navigationBar.layer.removeAllAnimations()
             }
