@@ -376,7 +376,11 @@ open class MediaViewerViewController: UIPageViewController {
         super.viewWillDisappear(animated)
         
         if #unavailable(iOS 26) {
-            // NOTE: Above iOS 26 this precondition fails when the tab bar was hidden.
+            /*
+             NOTE:
+             On iOS 26 and above, this precondition fails
+             when the tab bar was hidden in the previous screen.
+             */
             precondition(
                 navigationController != nil,
                 "\(Self.self) must be embedded in UINavigationController."
