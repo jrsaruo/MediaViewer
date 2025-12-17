@@ -50,7 +50,7 @@ final class AsyncImagesViewController: UIViewController {
     private lazy var refreshButton = UIBarButtonItem(
         systemItem: .refresh,
         primaryAction: .init { [weak self] _ in
-            Task { await self?.refresh(animated: true) }
+            self?.refreshButtonTapped()
         }
     )
     
@@ -135,6 +135,12 @@ final class AsyncImagesViewController: UIViewController {
         
         imageGridView.collectionView.refreshControl?.endRefreshing()
         return assets
+    }
+    
+    private func refreshButtonTapped() {
+        Task {
+            await refresh(animated: true)
+        }
     }
     
     private func toggleContentMode() {
