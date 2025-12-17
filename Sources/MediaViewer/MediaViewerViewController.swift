@@ -161,7 +161,7 @@ open class MediaViewerViewController: UIPageViewController {
     public init<MediaIdentifier>(
         opening mediaIdentifier: MediaIdentifier,
         dataSource: some MediaViewerDataSource<MediaIdentifier>
-    ) {
+    ) where MediaIdentifier: Sendable {
         super.init(
             transitionStyle: .scroll,
             navigationOrientation: .horizontal,
@@ -464,7 +464,7 @@ open class MediaViewerViewController: UIPageViewController {
         toMediaWith identifier: MediaIdentifier,
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
-    ) where MediaIdentifier: Hashable {
+    ) where MediaIdentifier: Hashable & Sendable {
         let identifier = AnyMediaIdentifier(identifier)
         move(
             to: makeMediaViewerPage(with: identifier),

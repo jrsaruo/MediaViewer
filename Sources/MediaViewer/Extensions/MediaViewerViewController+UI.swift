@@ -27,7 +27,7 @@ extension MediaViewerViewController {
             _ trashButton: UIBarButtonItem,
             _ currentMediaIdentifier: MediaIdentifier
         ) async -> Void
-    ) -> UIBarButtonItem where MediaIdentifier: Hashable {
+    ) -> UIBarButtonItem where MediaIdentifier: Hashable, MediaIdentifier: Sendable {
         let button = UIBarButtonItem(systemItem: .trash)
         button.primaryAction = .init { [weak self] action in
             guard let self else { return }
