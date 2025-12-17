@@ -28,6 +28,7 @@ let package = Package(
             dependencies: ["MediaViewer"],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
+                .enableUpcomingFeature("ExistentialAny", .when(configuration: .debug)),
             ],
         ),
     ]
