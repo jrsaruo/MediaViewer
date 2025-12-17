@@ -218,7 +218,9 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 self.sourceView?.isHidden = sourceViewHiddenBackup
                 
                 if let tabBar {
-                    tabBar.isHidden = tabBarHiddenBackup!
+                    if #unavailable(iOS 26.2) {
+                        tabBar.isHidden = tabBarHiddenBackup!
+                    }
                     tabBar.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
                     tabBarSuperviewBackup?.addSubview(tabBar)
                 }
