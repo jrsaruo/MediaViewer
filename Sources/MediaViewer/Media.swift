@@ -8,6 +8,7 @@
 import UIKit
 
 /// The way to animate media transition.
+@nonexhaustive
 public enum MediaTransition: Hashable, Sendable {
     
     /// The fade animation with the specified duration.
@@ -45,6 +46,7 @@ extension Source where Resource: ExpressibleByNilLiteral {
 // MARK: - Media -
 
 /// The media source for the media viewer.
+@nonexhaustive
 public enum Media: Sendable {
     case image(Source<UIImage?>)
 }
