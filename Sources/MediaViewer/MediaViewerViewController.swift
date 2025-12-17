@@ -375,8 +375,10 @@ open class MediaViewerViewController: UIPageViewController {
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        guard let navigationController else {
-            preconditionFailure(
+        if #unavailable(iOS 26) {
+            // NOTE: Above iOS 26 this precondition fails when the tab bar was hidden.
+            precondition(
+                navigationController != nil,
                 "\(Self.self) must be embedded in UINavigationController."
             )
         }
@@ -398,8 +400,8 @@ open class MediaViewerViewController: UIPageViewController {
             }
             tabBar.isHidden = tabBarHiddenBackup
         }
-        navigationController.navigationBar.alpha = navigationBarAlphaBackup
-        navigationController.setNavigationBarHidden(
+        navigationController?.navigationBar.alpha = navigationBarAlphaBackup
+        navigationController?.setNavigationBarHidden(
             navigationBarHiddenBackup,
             animated: animated
         )
@@ -408,8 +410,8 @@ open class MediaViewerViewController: UIPageViewController {
             if context.isCancelled {
                 // Cancel the appearance restoration
                 tabBar?.isHidden = self.isShowingMediaOnly || self.hidesBottomBarWhenPushed
-                navigationController.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
-                navigationController.isNavigationBarHidden = self.isShowingMediaOnly
+                self.navigationController?.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
+                self.navigationController?.isNavigationBarHidden = self.isShowingMediaOnly
             }
         }
     }
