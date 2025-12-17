@@ -56,7 +56,7 @@ final class SyncImagesViewController: UIViewController {
     private lazy var refreshButton = UIBarButtonItem(
         systemItem: .refresh,
         primaryAction: .init { [weak self] _ in
-            Task { self?.refresh() }
+            self?.refresh()
         }
     )
     

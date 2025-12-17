@@ -12,7 +12,7 @@ import UIKit
 public protocol MediaViewerDataSource<MediaIdentifier>: AnyObject {
     
     /// A type representing the unique identifier for media.
-    associatedtype MediaIdentifier: Hashable
+    associatedtype MediaIdentifier: Hashable & Sendable
     
     /// Asks the data source to return all identifiers for media to view in the media viewer.
     /// - Parameter mediaViewer: An object representing the media viewer requesting this information.

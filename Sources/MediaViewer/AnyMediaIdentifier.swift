@@ -6,13 +6,13 @@
 //
 
 /// A type-erased media identifier.
-struct AnyMediaIdentifier: Hashable {
+struct AnyMediaIdentifier: Hashable, @unchecked Sendable {
     
-    let base: AnyHashable
+    let base: AnyHashable // This must be Sendable
     
     init<MediaIdentifier>(
         _ base: MediaIdentifier
-    ) where MediaIdentifier: Hashable {
+    ) where MediaIdentifier: Hashable & Sendable {
         if let base = base as? AnyMediaIdentifier {
             // Already type-erased
             self = base
