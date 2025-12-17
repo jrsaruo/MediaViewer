@@ -19,14 +19,14 @@ let package = Package(
         .target(
             name: "MediaViewer",
             swiftSettings: [
-                .enableUpcomingFeature("ExistentialAny", .when(configuration: .debug)),
+                .enableUpcomingFeature("ExistentialAny"),
             ],
         ),
         .testTarget(
             name: "MediaViewerTests",
             dependencies: ["MediaViewer"],
             swiftSettings: [
-                .enableUpcomingFeature("ExistentialAny", .when(configuration: .debug)),
+                .enableUpcomingFeature("ExistentialAny"),
             ],
         ),
     ]
