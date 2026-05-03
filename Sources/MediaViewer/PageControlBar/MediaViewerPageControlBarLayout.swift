@@ -69,6 +69,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
              so they should be updated when the bounds height is changed.
              */
             isLayoutCacheInvalidated = true
+            expandedItemWidth = nil
             return true
         }
         return super.shouldInvalidateLayout(forBoundsChange: newBounds)
