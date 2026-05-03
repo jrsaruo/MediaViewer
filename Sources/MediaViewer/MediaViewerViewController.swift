@@ -247,10 +247,12 @@ open class MediaViewerViewController: UIPageViewController {
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
-        pageControlBar.configure(
-            mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
-            currentIdentifier: currentMediaIdentifier
-        )
+        Task {
+            await pageControlBar.configure(
+                mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
+                currentIdentifier: currentMediaIdentifier
+            )
+        }
         pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
@@ -605,11 +607,13 @@ open class MediaViewerViewController: UIPageViewController {
         }
         
         func finalizeReloading() {
-            pageControlBar.loadItems(
-                mediaViewerVM.mediaIdentifiers,
-                expandingItemWith: destination.mediaIdentifier,
-                animated: animated
-            )
+            Task {
+                await pageControlBar.loadItems(
+                    mediaViewerVM.mediaIdentifiers,
+                    expandingItemWith: destination.mediaIdentifier,
+                    animated: animated
+                )
+            }
             
             if let direction = pagingAfterReloading.direction {
                 move(
