@@ -25,7 +25,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     
     let style: Style
     
-    private var expandedItemWidth: CGFloat?
+    private var cachedExpandedItemWidth: CGFloat?
     
     static var collapsedItemWidth: CGFloat {
         if #available(iOS 26, *) { 20 } else { 21 }
@@ -69,7 +69,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
              so they should be updated when the bounds height is changed.
              */
             isLayoutCacheInvalidated = true
-            expandedItemWidth = nil
+            cachedExpandedItemWidth = nil
             return true
         }
         return super.shouldInvalidateLayout(forBoundsChange: newBounds)
@@ -98,8 +98,8 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         }
         
         // NOTE: Cache and reuse expandedItemWidth for smooth animation.
-        let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
-        self.expandedItemWidth = expandedItemWidth
+        let expandedItemWidth = cachedExpandedItemWidth ?? expandingItemWidth(in: collectionView)
+        self.cachedExpandedItemWidth = expandedItemWidth
         
         let collapsedItemSpacing: CGFloat
         let expandedItemSpacing: CGFloat
