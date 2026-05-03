@@ -291,6 +291,23 @@ final class MediaViewerPageControlBar: UIView {
         )
     }
     
+    @discardableResult
+    private func updateLayout(
+        expandingItemAt indexPath: IndexPath?,
+        expandingThumbnailWidthToHeight: CGFloat? = nil,
+        animated: Bool
+    ) async -> Bool {
+        await withCheckedContinuation { continuation in
+            updateLayout(
+                expandingItemAt: indexPath,
+                expandingThumbnailWidthToHeight: expandingThumbnailWidthToHeight,
+                animated: animated
+            ) { completed in
+                continuation.resume(returning: completed)
+            }
+        }
+    }
+    
     /// Expand an item and scroll there.
     /// - Parameters:
     ///   - indexPath: An index path for the expanding item.
