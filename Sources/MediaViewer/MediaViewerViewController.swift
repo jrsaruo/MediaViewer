@@ -126,15 +126,17 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: Layout constraints
     
+    private var expandedPageControlToolbarHeight: CGFloat {
+        if #available(iOS 26, *) { 30.0 } else { 42.0 }
+    }
+    
     private lazy var expandedPageControlToolbarConstraints = [
         pageControlBar.topAnchor.constraint(
             equalTo: pageControlToolbar.topAnchor,
             constant: 1
         ),
         pageControlToolbar.heightAnchor.constraint(
-            equalToConstant: pageControlToolbar.systemLayoutSizeFitting(
-                UIView.layoutFittingCompressedSize
-            ).height
+            equalToConstant: expandedPageControlToolbarHeight
         )
     ]
     
@@ -260,7 +262,6 @@ open class MediaViewerViewController: UIPageViewController {
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlBar.translatesAutoresizingMaskIntoConstraints = false
         let pageControlBottomPadding = if #available(iOS 26, *) { 19.0 } else { 0.0 }
-        let pageControlToolbarHeight = if #available(iOS 26, *) { 30.0 } else { 42.0 }
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
             backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -270,7 +271,6 @@ open class MediaViewerViewController: UIPageViewController {
             pageControlToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -pageControlBottomPadding),
-            pageControlToolbar.heightAnchor.constraint(equalToConstant: pageControlToolbarHeight),
             
             pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
             pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),

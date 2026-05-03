@@ -1,6 +1,6 @@
 //
 //  MediaViewerPageControlBarLayout.swift
-//  
+//
 //
 //  Created by Yusaku Nishi on 2023/03/18.
 //
@@ -25,7 +25,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     
     let style: Style
     
-    var expandedItemWidth: CGFloat?
+    private var cachedExpandedItemWidth: CGFloat?
     
     static var collapsedItemWidth: CGFloat {
         if #available(iOS 26, *) { 20 } else { 21 }
@@ -54,6 +54,27 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         contentSize
     }
     
+    private var previousBounds: CGRect = .zero
+    
+    override func shouldInvalidateLayout(
+        forBoundsChange newBounds: CGRect
+    ) -> Bool {
+        defer {
+            previousBounds = newBounds
+        }
+        if previousBounds.height != newBounds.height {
+            /*
+             NOTE:
+             Cells' height depend on the bounds height
+             so they should be updated when the bounds height is changed.
+             */
+            isLayoutCacheInvalidated = true
+            cachedExpandedItemWidth = nil
+            return true
+        }
+        return super.shouldInvalidateLayout(forBoundsChange: newBounds)
+    }
+    
     override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
         if context.invalidateEverything || context.invalidateDataSourceCounts {
             isLayoutCacheInvalidated = true
@@ -62,10 +83,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     override func prepare() {
-        guard isLayoutCacheInvalidated else {
-            contentSize.height = collectionView?.bounds.height ?? 0
-            return
-        }
+        guard isLayoutCacheInvalidated else { return }
         
         // Reset
         attributesDictionary.removeAll(keepingCapacity: true)
@@ -80,8 +98,8 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         }
         
         // NOTE: Cache and reuse expandedItemWidth for smooth animation.
-        let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
-        self.expandedItemWidth = expandedItemWidth
+        let expandedItemWidth = cachedExpandedItemWidth ?? expandingItemWidth(in: collectionView)
+        self.cachedExpandedItemWidth = expandedItemWidth
         
         let collapsedItemSpacing: CGFloat
         let expandedItemSpacing: CGFloat
