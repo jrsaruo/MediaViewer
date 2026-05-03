@@ -62,7 +62,10 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     override func prepare() {
-        guard isLayoutCacheInvalidated else { return }
+        guard isLayoutCacheInvalidated else {
+            contentSize.height = collectionView?.bounds.height ?? 0
+            return
+        }
         
         // Reset
         attributesDictionary.removeAll(keepingCapacity: true)
