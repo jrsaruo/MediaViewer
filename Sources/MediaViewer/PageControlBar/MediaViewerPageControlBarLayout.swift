@@ -75,23 +75,35 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
             expandedItemSpacing = 12
         }
         
+        // NOTE: Calculate width and item-spacing in advance for performance.
+        var widthAndSpacings: [IndexPath: (width: CGFloat, itemSpacing: CGFloat)] = [:]
+        switch style {
+        case .expanded(let indexPath, _):
+            widthAndSpacings[indexPath] = (
+                width: expandedItemWidth,
+                itemSpacing: expandedItemSpacing
+            )
+            var nextIndexPath = indexPath
+            nextIndexPath.item += 1
+            widthAndSpacings[nextIndexPath] = (
+                width: Self.collapsedItemWidth,
+                itemSpacing: expandedItemSpacing
+            )
+        case .collapsed:
+            break
+        }
+        
         // Calculate frames for each item
         for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
-            let width: CGFloat
-            let itemSpacing: CGFloat
-            switch style.indexPathForExpandingItem {
-            case indexPath:
-                width = expandedItemWidth
-                itemSpacing = expandedItemSpacing
-            case previousIndexPath:
-                width = Self.collapsedItemWidth
-                itemSpacing = expandedItemSpacing
-            default:
-                width = Self.collapsedItemWidth
-                itemSpacing = collapsedItemSpacing
-            }
+            let (width, itemSpacing) = widthAndSpacings[
+                indexPath,
+                default: (
+                    width: Self.collapsedItemWidth,
+                    itemSpacing: collapsedItemSpacing
+                )
+            ]
             let previousFrame = attributesDictionary[previousIndexPath]?.frame
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
