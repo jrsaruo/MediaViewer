@@ -18,6 +18,7 @@ final class MediaViewerViewModelTests: XCTestCase {
     
     // MARK: Reloading tests
     
+    @MainActor
     func testPagingAfterReloading() {
         // Arrange
         let identifiers = (0..<5).map(AnyMediaIdentifier.init)
@@ -170,6 +171,7 @@ final class MediaViewerViewModelTests: XCTestCase {
         }
     }
     
+    @MainActor
     func testInteractivePagingOnTransitioningToNextPage() {
         // Arrange
         let testCases: [InteractivePagingTestCase] = [
@@ -220,6 +222,7 @@ final class MediaViewerViewModelTests: XCTestCase {
         }
     }
     
+    @MainActor
     func testInteractivePagingOnTransitioningToPreviousPage() {
         // Arrange
         let testCases: [InteractivePagingTestCase] = [

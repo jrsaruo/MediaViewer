@@ -1,6 +1,6 @@
 //
 //  MediaViewerPageControlBarLayout.swift
-//  
+//
 //
 //  Created by Yusaku Nishi on 2023/03/18.
 //
@@ -25,11 +25,16 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     
     let style: Style
     
-    var expandedItemWidth: CGFloat?
-    static let collapsedItemWidth: CGFloat = 21
+    private var cachedExpandedItemWidth: CGFloat?
+    
+    static var collapsedItemWidth: CGFloat {
+        if #available(iOS 26, *) { 20 } else { 21 }
+    }
     
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
+    
+    private var isLayoutCacheInvalidated = true
     
     // MARK: - Initializers
     
@@ -49,7 +54,37 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         contentSize
     }
     
+    private var previousBounds: CGRect = .zero
+    
+    override func shouldInvalidateLayout(
+        forBoundsChange newBounds: CGRect
+    ) -> Bool {
+        defer {
+            previousBounds = newBounds
+        }
+        if previousBounds.height != newBounds.height {
+            /*
+             NOTE:
+             Cells' height depend on the bounds height
+             so they should be updated when the bounds height is changed.
+             */
+            isLayoutCacheInvalidated = true
+            cachedExpandedItemWidth = nil
+            return true
+        }
+        return super.shouldInvalidateLayout(forBoundsChange: newBounds)
+    }
+    
+    override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+        if context.invalidateEverything || context.invalidateDataSourceCounts {
+            isLayoutCacheInvalidated = true
+        }
+        super.invalidateLayout(with: context)
+    }
+    
     override func prepare() {
+        guard isLayoutCacheInvalidated else { return }
+        
         // Reset
         attributesDictionary.removeAll(keepingCapacity: true)
         contentSize = .zero
@@ -58,54 +93,71 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
         guard numberOfItems > 0 else { return }
         
-        // NOTE: Cache and reuse expandedItemWidth for smooth animation.
-        let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
-        self.expandedItemWidth = expandedItemWidth
+        defer {
+            isLayoutCacheInvalidated = false
+        }
         
-        let collapsedItemSpacing = 1.0
-        let expandedItemSpacing = 12.0
+        // NOTE: Cache and reuse expandedItemWidth for smooth animation.
+        let expandedItemWidth = cachedExpandedItemWidth ?? expandingItemWidth(in: collectionView)
+        self.cachedExpandedItemWidth = expandedItemWidth
+        
+        let collapsedItemSpacing: CGFloat
+        let expandedItemSpacing: CGFloat
+        if #available(iOS 26, *) {
+            collapsedItemSpacing = 3
+            expandedItemSpacing = 13
+        } else {
+            collapsedItemSpacing = 1
+            expandedItemSpacing = 12
+        }
+        
+        // NOTE: Calculate width and item-spacing in advance for performance.
+        var widthAndSpacings: [IndexPath: (width: CGFloat, itemSpacing: CGFloat)] = [:]
+        switch style {
+        case .expanded(let indexPath, _):
+            widthAndSpacings[indexPath] = (
+                width: expandedItemWidth,
+                itemSpacing: expandedItemSpacing
+            )
+            var nextIndexPath = indexPath
+            nextIndexPath.item += 1
+            widthAndSpacings[nextIndexPath] = (
+                width: Self.collapsedItemWidth,
+                itemSpacing: expandedItemSpacing
+            )
+        case .collapsed:
+            break
+        }
         
         // Calculate frames for each item
-        var frames: [IndexPath: CGRect] = [:]
         for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
-            let width: CGFloat
-            let itemSpacing: CGFloat
-            switch style.indexPathForExpandingItem {
-            case indexPath:
-                width = expandedItemWidth
-                itemSpacing = expandedItemSpacing
-            case previousIndexPath:
-                width = Self.collapsedItemWidth
-                itemSpacing = expandedItemSpacing
-            default:
-                width = Self.collapsedItemWidth
-                itemSpacing = collapsedItemSpacing
-            }
-            let previousFrame = frames[previousIndexPath]
+            let (width, itemSpacing) = widthAndSpacings[
+                indexPath,
+                default: (
+                    width: Self.collapsedItemWidth,
+                    itemSpacing: collapsedItemSpacing
+                )
+            ]
+            let previousFrame = attributesDictionary[previousIndexPath]?.frame
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
-            frames[indexPath] = CGRect(
+            let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
+            attributes.frame = CGRect(
                 x: x,
                 y: 0,
                 width: width,
                 height: collectionView.bounds.height
             )
+            attributesDictionary[indexPath] = attributes
         }
         
         // Calculate the content size
-        let lastItemFrame = frames[IndexPath(item: numberOfItems - 1, section: 0)]!
+        let lastItemFrame = attributesDictionary[IndexPath(item: numberOfItems - 1, section: 0)]!.frame
         contentSize = CGSize(
             width: lastItemFrame.maxX,
             height: collectionView.bounds.height
         )
-        
-        // Set up layout attributes
-        for (indexPath, frame) in frames {
-            let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
-            attributes.frame = frame
-            attributesDictionary[indexPath] = attributes
-        }
     }
     
     private func expandingItemWidth(in collectionView: UICollectionView) -> CGFloat {

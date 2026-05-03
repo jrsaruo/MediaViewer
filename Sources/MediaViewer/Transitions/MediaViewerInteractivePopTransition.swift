@@ -21,6 +21,17 @@ final class MediaViewerInteractivePopTransition: NSObject {
         transitionContext?.viewController(forKey: .to)?.tabBarController?.tabBar
     }
     
+    // MARK: Ending actions
+    
+    enum EndingAction {
+        case finish, cancel
+    }
+    
+    /// An ending action that was skipped because it was tried before starting the transition.
+    ///
+    /// This action should be retried if the transition starts.
+    private var skippedEndingActionBeforeStart: EndingAction?
+    
     // MARK: Backups
     
     private var sourceViewHiddenBackup = false
@@ -121,16 +132,19 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             tabBar.scrollEdgeAppearance = appearance
         }
         
-        /*
-         [Workaround]
-         If the navigation bar is hidden on transition start, some animations
-         are applied by system and the bar remains hidden after the transition.
-         Specifying alpha solved this problem.
-         */
         let navigationBar = navigationController.navigationBar
-        navigationBar.alpha = mediaViewer.isShowingMediaOnly 
-        ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
-        : 1
+        
+        if #unavailable(iOS 26) {
+            /*
+             [Workaround]
+             If the navigation bar is hidden on transition start, some animations
+             are applied by system and the bar remains hidden after the transition.
+             Specifying alpha solved this problem.
+             */
+            navigationBar.alpha = mediaViewer.isShowingMediaOnly
+            ? 0.0001 // NOTE: .leastNormalMagnitude didn't work.
+            : 1
+        }
         
         if mediaViewer.toolbarHiddenBackup {
             /*
@@ -187,7 +201,11 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
         let navigationBarAlpha = mediaViewer.navigationBarHiddenBackup
         ? 0
         : mediaViewer.navigationBarAlphaBackup
-        animator = UIViewPropertyAnimator(duration: 0.25, dampingRatio: 1) {
+        animator = UIViewPropertyAnimator(
+            duration: 0.25,
+            dampingRatio: 1
+        ) { [weak self] in
+            guard let self else { return }
             navigationBar.alpha = navigationBarAlpha
             for view in viewsToFadeOutDuringTransition {
                 view.alpha = 0
@@ -217,14 +235,40 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
              If the tabBar becomes visible and the toolbar remains visible,
              move it manually because repositioning is not animated.
              */
-            if !mediaViewer.toolbarHiddenBackup, let tabBar = self.tabBar {
+            if !mediaViewer.toolbarHiddenBackup, let tabBar {
                 toolbar.frame.origin.y = tabBar.frame.origin.y - toolbar.bounds.height
+            }
+        }
+        
+        // Retry skipped ending action
+        if let skippedEndingActionBeforeStart {
+            animator?.startAnimation()
+            /*
+             NOTE:
+             Delay the action using a Task so that it runs after the animation starts.
+             */
+            Task {
+                switch skippedEndingActionBeforeStart {
+                case .finish:
+                    finishInteractiveTransition()
+                case .cancel:
+                    cancelInteractiveTransition()
+                }
             }
         }
     }
     
     private func finishInteractiveTransition() {
-        guard let animator, let transitionContext else { return }
+        guard let animator, let transitionContext else {
+            /*
+             NOTE:
+             When the user quickly swipe down and release the finger,
+             this method is sometimes called before
+             startInteractiveTransition(_:) and enters here.
+             */
+            skippedEndingActionBeforeStart = .finish
+            return
+        }
         transitionContext.finishInteractiveTransition()
         
         animator.continueAnimation(withTimingParameters: nil, durationFactor: 1)
@@ -280,14 +324,31 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             if let animationKeys = navigationBar.layer.animationKeys() {
                 assert(animationKeys.allSatisfy {
                     $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+                    || $0.starts(with: "opacity")
                 })
                 navigationBar.layer.removeAllAnimations()
             }
             
             // Disable the default animation applied to the toolbar
             if let animationKeys = toolbar.layer.animationKeys() {
-                assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                assert(
+                    animationKeys.allSatisfy {
+                        $0.starts(with: "UIPacingAnimationForAnimatorsKey")
+                        || $0.starts(with: "position")
+                    }
+                )
                 toolbar.layer.removeAllAnimations()
+            }
+            
+            /*
+             [Workaround]
+             Some UI components have animations when retrying cancel,
+             so remove animations to prevent them from getting unresponsive.
+             */
+            let isRetrying = self.skippedEndingActionBeforeStart != nil
+            if isRetrying {
+                navigationBar.removeAllAnimationsRecursively()
+                toolbar.removeAllAnimationsRecursively()
             }
             
             transitionContext.completeTransition(true)
@@ -296,7 +357,16 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
     }
     
     private func cancelInteractiveTransition() {
-        guard let animator, let transitionContext else { return }
+        guard let animator, let transitionContext else {
+            /*
+             NOTE:
+             When the user quickly swipe down and release the finger,
+             this method is sometimes called before
+             startInteractiveTransition(_:) and enters here.
+             */
+            skippedEndingActionBeforeStart = .cancel
+            return
+        }
         transitionContext.cancelInteractiveTransition()
         
         animator.isReversed = true
@@ -340,6 +410,18 @@ extension MediaViewerInteractivePopTransition: UIViewControllerInteractiveTransi
             let pageControlToolbar = mediaViewer.pageControlToolbar
             pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
             mediaViewer.didCancelInteractivePopTransition()
+            
+            /*
+             [Workaround]
+             Some UI components have animations when retrying cancel,
+             so remove animations to prevent them from getting unresponsive.
+             */
+            let isRetrying = self.skippedEndingActionBeforeStart != nil
+            if isRetrying {
+                navigationController.navigationBar.removeAllAnimationsRecursively()
+                toolbar.removeAllAnimationsRecursively()
+                mediaViewer.pageControlToolbar.removeAllAnimationsRecursively()
+            }
             
             transitionContext.completeTransition(false)
         }

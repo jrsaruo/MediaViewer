@@ -42,7 +42,7 @@ final class AsyncImagesViewController: UIViewController {
             item: (
                 asset: asset,
                 contentMode: self.preferredContentMode,
-                screenScale: self.view.window?.screen.scale ?? 3
+                screenScale: self.traitCollection.displayScale
             )
         )
     }
@@ -50,7 +50,7 @@ final class AsyncImagesViewController: UIViewController {
     private lazy var refreshButton = UIBarButtonItem(
         systemItem: .refresh,
         primaryAction: .init { [weak self] _ in
-            Task { await self?.refresh(animated: true) }
+            self?.refreshButtonTapped()
         }
     )
     
@@ -137,6 +137,12 @@ final class AsyncImagesViewController: UIViewController {
         return assets
     }
     
+    private func refreshButtonTapped() {
+        Task {
+            await refresh(animated: true)
+        }
+    }
+    
     private func toggleContentMode() {
         let newContentMode: UIView.ContentMode
         let systemImageName: String
@@ -179,8 +185,8 @@ extension AsyncImagesViewController: UICollectionViewDelegate {
             .init(image: .init(systemName: "square.and.arrow.up")),
             .flexibleSpace(),
             .init(image: .init(systemName: "heart")),
-            .flexibleSpace(),
             .init(image: .init(systemName: "info.circle")),
+            .init(image: .init(systemName: "slider.horizontal.3")),
             .flexibleSpace(),
             mediaViewer.trashButton { mediaViewer, button, currentAsset in
                 try? await self.showConfirmationForPhotoRemoval(

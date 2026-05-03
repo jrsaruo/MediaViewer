@@ -126,15 +126,17 @@ open class MediaViewerViewController: UIPageViewController {
     
     // MARK: Layout constraints
     
+    private var expandedPageControlToolbarHeight: CGFloat {
+        if #available(iOS 26, *) { 30.0 } else { 42.0 }
+    }
+    
     private lazy var expandedPageControlToolbarConstraints = [
         pageControlBar.topAnchor.constraint(
             equalTo: pageControlToolbar.topAnchor,
             constant: 1
         ),
         pageControlToolbar.heightAnchor.constraint(
-            equalToConstant: pageControlToolbar.systemLayoutSizeFitting(
-                UIView.layoutFittingCompressedSize
-            ).height
+            equalToConstant: expandedPageControlToolbarHeight
         )
     ]
     
@@ -161,7 +163,7 @@ open class MediaViewerViewController: UIPageViewController {
     public init<MediaIdentifier>(
         opening mediaIdentifier: MediaIdentifier,
         dataSource: some MediaViewerDataSource<MediaIdentifier>
-    ) {
+    ) where MediaIdentifier: Sendable {
         super.init(
             transitionStyle: .scroll,
             navigationOrientation: .horizontal,
@@ -247,16 +249,19 @@ open class MediaViewerViewController: UIPageViewController {
         view.insertSubview(backgroundView, at: 0)
         view.addSubview(pageControlToolbar)
         
-        pageControlBar.configure(
-            mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
-            currentIdentifier: currentMediaIdentifier
-        )
+        Task {
+            await pageControlBar.configure(
+                mediaIdentifiers: mediaViewerVM.mediaIdentifiers,
+                currentIdentifier: currentMediaIdentifier
+            )
+        }
         pageControlToolbar.addSubview(pageControlBar)
         
         // Layout
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         pageControlToolbar.translatesAutoresizingMaskIntoConstraints = false
         pageControlBar.translatesAutoresizingMaskIntoConstraints = false
+        let pageControlBottomPadding = if #available(iOS 26, *) { 19.0 } else { 0.0 }
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
             backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -265,7 +270,7 @@ open class MediaViewerViewController: UIPageViewController {
             
             pageControlToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageControlToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            pageControlToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -pageControlBottomPadding),
             
             pageControlBar.leadingAnchor.constraint(equalTo: pageControlToolbar.leadingAnchor),
             pageControlBar.trailingAnchor.constraint(equalTo: pageControlToolbar.trailingAnchor),
@@ -298,6 +303,14 @@ open class MediaViewerViewController: UIPageViewController {
                 }
                 if showsMediaOnly {
                     animator.addCompletion { position in
+                        guard self.navigationController == navigationController else {
+                            /*
+                             NOTE:
+                             Prevent hiding bars after restored their visibility
+                             by interactive pop.
+                             */
+                            return
+                        }
                         if position == .end {
                             navigationController.isNavigationBarHidden = true
                             navigationController.isToolbarHidden = true
@@ -364,8 +377,14 @@ open class MediaViewerViewController: UIPageViewController {
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        guard let navigationController else {
-            preconditionFailure(
+        if #unavailable(iOS 26) {
+            /*
+             NOTE:
+             On iOS 26 and above, this precondition fails
+             when the tab bar was hidden in the previous screen.
+             */
+            precondition(
+                navigationController != nil,
                 "\(Self.self) must be embedded in UINavigationController."
             )
         }
@@ -387,8 +406,8 @@ open class MediaViewerViewController: UIPageViewController {
             }
             tabBar.isHidden = tabBarHiddenBackup
         }
-        navigationController.navigationBar.alpha = navigationBarAlphaBackup
-        navigationController.setNavigationBarHidden(
+        navigationController?.navigationBar.alpha = navigationBarAlphaBackup
+        navigationController?.setNavigationBarHidden(
             navigationBarHiddenBackup,
             animated: animated
         )
@@ -397,8 +416,8 @@ open class MediaViewerViewController: UIPageViewController {
             if context.isCancelled {
                 // Cancel the appearance restoration
                 tabBar?.isHidden = self.isShowingMediaOnly || self.hidesBottomBarWhenPushed
-                navigationController.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
-                navigationController.isNavigationBarHidden = self.isShowingMediaOnly
+                self.navigationController?.navigationBar.alpha = self.isShowingMediaOnly ? 0 : 1
+                self.navigationController?.isNavigationBarHidden = self.isShowingMediaOnly
             }
         }
     }
@@ -447,7 +466,7 @@ open class MediaViewerViewController: UIPageViewController {
         toMediaWith identifier: MediaIdentifier,
         animated: Bool,
         completion: ((Bool) -> Void)? = nil
-    ) where MediaIdentifier: Hashable {
+    ) where MediaIdentifier: Hashable & Sendable {
         let identifier = AnyMediaIdentifier(identifier)
         move(
             to: makeMediaViewerPage(with: identifier),
@@ -588,11 +607,13 @@ open class MediaViewerViewController: UIPageViewController {
         }
         
         func finalizeReloading() {
-            pageControlBar.loadItems(
-                mediaViewerVM.mediaIdentifiers,
-                expandingItemWith: destination.mediaIdentifier,
-                animated: animated
-            )
+            Task {
+                await pageControlBar.loadItems(
+                    mediaViewerVM.mediaIdentifiers,
+                    expandingItemWith: destination.mediaIdentifier,
+                    animated: animated
+                )
+            }
             
             if let direction = pagingAfterReloading.direction {
                 move(

@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jrsaruo/AceLayout",
       "state" : {
-        "revision" : "6f8ef9fe2a3d97fe64b34f2eeefe6147828793ba",
-        "version" : "1.1.0"
+        "revision" : "2b96b1b4990fee35ac1bd5b1dc942393dd4957fc",
+        "version" : "1.1.3"
       }
     }
   ],

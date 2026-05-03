@@ -63,7 +63,7 @@ final class CameraLikeViewController: UIViewController {
         guard let latestAsset = assets.last else { return }
         
         let showLibraryButton = cameraLikeView.showLibraryButton
-        let scale = view.window?.windowScene?.screen.scale ?? 3
+        let scale = view.traitCollection.displayScale
         let latestImage = await PHImageFetcher.image(
             for: latestAsset,
             targetSize: CGSize(

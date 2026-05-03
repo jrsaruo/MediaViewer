@@ -125,7 +125,7 @@ final class MediaViewerPageControlBar: UIView {
     
     private lazy var cellRegistration = CellRegistration { [weak self] cell, indexPath, mediaIdentifier in
         guard let self, let dataSource else { return }
-        let scale = window?.screen.scale ?? 3
+        let scale = traitCollection.displayScale
         let preferredSize = CGSize(
             width: cell.bounds.width * scale,
             height: cell.bounds.height * scale
@@ -171,7 +171,8 @@ final class MediaViewerPageControlBar: UIView {
     // MARK: - Override
     
     override var intrinsicContentSize: CGSize {
-        CGSize(width: super.intrinsicContentSize.width, height: 42)
+        let height = if #available(iOS 26, *) { 30.0 } else { 42.0 }
+        return CGSize(width: super.intrinsicContentSize.width, height: height)
     }
     
     // MARK: - Lifecycle
@@ -197,20 +198,19 @@ final class MediaViewerPageControlBar: UIView {
     func configure(
         mediaIdentifiers: [AnyMediaIdentifier],
         currentIdentifier: AnyMediaIdentifier
-    ) {
+    ) async {
         var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
         snapshot.appendSections([0])
         snapshot.appendItems(mediaIdentifiers)
+        await diffableDataSource.apply(snapshot)
         
         let currentPage = snapshot.indexOfItem(currentIdentifier)!
-        diffableDataSource.apply(snapshot) {
-            let indexPath = IndexPath(item: currentPage, section: 0)
-            self.expandAndScrollToItem(
-                at: indexPath,
-                causingBy: .configuration,
-                animated: false
-            )
-        }
+        let indexPath = IndexPath(item: currentPage, section: 0)
+        expandAndScrollToItem(
+            at: indexPath,
+            causingBy: .configuration,
+            animated: false
+        )
     }
     
     /// Loads identifiers for media.
@@ -218,33 +218,28 @@ final class MediaViewerPageControlBar: UIView {
     ///   - identifiers: Identifiers for media to load.
     ///   - expandingIdentifier: An identifier for media to expand after the loading.
     ///   - animated: Whether to animate the loading.
-    ///   - completion: A closure to execute when the loading completes.
     func loadItems(
         _ identifiers: [AnyMediaIdentifier],
         expandingItemWith expandingIdentifier: AnyMediaIdentifier,
-        animated: Bool,
-        completion: (() -> Void)? = nil
-    ) {
+        animated: Bool
+    ) async {
         var snapshot = NSDiffableDataSourceSnapshot<Int, AnyMediaIdentifier>()
         snapshot.appendSections([0])
         snapshot.appendItems(identifiers)
-        diffableDataSource.apply(snapshot, animatingDifferences: animated)
+        await diffableDataSource.apply(snapshot, animatingDifferences: animated)
         
         guard let indexPath = diffableDataSource.indexPath(for: expandingIdentifier) else {
-            completion?()
             return
         }
         _pageDidChange.send((page: indexPath.item, reason: .load))
-        updateLayout(
+        await updateLayout(
             expandingItemAt: indexPath,
             expandingThumbnailWidthToHeight: dataSource?.mediaViewerPageControlBar(
                 self,
                 widthToHeightOfThumbnailWith: expandingIdentifier
             ),
             animated: animated
-        ) { _ in
-            completion?()
-        }
+        )
     }
     
     private func page(with identifier: AnyMediaIdentifier) -> Int? {
@@ -288,6 +283,23 @@ final class MediaViewerPageControlBar: UIView {
             animated: animated,
             completion: completion
         )
+    }
+    
+    @discardableResult
+    private func updateLayout(
+        expandingItemAt indexPath: IndexPath?,
+        expandingThumbnailWidthToHeight: CGFloat? = nil,
+        animated: Bool
+    ) async -> Bool {
+        await withCheckedContinuation { continuation in
+            updateLayout(
+                expandingItemAt: indexPath,
+                expandingThumbnailWidthToHeight: expandingThumbnailWidthToHeight,
+                animated: animated
+            ) { completed in
+                continuation.resume(returning: completed)
+            }
+        }
     }
     
     /// Expand an item and scroll there.

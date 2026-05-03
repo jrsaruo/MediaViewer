@@ -125,7 +125,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         sourceView?.isHidden = true
         
         let wasTabBarHidden = mediaViewer.tabBarHiddenBackup ?? true
-        if let tabBar {
+        if #unavailable(iOS 26), let tabBar {
             // Show the tabBar during the transition
             containerView.addSubview(tabBar)
             if !wasTabBarHidden {
@@ -140,7 +140,12 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
             // Disable the default animation applied to the tabBar
             if mediaViewer.hidesBottomBarWhenPushed,
                let animationKeys = tabBar.layer.animationKeys() {
-                assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+                assert(
+                    animationKeys.allSatisfy {
+                        $0.starts(with: "position")
+                        || $0.starts(with: "opacity")
+                    }
+                )
                 tabBar.layer.removeAllAnimations()
             }
         }
@@ -196,7 +201,8 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
              If the tabBar becomes hidden and the toolbar remains visible,
              move it manually because repositioning is not animated.
              */
-            if !mediaViewer.toolbarHiddenBackup,
+            if #unavailable(iOS 26),
+               !mediaViewer.toolbarHiddenBackup,
                let tabBar,
                mediaViewer.hidesBottomBarWhenPushed {
                 toolbar.frame.origin.y = tabBar.frame.origin.y
@@ -212,7 +218,7 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
                 currentPageView.restoreLayoutConfigurationAfterTransition()
                 self.sourceView?.isHidden = sourceViewHiddenBackup
                 
-                if let tabBar {
+                if #unavailable(iOS 26), let tabBar {
                     tabBar.isHidden = tabBarHiddenBackup!
                     tabBar.scrollEdgeAppearance = tabBarScrollEdgeAppearanceBackup
                     tabBarSuperviewBackup?.addSubview(tabBar)
@@ -337,7 +343,10 @@ final class MediaViewerTransition: NSObject, UIViewControllerAnimatedTransitioni
         // Customize the tabBar animation
         if let tabBar = toVC.tabBarController?.tabBar,
            let animationKeys = tabBar.layer.animationKeys() {
-            assert(animationKeys.allSatisfy { $0.starts(with: "position") })
+            assert(animationKeys.allSatisfy {
+                $0.starts(with: "position")
+                || $0.starts(with: "opacity")
+            })
             tabBar.layer.removeAllAnimations()
             
             if toVC.hidesBottomBarWhenPushed {
