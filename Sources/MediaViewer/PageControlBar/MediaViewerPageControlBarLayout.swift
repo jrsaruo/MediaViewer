@@ -34,6 +34,8 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     private var attributesDictionary: [IndexPath: UICollectionViewLayoutAttributes] = [:]
     private var contentSize: CGSize = .zero
     
+    private var isLayoutCacheInvalidated = true
+    
     // MARK: - Initializers
     
     init(style: Style) {
@@ -52,7 +54,16 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         contentSize
     }
     
+    override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+        if context.invalidateEverything || context.invalidateDataSourceCounts {
+            isLayoutCacheInvalidated = true
+        }
+        super.invalidateLayout(with: context)
+    }
+    
     override func prepare() {
+        guard isLayoutCacheInvalidated else { return }
+        
         // Reset
         attributesDictionary.removeAll(keepingCapacity: true)
         contentSize = .zero
@@ -60,6 +71,10 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         guard let collectionView, collectionView.numberOfSections == 1 else { return }
         let numberOfItems = collectionView.numberOfItems(inSection: 0)
         guard numberOfItems > 0 else { return }
+        
+        defer {
+            isLayoutCacheInvalidated = false
+        }
         
         // NOTE: Cache and reuse expandedItemWidth for smooth animation.
         let expandedItemWidth = self.expandedItemWidth ?? expandingItemWidth(in: collectionView)
