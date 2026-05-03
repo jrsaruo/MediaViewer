@@ -54,6 +54,26 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         contentSize
     }
     
+    private var previousBounds: CGRect = .zero
+    
+    override func shouldInvalidateLayout(
+        forBoundsChange newBounds: CGRect
+    ) -> Bool {
+        defer {
+            previousBounds = newBounds
+        }
+        if previousBounds.height != newBounds.height {
+            /*
+             NOTE:
+             Cells' height depend on the bounds height
+             so they should be updated when the bounds height is changed.
+             */
+            isLayoutCacheInvalidated = true
+            return true
+        }
+        return super.shouldInvalidateLayout(forBoundsChange: newBounds)
+    }
+    
     override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
         if context.invalidateEverything || context.invalidateDataSourceCounts {
             isLayoutCacheInvalidated = true
@@ -62,10 +82,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     override func prepare() {
-        guard isLayoutCacheInvalidated else {
-            contentSize.height = collectionView?.bounds.height ?? 0
-            return
-        }
+        guard isLayoutCacheInvalidated else { return }
         
         // Reset
         attributesDictionary.removeAll(keepingCapacity: true)
