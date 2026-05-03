@@ -1,6 +1,6 @@
 //
 //  MediaViewerPageControlBarLayout.swift
-//  
+//
 //
 //  Created by Yusaku Nishi on 2023/03/18.
 //
@@ -25,7 +25,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     
     let style: Style
     
-    var expandedItemWidth: CGFloat?
+    private var expandedItemWidth: CGFloat?
     
     static var collapsedItemWidth: CGFloat {
         if #available(iOS 26, *) { 20 } else { 21 }
