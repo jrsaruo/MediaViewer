@@ -129,6 +129,8 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
             break
         }
         
+        attributesDictionary.reserveCapacity(numberOfItems)
+        
         // Calculate frames for each item
         for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
