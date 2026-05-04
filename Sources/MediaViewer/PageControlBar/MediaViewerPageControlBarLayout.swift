@@ -143,27 +143,30 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         
         attributesDictionary.reserveCapacity(numberOfItems)
         
+        let firstIndexPath = IndexPath(item: 0, section: 0)
+        // NOTE: Initial previousMaxX + initial itemSpacing should be 0.
+        var previousMaxX = -widthAndSpacings(for: firstIndexPath).itemSpacing
+        
         // Calculate frames for each item
         for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
-            let previousIndexPath = IndexPath(item: item - 1, section: 0)
             let (width, itemSpacing) = widthAndSpacings(for: indexPath)
-            let previousFrame = attributesDictionary[previousIndexPath]?.frame
-            let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
             attributes.frame = CGRect(
-                x: x,
+                x: previousMaxX + itemSpacing,
                 y: 0,
                 width: width,
                 height: collectionView.bounds.height
             )
             attributesDictionary[indexPath] = attributes
+            previousMaxX = attributes.frame.maxX
         }
+        assert(attributesDictionary[firstIndexPath]?.frame.minX == 0)
         
         // Calculate the content size
-        let lastItemFrame = attributesDictionary[IndexPath(item: numberOfItems - 1, section: 0)]!.frame
+        let lastItemMaxX = previousMaxX
         contentSize = CGSize(
-            width: lastItemFrame.maxX,
+            width: lastItemMaxX,
             height: collectionView.bounds.height
         )
     }
