@@ -112,21 +112,33 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         }
         
         // NOTE: Calculate width and item-spacing in advance for performance.
-        var widthAndSpacings: [IndexPath: (width: CGFloat, itemSpacing: CGFloat)] = [:]
+        var _widthAndSpacings: [IndexPath: (width: CGFloat, itemSpacing: CGFloat)] = [:]
         switch style {
         case .expanded(let indexPath, _):
-            widthAndSpacings[indexPath] = (
+            _widthAndSpacings[indexPath] = (
                 width: expandedItemWidth,
                 itemSpacing: expandedItemSpacing
             )
             var nextIndexPath = indexPath
             nextIndexPath.item += 1
-            widthAndSpacings[nextIndexPath] = (
+            _widthAndSpacings[nextIndexPath] = (
                 width: Self.collapsedItemWidth,
                 itemSpacing: expandedItemSpacing
             )
         case .collapsed:
             break
+        }
+        
+        func widthAndSpacings(
+            for indexPath: IndexPath
+        ) -> (width: CGFloat, itemSpacing: CGFloat) {
+            _widthAndSpacings[
+                indexPath,
+                default: (
+                    width: Self.collapsedItemWidth,
+                    itemSpacing: collapsedItemSpacing
+                )
+            ]
         }
         
         attributesDictionary.reserveCapacity(numberOfItems)
@@ -135,13 +147,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         for item in 0..<numberOfItems {
             let indexPath = IndexPath(item: item, section: 0)
             let previousIndexPath = IndexPath(item: item - 1, section: 0)
-            let (width, itemSpacing) = widthAndSpacings[
-                indexPath,
-                default: (
-                    width: Self.collapsedItemWidth,
-                    itemSpacing: collapsedItemSpacing
-                )
-            ]
+            let (width, itemSpacing) = widthAndSpacings(for: indexPath)
             let previousFrame = attributesDictionary[previousIndexPath]?.frame
             let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
