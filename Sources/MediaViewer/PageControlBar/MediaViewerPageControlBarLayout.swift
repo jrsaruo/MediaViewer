@@ -204,7 +204,27 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        attributesDictionary.values.filter { $0.frame.intersects(rect) }
+        /*
+         NOTE:
+         Not use attributesDictionary.values.filter { ... } for performance.
+         */
+        guard !attributesDictionary.isEmpty else { return nil }
+        
+        var results: [UICollectionViewLayoutAttributes] = []
+        let lastItemIndex = attributesDictionary.count - 1
+        for item in 0...lastItemIndex {
+            let indexPath = IndexPath(item: item, section: 0)
+            let attributes = attributesDictionary[indexPath]!
+            guard attributes.frame.intersects(rect) else {
+                if results.isEmpty {
+                    continue // Not found yet
+                } else {
+                    break // All the rest items should be out of `rect`
+                }
+            }
+            results.append(attributes)
+        }
+        return results
     }
     
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
