@@ -99,7 +99,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         
         // NOTE: Cache and reuse expandedItemWidth for smooth animation.
         let expandedItemWidth = cachedExpandedItemWidth ?? expandingItemWidth(in: collectionView)
-        self.cachedExpandedItemWidth = expandedItemWidth
+        cachedExpandedItemWidth = expandedItemWidth
         
         let collapsedItemSpacing: CGFloat
         let expandedItemSpacing: CGFloat
