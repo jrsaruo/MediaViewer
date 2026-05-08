@@ -17,8 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       
-      - name: Build
-        run: xcodebuild build -scheme ${{ env.package }} -destination "name=${{ env.IOS_SIMULATOR }}"
+      - name: Build for testing
+        run: xcodebuild build-for-testing -scheme ${{ env.package }} -destination "platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }}"
         
       - name: Run tests
-        run: xcodebuild test -scheme ${{ env.package }} -destination "name=${{ env.IOS_SIMULATOR }}"
+        run: xcodebuild test-without-building -scheme ${{ env.package }} -destination "platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }}"
