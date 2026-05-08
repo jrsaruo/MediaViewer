@@ -99,7 +99,7 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         
         // NOTE: Cache and reuse expandedItemWidth for smooth animation.
         let expandedItemWidth = cachedExpandedItemWidth ?? expandingItemWidth(in: collectionView)
-        self.cachedExpandedItemWidth = expandedItemWidth
+        cachedExpandedItemWidth = expandedItemWidth
         
         let collapsedItemSpacing: CGFloat
         let expandedItemSpacing: CGFloat
@@ -112,16 +112,16 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
         }
         
         // NOTE: Calculate width and item-spacing in advance for performance.
-        var widthAndSpacings: [IndexPath: (width: CGFloat, itemSpacing: CGFloat)] = [:]
+        var _widthAndSpacings: [IndexPath: (width: CGFloat, itemSpacing: CGFloat)] = [:]
         switch style {
         case .expanded(let indexPath, _):
-            widthAndSpacings[indexPath] = (
+            _widthAndSpacings[indexPath] = (
                 width: expandedItemWidth,
                 itemSpacing: expandedItemSpacing
             )
             var nextIndexPath = indexPath
             nextIndexPath.item += 1
-            widthAndSpacings[nextIndexPath] = (
+            _widthAndSpacings[nextIndexPath] = (
                 width: Self.collapsedItemWidth,
                 itemSpacing: expandedItemSpacing
             )
@@ -129,33 +129,44 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
             break
         }
         
-        // Calculate frames for each item
-        for item in 0..<numberOfItems {
-            let indexPath = IndexPath(item: item, section: 0)
-            let previousIndexPath = IndexPath(item: item - 1, section: 0)
-            let (width, itemSpacing) = widthAndSpacings[
+        func widthAndSpacings(
+            for indexPath: IndexPath
+        ) -> (width: CGFloat, itemSpacing: CGFloat) {
+            _widthAndSpacings[
                 indexPath,
                 default: (
                     width: Self.collapsedItemWidth,
                     itemSpacing: collapsedItemSpacing
                 )
             ]
-            let previousFrame = attributesDictionary[previousIndexPath]?.frame
-            let x = previousFrame.map { $0.maxX + itemSpacing } ?? 0
+        }
+        
+        attributesDictionary.reserveCapacity(numberOfItems)
+        
+        let firstIndexPath = IndexPath(item: 0, section: 0)
+        // NOTE: Initial previousMaxX + initial itemSpacing should be 0.
+        var previousMaxX = -widthAndSpacings(for: firstIndexPath).itemSpacing
+        
+        // Calculate frames for each item
+        for item in 0..<numberOfItems {
+            let indexPath = IndexPath(item: item, section: 0)
+            let (width, itemSpacing) = widthAndSpacings(for: indexPath)
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
             attributes.frame = CGRect(
-                x: x,
+                x: previousMaxX + itemSpacing,
                 y: 0,
                 width: width,
                 height: collectionView.bounds.height
             )
             attributesDictionary[indexPath] = attributes
+            previousMaxX = attributes.frame.maxX
         }
+        assert(attributesDictionary[firstIndexPath]?.frame.minX == 0)
         
         // Calculate the content size
-        let lastItemFrame = attributesDictionary[IndexPath(item: numberOfItems - 1, section: 0)]!.frame
+        let lastItemMaxX = previousMaxX
         contentSize = CGSize(
-            width: lastItemFrame.maxX,
+            width: lastItemMaxX,
             height: collectionView.bounds.height
         )
     }
@@ -193,7 +204,27 @@ final class MediaViewerPageControlBarLayout: UICollectionViewLayout {
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        attributesDictionary.values.filter { $0.frame.intersects(rect) }
+        /*
+         NOTE:
+         Not use attributesDictionary.values.filter { ... } for performance.
+         */
+        guard !attributesDictionary.isEmpty else { return nil }
+        
+        var results: [UICollectionViewLayoutAttributes] = []
+        let lastItemIndex = attributesDictionary.count - 1
+        for item in 0...lastItemIndex {
+            let indexPath = IndexPath(item: item, section: 0)
+            let attributes = attributesDictionary[indexPath]!
+            guard attributes.frame.intersects(rect) else {
+                if results.isEmpty {
+                    continue // Not found yet
+                } else {
+                    break // All the rest items should be out of `rect`
+                }
+            }
+            results.append(attributes)
+        }
+        return results
     }
     
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
