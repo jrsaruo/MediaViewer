@@ -9,7 +9,7 @@ env:
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: macos-26
     
     env:
       IOS_SIMULATOR: "iPhone 17"
