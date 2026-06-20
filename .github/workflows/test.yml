@@ -15,7 +15,7 @@ jobs:
       IOS_SIMULATOR: "iPhone 17"
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Build for testing
         run: xcodebuild build-for-testing -scheme ${{ env.package }} -destination "platform=iOS Simulator,OS=latest,name=${{ env.IOS_SIMULATOR }}"
